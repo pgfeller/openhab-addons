@@ -17,6 +17,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ScheduledFuture;
@@ -393,6 +394,23 @@ public class JellyfinServerHandler extends BaseBridgeHandler {
 
     private void updateClients(List<SessionInfo> sessions) {
         var things = getThing().getThings();
+
+        sessions.stream().forEach(session -> {
+            String id = session.getId();
+            String client = session.getClient();
+            String deviceId = session.getDeviceId();
+            String deviceName = session.getDeviceName();
+            String deviceType = session.getDeviceType();
+
+            if (client.contains("DLNA")) {
+                this.logger.trace("Session: {}, Client: {}, DeviceId {}, deviceName {}, deviceType {}", id, client,
+                        deviceId, deviceName, deviceType);
+            } else {
+                this.logger.debug("Session: {}, Client: {}, DeviceId {}, deviceName {}, deviceType {}", id, client,
+                        deviceId, deviceName, deviceType);
+            }
+        });
+
         things.forEach((childThing) -> {
             var handler = childThing.getHandler();
             if (handler == null) {
@@ -407,11 +425,34 @@ public class JellyfinServerHandler extends BaseBridgeHandler {
     }
 
     private void updateClientState(JellyfinClientHandler handler, List<SessionInfo> sessions) {
-        @Nullable
-        SessionInfo clientSession = sessions.stream()
-                .filter(session -> Objects.equals(session.getDeviceId(), handler.getThing().getUID().getId()))
-                .sorted((a, b) -> b.getLastActivityDate().compareTo(a.getLastActivityDate())).findFirst().orElse(null);
-        handler.updateStateFromSession(clientSession);
+        var thing = handler.getThing();
+        var uid = thing.getUID();
+        var id = uid.getId();
+
+        // Optional<SessionInfo> activeSession = sessions.stream()
+        // .filter(session -> Objects.equals(session.getDeviceId(), id))
+        // .sorted((a, b) -> b.getLastActivityDate().compareTo(a.getLastActivityDate())).findFirst();
+        Optional<SessionInfo> activeSession = sessions.stream().filter(session -> session.getDeviceId().startsWith(id))
+                .sorted((a, b) -> b.getLastActivityDate().compareTo(a.getLastActivityDate())).findFirst();
+
+        if (activeSession.isPresent()) {
+            @SuppressWarnings("null")
+            SessionInfo session = activeSession.get();
+
+            if (!session.getDeviceId().equals(id)) {
+                this.logger.warn(
+                        " Partial id match only! Session found for thing UID: {}, ID: {} ({}): Client {}, DeviceId {}, DeviceName {}",
+                        uid, id, thing.getLabel(), session.getClient(), session.getDeviceId(), session.getDeviceName());
+            } else {
+                this.logger.debug("Session found for thing UID: {}, ID: {} ({}): Client {}, DeviceId {}, DeviceName {}",
+                        uid, id, thing.getLabel(), session.getClient(), session.getDeviceId(), session.getDeviceName());
+            }
+        } else {
+            this.logger.debug("No active session found for thing UID: {}, ID: {}, label: {}", uid, id,
+                    thing.getLabel());
+        }
+
+        handler.updateStateFromSession(activeSession.isPresent() ? activeSession.get() : null);
     }
 
     public static class JellyfinCredentials {
