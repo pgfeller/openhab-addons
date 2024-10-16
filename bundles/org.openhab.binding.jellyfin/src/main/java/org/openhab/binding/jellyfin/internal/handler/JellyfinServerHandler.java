@@ -406,7 +406,7 @@ public class JellyfinServerHandler extends BaseBridgeHandler {
                 this.logger.trace("Session: {}, Client: {}, DeviceId {}, deviceName {}, deviceType {}", id, client,
                         deviceId, deviceName, deviceType);
             } else {
-                this.logger.debug("Session: {}, Client: {}, DeviceId {}, deviceName {}, deviceType {}", id, client,
+                this.logger.info("Session: {}, Client: {}, DeviceId {}, deviceName {}, deviceType {}", id, client,
                         deviceId, deviceName, deviceType);
             }
         });
@@ -427,13 +427,22 @@ public class JellyfinServerHandler extends BaseBridgeHandler {
     private void updateClientState(JellyfinClientHandler handler, List<SessionInfo> sessions) {
         var thing = handler.getThing();
         var uid = thing.getUID();
-        var id = uid.getId();
+        var thingLabel = Optional.ofNullable(thing.getLabel());
+
+        String id = uid.getId();
+        String label = thingLabel.isPresent() ? thingLabel.get() : "";
 
         // Optional<SessionInfo> activeSession = sessions.stream()
         // .filter(session -> Objects.equals(session.getDeviceId(), id))
         // .sorted((a, b) -> b.getLastActivityDate().compareTo(a.getLastActivityDate())).findFirst();
-        Optional<SessionInfo> activeSession = sessions.stream().filter(session -> session.getDeviceId().startsWith(id))
-                .sorted((a, b) -> b.getLastActivityDate().compareTo(a.getLastActivityDate())).findFirst();
+        Optional<SessionInfo> activeSession = sessions.stream().filter(session -> {
+            var deviceName = Optional.ofNullable(session.getDeviceName());
+
+            String name = deviceName.isPresent() ? deviceName.get() : "";
+
+            return session.getDeviceId().contains(id)
+                    || (thingLabel.isPresent() && deviceName.isPresent() && name.contains(label));
+        }).sorted((a, b) -> b.getLastActivityDate().compareTo(a.getLastActivityDate())).findFirst();
 
         if (activeSession.isPresent()) {
             @SuppressWarnings("null")
@@ -441,8 +450,8 @@ public class JellyfinServerHandler extends BaseBridgeHandler {
 
             if (!session.getDeviceId().equals(id)) {
                 this.logger.warn(
-                        " Partial id match only! Session found for thing UID: {}, ID: {} ({}): Client {}, DeviceId {}, DeviceName {}",
-                        uid, id, thing.getLabel(), session.getClient(), session.getDeviceId(), session.getDeviceName());
+                        " Fallback! Session found for thing UID: {}, ID: {} ({}): Client {}, DeviceId {}, DeviceName {}",
+                        uid, id, label, session.getClient(), session.getDeviceId(), session.getDeviceName());
             } else {
                 this.logger.debug("Session found for thing UID: {}, ID: {} ({}): Client {}, DeviceId {}, DeviceName {}",
                         uid, id, thing.getLabel(), session.getClient(), session.getDeviceId(), session.getDeviceName());
