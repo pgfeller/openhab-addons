@@ -302,7 +302,7 @@ public class HueSyncHandler extends BaseThingHandler {
     @Override
     public void initialize() {
         try {
-            updateStatus(ThingStatus.UNKNOWN);
+            this.updateStatus(ThingStatus.UNKNOWN);
 
             this.stopTasks();
 

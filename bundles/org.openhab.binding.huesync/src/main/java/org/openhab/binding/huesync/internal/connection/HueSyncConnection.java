@@ -105,10 +105,8 @@ public class HueSyncConnection {
             @Nullable Class<T> type) {
         try {
             return this.processedResponse(this.executeRequest(method, endpoint, payload), type);
-        } catch (ExecutionException e) {
-            this.handleExecutionException(e);
-        } catch (InterruptedException | TimeoutException e) {
-            this.logger.warn("{}", e.getMessage());
+        } catch (ExecutionException | InterruptedException | TimeoutException e) {
+            this.handleException(e);
         }
 
         return null;
@@ -117,10 +115,8 @@ public class HueSyncConnection {
     protected @Nullable <T> T executeGetRequest(String endpoint, Class<T> type) {
         try {
             return this.processedResponse(this.executeGetRequest(endpoint), type);
-        } catch (ExecutionException e) {
-            this.handleExecutionException(e);
-        } catch (InterruptedException | TimeoutException e) {
-            this.logger.warn("{}", e.getMessage());
+        } catch (ExecutionException | InterruptedException | TimeoutException e) {
+            this.handleException(e);
         }
 
         return null;
@@ -226,8 +222,8 @@ public class HueSyncConnection {
         return request.send();
     }
 
-    private void handleExecutionException(ExecutionException e) {
-        this.logger.warn("{}", e.getMessage());
+    private void handleException(Exception e) {
+        this.logger.warn("Exception: {}, Client State: {}", e.getMessage(), this.httpClient.getState());
 
         Throwable cause = e.getCause();
         if (cause != null && cause instanceof HttpResponseException) {
