@@ -12,9 +12,6 @@
  */
 package org.openhab.binding.huesync.internal.handler;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -39,6 +36,7 @@ import org.openhab.binding.huesync.internal.exceptions.HueSyncApiException;
 import org.openhab.binding.huesync.internal.handler.tasks.HueSyncRegistrationTask;
 import org.openhab.binding.huesync.internal.handler.tasks.HueSyncUpdateTask;
 import org.openhab.binding.huesync.internal.handler.tasks.HueSyncUpdateTaskResult;
+import org.openhab.binding.huesync.internal.types.HueSyncExceptionHandler;
 import org.openhab.core.config.core.Configuration;
 import org.openhab.core.io.net.http.HttpClientFactory;
 import org.openhab.core.library.types.DecimalType;
@@ -49,6 +47,7 @@ import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingStatus;
 import org.openhab.core.thing.ThingStatusDetail;
+import org.openhab.core.thing.ThingStatusInfo;
 import org.openhab.core.thing.binding.BaseThingHandler;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.State;
@@ -63,11 +62,33 @@ import org.slf4j.LoggerFactory;
  */
 @NonNullByDefault
 public class HueSyncHandler extends BaseThingHandler {
+
+    /**
+     * Exception handler implementation
+     * 
+     * @author Patrik Gfeller - Issue #18062, improve connection exception handling.
+     */
+    private class ExceptionHandler implements HueSyncExceptionHandler {
+        private final Thing thing;
+
+        private ExceptionHandler(Thing thing) {
+            this.thing = thing;
+        }
+
+        @Override
+        public void handle(Exception exception) {
+            ThingStatusInfo status = new ThingStatusInfo(ThingStatus.INITIALIZING,
+                    ThingStatusDetail.COMMUNICATION_ERROR, exception.getLocalizedMessage());
+            this.thing.setStatusInfo(status);
+        }
+    }
+
     private static final String REGISTER = "Registration";
     private static final String POLL = "Update";
 
     private static final String PROPERTY_API_VERSION = "apiVersion";
 
+    private final ExceptionHandler exceptionHandler;
     private final Logger logger = LoggerFactory.getLogger(HueSyncHandler.class);
 
     Map<String, @Nullable ScheduledFuture<?>> tasks = new HashMap<>();
@@ -80,6 +101,7 @@ public class HueSyncHandler extends BaseThingHandler {
     public HueSyncHandler(Thing thing, HttpClientFactory httpClientFactory) {
         super(thing);
 
+        this.exceptionHandler = new ExceptionHandler(thing);
         this.httpClient = httpClientFactory.getCommonHttpClient();
     }
 
@@ -97,7 +119,7 @@ public class HueSyncHandler extends BaseThingHandler {
         return () -> {
             try {
                 var connectionInstance = new HueSyncDeviceConnection(this.httpClient,
-                        this.getConfigAs(HueSyncConfiguration.class));
+                        this.getConfigAs(HueSyncConfiguration.class), this.exceptionHandler);
 
                 this.connection = Optional.of(connectionInstance);
 
@@ -117,8 +139,8 @@ public class HueSyncHandler extends BaseThingHandler {
                         this.startTasks(connectionInstance);
                     }
                 });
-            } catch (CertificateException | URISyntaxException | IOException | NoSuchElementException ex) {
-                this.updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, ex.getLocalizedMessage());
+            } catch (Exception ex) {
+                this.exceptionHandler.handle(ex);
             }
         };
     }
@@ -158,7 +180,7 @@ public class HueSyncHandler extends BaseThingHandler {
                         "@text/thing.config.huesync.box.registration");
 
                 task = new HueSyncRegistrationTask(connection, this.deviceInfo.get(),
-                        registration -> this.handleRegistration(registration, connection));
+                        registration -> this.handleRegistration(registration, connection), this.exceptionHandler);
             }
         }
 
@@ -190,15 +212,16 @@ public class HueSyncHandler extends BaseThingHandler {
         try {
             HueSyncUpdateTaskResult update = Optional.ofNullable(dto).get();
 
-            try {
-                this.updateFirmwareInformation(Optional.ofNullable(update.deviceStatus).get());
-            } catch (NoSuchElementException e) {
-                this.logMissingUpdateInformation("device");
-            }
-
+            this.updateFirmwareInformation(Optional.ofNullable(update.deviceStatus).get());
             this.updateHdmiInformation(Optional.ofNullable(update.hdmiStatus).get());
             this.updateExecutionInformation(Optional.ofNullable(update.execution).get());
+
+            if (this.getThing().getStatus() != ThingStatus.ONLINE) {
+                this.updateStatus(ThingStatus.ONLINE);
+            }
+
         } catch (NoSuchElementException e) {
+            this.logMissingUpdateInformation("device");
             this.startTasks(connection);
         }
     }
@@ -299,6 +322,7 @@ public class HueSyncHandler extends BaseThingHandler {
     // #endregion
 
     // #region Override
+
     @Override
     public void initialize() {
         try {
@@ -308,9 +332,9 @@ public class HueSyncHandler extends BaseThingHandler {
 
             scheduler.execute(initializeConnection());
         } catch (Exception e) {
+            this.stopTasks();
             this.logger.warn("{}", e.getMessage());
-
-            this.updateStatus(ThingStatus.OFFLINE);
+            this.exceptionHandler.handle(e);
         }
     }
 
