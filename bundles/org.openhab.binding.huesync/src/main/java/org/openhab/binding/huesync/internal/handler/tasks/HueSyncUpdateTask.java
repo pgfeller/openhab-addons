@@ -53,7 +53,7 @@ public class HueSyncUpdateTask implements Runnable {
         HueSyncUpdateTaskResult updateInfo = new HueSyncUpdateTaskResult();
 
         try {
-            this.logger.debug("Status update query for {} {}:{}", this.deviceInfo.name, this.deviceInfo.deviceType,
+            this.logger.trace("Status update query for {} {}:{}", this.deviceInfo.name, this.deviceInfo.deviceType,
                     this.deviceInfo.uniqueId);
 
             updateInfo.deviceStatus = this.connection.getDetailedDeviceInfo();

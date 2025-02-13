@@ -204,6 +204,10 @@ public class HueSyncConnection {
             }
             throw new HueSyncConnectionException(message, new HttpResponseException(message, response));
         } catch (JsonProcessingException | InterruptedException | ExecutionException | TimeoutException e) {
+
+            var logMessage = message + " {}";
+            this.logger.warn(logMessage, e.toString());
+
             throw new HueSyncConnectionException(message, e);
         }
     }
