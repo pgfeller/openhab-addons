@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
  * Task to handle device registration.
  * 
  * @author Patrik Gfeller - Initial contribution
+  * @author Patrik Gfeller - Issue #18376, Fix/improve log message and exception handling
  */
 @NonNullByDefault
 public class HueSyncRegistrationTask implements Runnable {
@@ -34,15 +35,18 @@ public class HueSyncRegistrationTask implements Runnable {
     private final HueSyncDeviceConnection connection;
     private final HueSyncDevice deviceInfo;
     private final HueSyncExceptionHandler exceptionHandler;
-    private final Consumer<HueSyncRegistration> action;
+    private final Consumer<HueSyncRegistration> registrationAccepted;
+    private final Runnable registrationFailed;
 
     public HueSyncRegistrationTask(HueSyncDeviceConnection connection, HueSyncDevice deviceInfo,
-            Consumer<HueSyncRegistration> action, HueSyncExceptionHandler exceptionHandler) {
+            Consumer<HueSyncRegistration> registrationAccepted, Runnable registrationFailed,
+            HueSyncExceptionHandler exceptionHandler) {
 
         this.exceptionHandler = exceptionHandler;
         this.connection = connection;
         this.deviceInfo = deviceInfo;
-        this.action = action;
+        this.registrationAccepted = registrationAccepted;
+        this.registrationFailed = registrationFailed;
     }
 
     @Override
@@ -62,10 +66,12 @@ public class HueSyncRegistrationTask implements Runnable {
             if (registration != null) {
                 this.logger.debug("API token for {} received", this.deviceInfo.name);
 
-                this.action.accept(registration);
+                this.registrationAccepted.accept(registration);
             }
         } catch (Exception e) {
             this.exceptionHandler.handle(e);
+
+            this.registrationFailed.run();
         }
     }
 }

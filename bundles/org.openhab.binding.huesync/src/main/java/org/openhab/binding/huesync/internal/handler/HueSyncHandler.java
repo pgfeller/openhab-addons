@@ -62,6 +62,7 @@ import org.slf4j.LoggerFactory;
  * channels.
  *
  * @author Patrik Gfeller - Initial contribution
+  * @author Patrik Gfeller - Issue #18376, Fix/improve log message and exception handling
  */
 @NonNullByDefault
 public class HueSyncHandler extends BaseThingHandler {
@@ -212,7 +213,8 @@ public class HueSyncHandler extends BaseThingHandler {
                         "@text/thing.config.huesync.box.registration");
 
                 task = new HueSyncRegistrationTask(connection, this.deviceInfo.get(),
-                        registration -> this.handleRegistration(registration, connection), this.exceptionHandler);
+                        registration -> this.handleRegistration(registration, connection),
+                        () -> this.connect(connection, this.deviceInfo.get()), this.exceptionHandler);
             }
         }
 
