@@ -36,7 +36,6 @@ import org.openhab.binding.huesync.internal.config.HueSyncConfiguration;
 import org.openhab.binding.huesync.internal.connection.HueSyncDeviceConnection;
 import org.openhab.binding.huesync.internal.exceptions.HueSyncApiException;
 import org.openhab.binding.huesync.internal.exceptions.HueSyncConnectionException;
-import org.openhab.binding.huesync.internal.exceptions.HueSyncException;
 import org.openhab.binding.huesync.internal.handler.tasks.HueSyncRegistrationTask;
 import org.openhab.binding.huesync.internal.handler.tasks.HueSyncUpdateTask;
 import org.openhab.binding.huesync.internal.handler.tasks.HueSyncUpdateTaskResult;
@@ -63,7 +62,7 @@ import org.slf4j.LoggerFactory;
  * channels.
  *
  * @author Patrik Gfeller - Initial contribution
-  * @author Patrik Gfeller - Issue #18376, Fix/improve log message and exception handling
+ * @author Patrik Gfeller - Issue #18376, Fix/improve log message and exception handling
  */
 @NonNullByDefault
 public class HueSyncHandler extends BaseThingHandler {
@@ -87,28 +86,24 @@ public class HueSyncHandler extends BaseThingHandler {
             ThingStatusDetail detail = ThingStatusDetail.COMMUNICATION_ERROR;
             String description;
 
-            switch (exception) {
-                case HueSyncConnectionException connectionException -> {
-                    if (connectionException.getInnerException() instanceof HttpResponseException innerException) {
-                        switch (innerException.getResponse().getStatus()) {
-                            case HttpStatus.BAD_REQUEST_400 -> {
-                                detail = ThingStatusDetail.CONFIGURATION_PENDING;
-                            }
-                            case HttpStatus.UNAUTHORIZED_401 -> {
-                                detail = ThingStatusDetail.CONFIGURATION_ERROR;
-                            }
-                            default -> {
-                                detail = ThingStatusDetail.COMMUNICATION_ERROR;
-                            }
+            if (exception instanceof HueSyncConnectionException connectionException) {
+                if (connectionException.getInnerException() instanceof HttpResponseException innerException) {
+                    switch (innerException.getResponse().getStatus()) {
+                        case HttpStatus.BAD_REQUEST_400 -> {
+                            detail = ThingStatusDetail.CONFIGURATION_PENDING;
+                        }
+                        case HttpStatus.UNAUTHORIZED_401 -> {
+                            detail = ThingStatusDetail.CONFIGURATION_ERROR;
+                        }
+                        default -> {
+                            detail = ThingStatusDetail.COMMUNICATION_ERROR;
                         }
                     }
-                    description = connectionException.getLocalizedMessage();
                 }
-                case HueSyncException hueSyncException -> description = hueSyncException.getLocalizedMessage();
-                default -> {
-                    detail = ThingStatusDetail.COMMUNICATION_ERROR;
-                    description = exception.getLocalizedMessage();
-                }
+                description = connectionException.getLocalizedMessage();
+            } else {
+                detail = ThingStatusDetail.COMMUNICATION_ERROR;
+                description = exception.getLocalizedMessage();
             }
 
             ThingStatusInfo statusInfo = new ThingStatusInfo(ThingStatus.OFFLINE, detail, description);
