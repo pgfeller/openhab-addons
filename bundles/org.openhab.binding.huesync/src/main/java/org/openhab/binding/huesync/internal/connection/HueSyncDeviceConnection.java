@@ -64,9 +64,14 @@ public class HueSyncDeviceConnection {
             HueSyncExceptionHandler exceptionHandler) throws CertificateException, IOException, URISyntaxException {
 
         this.exceptionHandler = exceptionHandler;
-        this.connection = new HueSyncConnection(httpClient, configuration.host, configuration.port);
+        try {
+            this.connection = new HueSyncConnection(httpClient, configuration.host, configuration.port);
 
-        registerCommandHandlers();
+            registerCommandHandlers();
+        } catch (IOException | URISyntaxException | CertificateException e) {
+            exceptionHandler.handle(e);
+            throw e;
+        }
     }
 
     // #region private

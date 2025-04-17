@@ -36,17 +36,14 @@ public class HueSyncRegistrationTask implements Runnable {
     private final HueSyncDevice deviceInfo;
     private final HueSyncExceptionHandler exceptionHandler;
     private final Consumer<HueSyncRegistration> registrationAccepted;
-    private final Runnable registrationFailed;
 
     public HueSyncRegistrationTask(HueSyncDeviceConnection connection, HueSyncDevice deviceInfo,
-            Consumer<HueSyncRegistration> registrationAccepted, Runnable registrationFailed,
-            HueSyncExceptionHandler exceptionHandler) {
+            Consumer<HueSyncRegistration> registrationAccepted, HueSyncExceptionHandler exceptionHandler) {
 
         this.exceptionHandler = exceptionHandler;
         this.connection = connection;
         this.deviceInfo = deviceInfo;
         this.registrationAccepted = registrationAccepted;
-        this.registrationFailed = registrationFailed;
     }
 
     @Override
@@ -54,6 +51,7 @@ public class HueSyncRegistrationTask implements Runnable {
         try {
             String id = this.deviceInfo.uniqueId;
 
+            // TODO: Handle null id with typed exception.
             if (this.connection.isRegistered() || id == null) {
                 return;
             }
@@ -70,8 +68,6 @@ public class HueSyncRegistrationTask implements Runnable {
             }
         } catch (Exception e) {
             this.exceptionHandler.handle(e);
-
-            this.registrationFailed.run();
         }
     }
 }
