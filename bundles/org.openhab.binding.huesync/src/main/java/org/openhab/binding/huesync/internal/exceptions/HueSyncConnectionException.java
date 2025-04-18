@@ -12,6 +12,8 @@
  */
 package org.openhab.binding.huesync.internal.exceptions;
 
+import java.util.Optional;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -35,5 +37,17 @@ public class HueSyncConnectionException extends HueSyncException {
 
     public @Nullable Exception getInnerException() {
         return this.innerException;
+    }
+
+    @Override
+    public @Nullable String getLocalizedMessage() {
+        var innerMessage = Optional.ofNullable(this.innerException.getLocalizedMessage());
+        var message = super.getLocalizedMessage();
+
+        if (innerMessage.isPresent()) {
+            message = message + " (" + innerMessage.get() + ")";
+        }
+
+        return message;
     }
 }

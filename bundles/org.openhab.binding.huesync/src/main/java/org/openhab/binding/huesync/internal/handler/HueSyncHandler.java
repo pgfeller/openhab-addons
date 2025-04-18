@@ -12,7 +12,6 @@
  */
 package org.openhab.binding.huesync.internal.handler;
 
-import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -73,18 +72,15 @@ public class HueSyncHandler extends BaseThingHandler {
     /**
      * @author Patrik Gfeller - Initial contribution, Issue #18376
      */
-    private static class TASK_TYPE {
+    public static class TASK_TYPE {
         public static final String CONNECT = "Connect";
         public static final String REGISTER = "Registration";
         public static final String POLL = "Update";
 
-        public static Map<String, Integer> DELAY_MAP = Map.ofEntries(
-                new AbstractMap.SimpleEntry<>(TASK_TYPE.CONNECT, 0),
-                new AbstractMap.SimpleEntry<>(TASK_TYPE.REGISTER, 5), new AbstractMap.SimpleEntry<>(TASK_TYPE.POLL, 0));
-        public static Map<String, Integer> INTERVAL_MAP = Map.ofEntries(
-                new AbstractMap.SimpleEntry<>(TASK_TYPE.CONNECT, 10),
-                new AbstractMap.SimpleEntry<>(TASK_TYPE.REGISTER, 1),
-                new AbstractMap.SimpleEntry<>(TASK_TYPE.POLL, 10));
+        public static Map<String, Integer> DELAY_MAP = Map.ofEntries(Map.entry(TASK_TYPE.CONNECT, 0),
+                Map.entry(TASK_TYPE.REGISTER, 5), Map.entry(TASK_TYPE.POLL, 10));
+        public static Map<String, Integer> INTERVAL_MAP = Map.ofEntries(Map.entry(TASK_TYPE.CONNECT, 10),
+                Map.entry(TASK_TYPE.REGISTER, 1), Map.entry(TASK_TYPE.POLL, 10));
     }
 
     /**
@@ -104,30 +100,36 @@ public class HueSyncHandler extends BaseThingHandler {
         @Override
         public void handle(Exception exception) {
             ThingStatusDetail detail = ThingStatusDetail.COMMUNICATION_ERROR;
-            String description;
+            String description = exception.getLocalizedMessage();
 
             if (exception instanceof HueSyncConnectionException connectionException) {
                 if (connectionException.getInnerException() instanceof HttpResponseException innerException) {
-                    switch (innerException.getResponse().getStatus()) {
-                        case HttpStatus.BAD_REQUEST_400 -> {
-                            detail = ThingStatusDetail.CONFIGURATION_PENDING;
-                        }
-                        case HttpStatus.UNAUTHORIZED_401 -> {
-                            detail = ThingStatusDetail.CONFIGURATION_ERROR;
-                        }
-                        default -> {
-                            detail = ThingStatusDetail.COMMUNICATION_ERROR;
-                        }
-                    }
+                    detail = getExceptionDetail(innerException);
                 }
-                description = connectionException.getLocalizedMessage();
-            } else {
-                description = exception.getLocalizedMessage();
+            } else if (exception instanceof HttpResponseException httpResponseException) {
+                detail = getExceptionDetail(httpResponseException);
             }
 
             ThingStatusInfo statusInfo = new ThingStatusInfo(ThingStatus.OFFLINE, detail, description);
             this.handler.thing.setStatusInfo(statusInfo);
-            this.handler.startTasks();
+
+            scheduler.execute(initializeHandler());
+        }
+
+        private ThingStatusDetail getExceptionDetail(HttpResponseException innerException) {
+            ThingStatusDetail detail;
+            switch (innerException.getResponse().getStatus()) {
+                case HttpStatus.BAD_REQUEST_400 -> {
+                    detail = ThingStatusDetail.CONFIGURATION_PENDING;
+                }
+                case HttpStatus.UNAUTHORIZED_401 -> {
+                    detail = ThingStatusDetail.CONFIGURATION_ERROR;
+                }
+                default -> {
+                    detail = ThingStatusDetail.COMMUNICATION_ERROR;
+                }
+            }
+            return detail;
         }
     }
 
@@ -151,52 +153,24 @@ public class HueSyncHandler extends BaseThingHandler {
     }
 
     // #region private
-    private Runnable initializeHandler() {
+    private synchronized Runnable initializeHandler() {
         return () -> {
+            this.stopTasks();
             this.startTasks();
         };
     }
-
-    /*
-     * private void connect(HueSyncDeviceConnection connectionInstance, HueSyncDevice info) {
-     * setProperty(Thing.PROPERTY_SERIAL_NUMBER, info.uniqueId != null ? info.uniqueId : "");
-     * setProperty(Thing.PROPERTY_MODEL_ID, info.deviceType);
-     * setProperty(Thing.PROPERTY_FIRMWARE_VERSION, info.firmwareVersion);
-     * 
-     * setProperty(HueSyncHandler.PROPERTY_API_VERSION, String.format("%d", info.apiLevel));
-     * 
-     * try {
-     * this.checkCompatibility();
-     * } catch (HueSyncApiException e) {
-     * this.exceptionHandler.handle(e);
-     * } finally {
-     * this.startTasks(connectionInstance);
-     * }
-     * }
-     */
 
     private @Nullable ScheduledFuture<?> executeTask(Runnable task, long initialDelay, long interval) {
         return scheduler.scheduleWithFixedDelay(task, initialDelay, interval, TimeUnit.SECONDS);
     }
 
     private synchronized void startTasks() {
-        this.stopTasks();
-
-        String taskId;
-
-        var statusInfo = this.thing.getStatusInfo();
+        String taskId = TASK_TYPE.POLL;
 
         if (this.connection.isEmpty()) {
             taskId = TASK_TYPE.CONNECT;
-        } else {
-            switch (statusInfo.getStatus()) {
-                case ONLINE -> taskId = TASK_TYPE.POLL;
-                case OFFLINE -> taskId = switch (statusInfo.getStatusDetail()) {
-                    case CONFIGURATION_PENDING, CONFIGURATION_ERROR -> TASK_TYPE.REGISTER;
-                    default -> TASK_TYPE.POLL;
-                };
-                default -> taskId = TASK_TYPE.POLL;
-            }
+        } else if (this.connection.get().isRegistered()) {
+            taskId = TASK_TYPE.REGISTER;
         }
 
         Runnable task = null;
@@ -310,22 +284,18 @@ public class HueSyncHandler extends BaseThingHandler {
 
     private void handleConnection(HueSyncDeviceConnection connectionInstance) {
         try {
-            this.stopTasks();
-
             var information = Optional.ofNullable(connectionInstance.getDeviceInfo());
 
             this.deviceInfo = Optional.of(this.checkCompatibility(information));
             this.connection = Optional.of(connectionInstance);
 
-            this.startTasks();
+            scheduler.execute(initializeHandler());
         } catch (Exception e) {
             this.exceptionHandler.handle(e);
         }
     }
 
     private void handleRegistration(HueSyncRegistration registration) {
-        this.stopTasks();
-
         setProperty(HueSyncConstants.REGISTRATION_ID, registration.registrationId);
 
         Configuration configuration = this.editConfiguration();
@@ -335,7 +305,7 @@ public class HueSyncHandler extends BaseThingHandler {
 
         this.updateConfiguration(configuration);
 
-        this.startTasks();
+        scheduler.execute(initializeHandler());
     }
 
     private HueSyncDevice checkCompatibility(Optional<HueSyncDevice> deviceInfo) throws HueSyncApiException {

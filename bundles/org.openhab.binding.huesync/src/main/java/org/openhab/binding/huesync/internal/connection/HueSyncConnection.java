@@ -172,10 +172,10 @@ public class HueSyncConnection {
     // #region private
 
     private @Nullable <T> T executeRequest(Request request, @Nullable Class<T> type) throws HueSyncConnectionException {
-        String message = "@text/connection.generic-error";
+        var message = "@text/connection.generic-error";
 
         try {
-            ContentResponse response = request.execute();
+            var response = request.execute();
 
             /*
              * 400 Invalid State: Registration in progress
@@ -189,22 +189,56 @@ public class HueSyncConnection {
              * 500 Internal: Internal errors like out of memory
              */
             switch (response.getStatus()) {
-                case HttpStatus.OK_200 -> {
+                case HttpStatus.OK_200:
                     return this.deserialize(response.getContentAsString(), type);
-                }
-                case HttpStatus.BAD_REQUEST_400 -> {
+                case HttpStatus.BAD_REQUEST_400:
                     logger.debug("registration in progress: no token received yet");
-                    return null;
-                }
-                case HttpStatus.UNAUTHORIZED_401 -> message = "@text/connection.invalid-login";
-                case HttpStatus.NOT_FOUND_404 -> message = "@text/connection.generic-error";
+                    break;
+                case HttpStatus.UNAUTHORIZED_401:
+                    message = "@text/connection.invalid-login";
+                    break;
+                case HttpStatus.NOT_FOUND_404:
+                default:
+                    message = "@text/connection.generic-error";
             }
+
+            this.logger.trace("Status: {}, Message Key: {}", response.getStatus(), message);
+
             throw new HueSyncConnectionException(message, new HttpResponseException(message, response));
-        } catch (JsonProcessingException | InterruptedException | ExecutionException | TimeoutException e) {
-            this.logger.warn("{}", e.getMessage());
+        } catch (ExecutionException e) {
+            this.logger.trace("{}: {}", e.getMessage(), message);
+
+            if (e.getCause() instanceof HttpResponseException httpResponseException) {
+                handleHttpResponseException(httpResponseException);
+            }
+
+            throw new HueSyncConnectionException(message, e);
+        } catch (HttpResponseException e) {
+            handleHttpResponseException(e);
+        } catch (JsonProcessingException | InterruptedException | TimeoutException e) {
+            this.logger.trace("{}: {}", e.getMessage(), message);
 
             throw new HueSyncConnectionException(message, e);
         }
+
+        throw new HueSyncConnectionException(message);
+    }
+
+    private String handleHttpResponseException(HttpResponseException e) throws HueSyncConnectionException {
+        var message = "@text/connection.generic-error";
+        var response = e.getResponse();
+
+        switch (response.getStatus()) {
+            case HttpStatus.UNAUTHORIZED_401:
+                message = "@text/connection.invalid-login";
+                break;
+            case HttpStatus.NOT_FOUND_404:
+                message = "@text/connection.generic-error";
+                break;
+        }
+        this.logger.trace("Status: {}, Message Key: {}", response.getStatus(), message);
+
+        throw new HueSyncConnectionException(message, e);
     }
 
     private @Nullable <T> T deserialize(String json, @Nullable Class<T> type) throws JsonProcessingException {

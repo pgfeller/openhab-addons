@@ -51,13 +51,12 @@ public class HueSyncRegistrationTask implements Runnable {
         try {
             String id = this.deviceInfo.uniqueId;
 
-            // TODO: Handle null id with typed exception.
-            if (this.connection.isRegistered() || id == null) {
-                return;
-            }
-
             this.logger.debug("Listening for device registration - {} {}:{}", this.deviceInfo.name,
                     this.deviceInfo.deviceType, id);
+
+            if (id == null) {
+                throw new Exception("Device information id must not be null");
+            }
 
             HueSyncRegistration registration = this.connection.registerDevice(id);
 
