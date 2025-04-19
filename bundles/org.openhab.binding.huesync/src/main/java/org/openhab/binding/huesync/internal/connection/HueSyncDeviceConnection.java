@@ -66,6 +66,7 @@ public class HueSyncDeviceConnection {
         this.exceptionHandler = exceptionHandler;
         try {
             this.connection = new HueSyncConnection(httpClient, configuration.host, configuration.port);
+            this.connection.updateAuthentication(configuration.registrationId, configuration.apiAccessToken);
 
             registerCommandHandlers();
         } catch (IOException | URISyntaxException | CertificateException e) {
@@ -205,9 +206,9 @@ public class HueSyncDeviceConnection {
         this.connection.dispose();
     }
 
-    public void updateConfiguration(HueSyncConfiguration config) {
-        this.logger.debug("Connection configuration update for device {}:{} - Registration Id [{}]", config.host,
-                config.port, config.registrationId);
+    public void updateAuthentication(HueSyncConfiguration config) {
+        this.logger.debug("Configure authentication for device {}:{} - Registration Id [{}]", config.host, config.port,
+                config.registrationId);
 
         this.connection.updateAuthentication(config.registrationId, config.apiAccessToken);
     }

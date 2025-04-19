@@ -191,30 +191,19 @@ public class HueSyncConnection {
             switch (response.getStatus()) {
                 case HttpStatus.OK_200:
                     return this.deserialize(response.getContentAsString(), type);
-                case HttpStatus.BAD_REQUEST_400:
-                    logger.debug("registration in progress: no token received yet");
-                    break;
-                case HttpStatus.UNAUTHORIZED_401:
-                    message = "@text/connection.invalid-login";
-                    break;
-                case HttpStatus.NOT_FOUND_404:
-                default:
-                    message = "@text/connection.generic-error";
             }
 
-            this.logger.trace("Status: {}, Message Key: {}", response.getStatus(), message);
-
-            throw new HueSyncConnectionException(message, new HttpResponseException(message, response));
+            handleResponseStatus(response.getStatus(), new HttpResponseException(response.getReason(), response));
         } catch (ExecutionException e) {
             this.logger.trace("{}: {}", e.getMessage(), message);
 
             if (e.getCause() instanceof HttpResponseException httpResponseException) {
-                handleHttpResponseException(httpResponseException);
+                handleResponseStatus(httpResponseException.getResponse().getStatus(), httpResponseException);
             }
 
             throw new HueSyncConnectionException(message, e);
         } catch (HttpResponseException e) {
-            handleHttpResponseException(e);
+            handleResponseStatus(e.getResponse().getStatus(), e);
         } catch (JsonProcessingException | InterruptedException | TimeoutException e) {
             this.logger.trace("{}: {}", e.getMessage(), message);
 
@@ -224,11 +213,11 @@ public class HueSyncConnection {
         throw new HueSyncConnectionException(message);
     }
 
-    private String handleHttpResponseException(HttpResponseException e) throws HueSyncConnectionException {
+    private void handleResponseStatus(int status, Exception e) throws HueSyncConnectionException {
         var message = "@text/connection.generic-error";
-        var response = e.getResponse();
 
-        switch (response.getStatus()) {
+        switch (status) {
+            case HttpStatus.BAD_REQUEST_400:
             case HttpStatus.UNAUTHORIZED_401:
                 message = "@text/connection.invalid-login";
                 break;
@@ -236,7 +225,8 @@ public class HueSyncConnection {
                 message = "@text/connection.generic-error";
                 break;
         }
-        this.logger.trace("Status: {}, Message Key: {}", response.getStatus(), message);
+
+        this.logger.trace("Status: {}, Message Key: {}", status, message);
 
         throw new HueSyncConnectionException(message, e);
     }

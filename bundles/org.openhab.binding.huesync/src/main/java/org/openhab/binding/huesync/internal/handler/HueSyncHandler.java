@@ -102,21 +102,38 @@ public class HueSyncHandler extends BaseThingHandler {
             ThingStatusDetail detail = ThingStatusDetail.COMMUNICATION_ERROR;
             String description = exception.getLocalizedMessage();
 
-            if (exception instanceof HueSyncConnectionException connectionException) {
-                if (connectionException.getInnerException() instanceof HttpResponseException innerException) {
-                    detail = getExceptionDetail(innerException);
-                }
-            } else if (exception instanceof HttpResponseException httpResponseException) {
-                detail = getExceptionDetail(httpResponseException);
+            // if (exception instanceof HueSyncConnectionException connectionException) {
+            // if (connectionException.getInnerException() instanceof HttpResponseException innerException) {
+            // detail = getThingStatusDetail(innerException);
+            // }
+            // } else if (exception instanceof HttpResponseException httpResponseException) {
+            // detail = getThingStatusDetail(httpResponseException);
+            // }
+
+            HttpResponseException httpResponseException = null;
+
+            if (exception instanceof HueSyncConnectionException connectionException
+                    && connectionException.getInnerException() instanceof HttpResponseException responseException) {
+                httpResponseException = responseException;
+
+            }
+            if (exception instanceof HttpResponseException responseException) {
+                httpResponseException = responseException;
+            }
+
+            if (httpResponseException != null) {
+                detail = getThingStatusDetail(httpResponseException);
             }
 
             ThingStatusInfo statusInfo = new ThingStatusInfo(ThingStatus.OFFLINE, detail, description);
             this.handler.thing.setStatusInfo(statusInfo);
 
-            scheduler.execute(initializeHandler());
+            if (!(detail == ThingStatusDetail.CONFIGURATION_PENDING && tasks.containsKey(TASK_TYPE.REGISTER))) {
+                scheduler.execute(initializeHandler());
+            }
         }
 
-        private ThingStatusDetail getExceptionDetail(HttpResponseException innerException) {
+        private ThingStatusDetail getThingStatusDetail(HttpResponseException innerException) {
             ThingStatusDetail detail;
             switch (innerException.getResponse().getStatus()) {
                 case HttpStatus.BAD_REQUEST_400 -> {
@@ -178,11 +195,7 @@ public class HueSyncHandler extends BaseThingHandler {
         long delay = TASK_TYPE.DELAY_MAP.get(taskId);
         long interval = TASK_TYPE.INTERVAL_MAP.get(taskId);
 
-        this.logger.debug("startTasks - [{}, delay: {}s, interval: {}s]", taskId, delay, interval);
-
-        if (this.connection.isPresent()) {
-            this.connection.get().updateConfiguration(this.getConfigAs(HueSyncConfiguration.class));
-        }
+        this.logger.trace("startTasks - [{}, delay: {}s, interval: {}s]", taskId, delay, interval);
 
         switch (taskId) {
             case TASK_TYPE.CONNECT -> {
@@ -204,15 +217,14 @@ public class HueSyncHandler extends BaseThingHandler {
             }
         }
 
-        // TODO: Handle null task with dedicated exception
         if (task != null) {
-            logger.debug("Starting task [{}]", taskId);
+            logger.info("Starting task [{}]", taskId);
             this.tasks.put(taskId, this.executeTask(task, delay, interval));
         }
     }
 
     private synchronized void stopTasks() {
-        logger.debug("Stopping {} task(s): {}", this.tasks.values().size(), String.join(",", this.tasks.keySet()));
+        logger.info("Stopping {} task(s): {}", this.tasks.values().size(), String.join(",", this.tasks.keySet()));
 
         this.tasks.values().forEach(task -> this.stopTask(task));
         this.tasks.clear();
