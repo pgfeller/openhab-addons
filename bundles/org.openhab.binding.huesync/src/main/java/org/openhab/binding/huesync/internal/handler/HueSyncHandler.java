@@ -54,6 +54,7 @@ import org.openhab.core.thing.ThingStatus;
 import org.openhab.core.thing.ThingStatusDetail;
 import org.openhab.core.thing.ThingStatusInfo;
 import org.openhab.core.thing.binding.BaseThingHandler;
+import org.openhab.core.thing.binding.builder.ThingStatusInfoBuilder;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.State;
 import org.slf4j.Logger;
@@ -186,7 +187,7 @@ public class HueSyncHandler extends BaseThingHandler {
 
         if (this.connection.isEmpty()) {
             taskId = TASK_TYPE.CONNECT;
-        } else if (this.connection.get().isRegistered()) {
+        } else if (!this.connection.get().isRegistered()) {
             taskId = TASK_TYPE.REGISTER;
         }
 
@@ -204,7 +205,10 @@ public class HueSyncHandler extends BaseThingHandler {
                 break;
             }
             case TASK_TYPE.POLL -> {
-                interval = this.getConfigAs(HueSyncConfiguration.class).statusUpdateInterval;
+                ThingStatusInfo statusInfo = ThingStatusInfoBuilder.create(ThingStatus.ONLINE).build();
+                this.thing.setStatusInfo(statusInfo);
+
+                interval = this.getHueSyncConfiguration().statusUpdateInterval;
 
                 task = new HueSyncUpdateTask(this.connection.get(), this.deviceInfo.get(),
                         deviceStatus -> this.handleUpdate(deviceStatus), this.exceptionHandler);
@@ -212,7 +216,8 @@ public class HueSyncHandler extends BaseThingHandler {
             }
             case TASK_TYPE.REGISTER -> {
                 task = new HueSyncRegistrationTask(this.connection.get(), this.deviceInfo.get(),
-                        registration -> this.handleRegistration(registration), this.exceptionHandler);
+                        this.getHueSyncConfiguration(), registration -> this.handleRegistration(registration),
+                        this.exceptionHandler);
                 break;
             }
         }
@@ -310,12 +315,17 @@ public class HueSyncHandler extends BaseThingHandler {
     private void handleRegistration(HueSyncRegistration registration) {
         setProperty(HueSyncConstants.REGISTRATION_ID, registration.registrationId);
 
-        Configuration configuration = this.editConfiguration();
+        if ((this.getHueSyncConfiguration().apiAccessToken == null ? registration.accessToken != null
+                : !this.getHueSyncConfiguration().apiAccessToken.equals(registration.accessToken))
+                && (this.getHueSyncConfiguration().registrationId == null ? registration.registrationId != null
+                        : !this.getHueSyncConfiguration().registrationId.equals(registration.registrationId))) {
+            Configuration configuration = this.editConfiguration();
 
-        configuration.put(HueSyncConstants.REGISTRATION_ID, registration.registrationId);
-        configuration.put(HueSyncConstants.API_TOKEN, registration.accessToken);
+            configuration.put(HueSyncConstants.REGISTRATION_ID, registration.registrationId);
+            configuration.put(HueSyncConstants.API_TOKEN, registration.accessToken);
 
-        this.updateConfiguration(configuration);
+            this.updateConfiguration(configuration);
+        }
 
         scheduler.execute(initializeHandler());
     }
@@ -355,6 +365,9 @@ public class HueSyncHandler extends BaseThingHandler {
         this.updateProperties(properties);
     }
 
+    private HueSyncConfiguration getHueSyncConfiguration() {
+        return this.getConfigAs(HueSyncConfiguration.class);
+    }
     // #endregion
 
     // #region Override

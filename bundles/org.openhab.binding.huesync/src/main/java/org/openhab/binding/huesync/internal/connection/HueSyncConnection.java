@@ -33,6 +33,7 @@ import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.http.MimeTypes;
 import org.openhab.binding.huesync.internal.HueSyncConstants.ENDPOINTS;
+import org.openhab.binding.huesync.internal.config.HueSyncConfiguration;
 import org.openhab.binding.huesync.internal.exceptions.HueSyncConnectionException;
 import org.openhab.core.io.net.http.TlsTrustManagerProvider;
 import org.osgi.framework.BundleContext;
@@ -109,10 +110,11 @@ public class HueSyncConnection {
 
     protected String registrationId = "";
 
-    public HueSyncConnection(HttpClient httpClient, String host, Integer port)
+    public HueSyncConnection(HttpClient httpClient, HueSyncConfiguration configuration)
             throws CertificateException, IOException, URISyntaxException {
-        this.host = host;
-        this.port = port;
+
+        this.host = configuration.host;
+        this.port = configuration.port;
 
         this.deviceUri = new URI(String.format("https://%s:%s", this.host, this.port));
 
@@ -122,9 +124,10 @@ public class HueSyncConnection {
         this.tlsProviderService = context.registerService(TlsTrustManagerProvider.class.getName(), trustManagerProvider,
                 null);
         this.httpClient = httpClient;
+        this.updateAuthentication(configuration.registrationId, configuration.apiAccessToken);
     }
 
-    public void updateAuthentication(String id, String token) {
+    public final void updateAuthentication(String id, String token) {
         this.removeAuthentication();
 
         if (!id.isBlank() && !token.isBlank()) {

@@ -65,8 +65,7 @@ public class HueSyncDeviceConnection {
 
         this.exceptionHandler = exceptionHandler;
         try {
-            this.connection = new HueSyncConnection(httpClient, configuration.host, configuration.port);
-            this.connection.updateAuthentication(configuration.registrationId, configuration.apiAccessToken);
+            this.connection = new HueSyncConnection(httpClient, configuration);
 
             registerCommandHandlers();
         } catch (IOException | URISyntaxException | CertificateException e) {
