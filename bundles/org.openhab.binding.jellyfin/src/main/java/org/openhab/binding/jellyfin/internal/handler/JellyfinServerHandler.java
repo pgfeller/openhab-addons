@@ -23,7 +23,7 @@ import org.openhab.core.types.Command;
  * sent to one of the channels.
  *
  * @author Miguel Álvarez - Initial contribution
- * @author Patrik Gfeller - Refactoring to avoid the use of Jellyfin SDK
+ * @author Patrik Gfeller - Adjustments to work independently of the Android SDK and respective runtime
  * 
  */
 @NonNullByDefault

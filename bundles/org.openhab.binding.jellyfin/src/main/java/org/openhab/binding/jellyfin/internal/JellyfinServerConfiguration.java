@@ -18,6 +18,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * The {@link JellyfinServerConfiguration} class contains fields mapping thing configuration parameters.
  *
  * @author Miguel Álvarez - Initial contribution
+ * @author Patrik Gfeller - Adjustments to work independently of the Android SDK and respective runtime
  */
 @NonNullByDefault
 public class JellyfinServerConfiguration {
