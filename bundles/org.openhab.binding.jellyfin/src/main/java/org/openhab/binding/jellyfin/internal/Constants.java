@@ -13,8 +13,10 @@
 package org.openhab.binding.jellyfin.internal;
 
 import java.util.Set;
+import java.util.UUID;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.ThingTypeUID;
 
 /**
@@ -23,6 +25,7 @@ import org.openhab.core.thing.ThingTypeUID;
  *
  * @author Miguel Álvarez - Initial contribution
  * @author Patrik Gfeller - Adjustments to work independently of the Android SDK and respective runtime
+ * @author Patrik Gfeller - Jellyfin public-user Thing identity
  */
 @NonNullByDefault
 public class Constants {
@@ -50,9 +53,16 @@ public class Constants {
     // List of all Thing Type UIDs
     public static final ThingTypeUID THING_TYPE_SERVER = new ThingTypeUID(BINDING_ID, "server");
     public static final ThingTypeUID THING_TYPE_JELLYFIN_CLIENT = new ThingTypeUID(BINDING_ID, "client");
-    // Only server handler is implemented - client discovery exists but no client handler yet
-    public static final Set<ThingTypeUID> SUPPORTED_THING_TYPES = Set.of(THING_TYPE_SERVER, THING_TYPE_JELLYFIN_CLIENT);
+    public static final ThingTypeUID THING_TYPE_JELLYFIN_USER = new ThingTypeUID(BINDING_ID, "user");
+    // Only the server handler is implemented; client and user handlers are not yet available.
+    public static final Set<ThingTypeUID> SUPPORTED_THING_TYPES =
+            Set.of(THING_TYPE_SERVER, THING_TYPE_JELLYFIN_CLIENT, THING_TYPE_JELLYFIN_USER);
     public static final Set<ThingTypeUID> DISCOVERABLE_CLIENT_THING_TYPES = Set.of(THING_TYPE_JELLYFIN_CLIENT);
+
+    // TODO: Move this helper and its test into the user discovery implementation when it is added.
+    public static ThingUID getUserThingUID(ThingUID bridgeUID, UUID jellyfinUserId) {
+        return new ThingUID(THING_TYPE_JELLYFIN_USER, bridgeUID, jellyfinUserId.toString());
+    }
 
     // List of all Channel ids
     public static final String SEND_NOTIFICATION_CHANNEL = "send-notification";
