@@ -14,14 +14,18 @@ package org.openhab.binding.jellyfin.internal;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.UUID;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.junit.jupiter.api.Test;
+import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.ThingTypeUID;
 
 /**
  * Unit tests for {@link Constants}
  *
  * @author Patrik Gfeller - Initial contribution
+ * @author Patrik Gfeller - Jellyfin public-user Thing identity tests
  */
 @NonNullByDefault
 class ConstantsTest {
@@ -34,6 +38,9 @@ class ConstantsTest {
 
         ThingTypeUID clientType = Constants.THING_TYPE_JELLYFIN_CLIENT;
         assertEquals("jellyfin", clientType.getBindingId());
+
+        ThingTypeUID userType = Constants.THING_TYPE_JELLYFIN_USER;
+        assertEquals("jellyfin", userType.getBindingId());
     }
 
     @Test
@@ -55,13 +62,30 @@ class ConstantsTest {
     }
 
     @Test
-    void testSupportedThingTypesContainsBothTypes() {
-        // Verify that both server and client thing types are supported
+    void testUserThingUIDIsScopedByBridgeAndUsesCanonicalUserId() {
+        UUID userId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        ThingUID firstBridgeUID = new ThingUID(Constants.THING_TYPE_SERVER, "first-server");
+        ThingUID secondBridgeUID = new ThingUID(Constants.THING_TYPE_SERVER, "second-server");
+
+        ThingUID firstUserUID = Constants.getUserThingUID(firstBridgeUID, userId);
+        ThingUID sameUserUID = Constants.getUserThingUID(firstBridgeUID, userId);
+        ThingUID otherBridgeUserUID = Constants.getUserThingUID(secondBridgeUID, userId);
+
+        assertEquals(firstUserUID, sameUserUID);
+        assertNotEquals(firstUserUID, otherBridgeUserUID);
+        assertEquals("123e4567-e89b-12d3-a456-426614174000", firstUserUID.getId());
+    }
+
+    @Test
+    void testSupportedThingTypesContainsAllTypes() {
+        // Verify that server, client, and user thing types are supported
         assertTrue(Constants.SUPPORTED_THING_TYPES.contains(Constants.THING_TYPE_SERVER),
                 "Server thing type should be in supported types");
         assertTrue(Constants.SUPPORTED_THING_TYPES.contains(Constants.THING_TYPE_JELLYFIN_CLIENT),
                 "Client thing type should be in supported types");
-        assertEquals(2, Constants.SUPPORTED_THING_TYPES.size(), "Should contain exactly 2 thing types");
+        assertTrue(Constants.SUPPORTED_THING_TYPES.contains(Constants.THING_TYPE_JELLYFIN_USER),
+                "User thing type should be in supported types");
+        assertEquals(3, Constants.SUPPORTED_THING_TYPES.size(), "Should contain exactly 3 thing types");
     }
 
     @Test
@@ -70,6 +94,8 @@ class ConstantsTest {
         assertTrue(Constants.DISCOVERABLE_CLIENT_THING_TYPES.contains(Constants.THING_TYPE_JELLYFIN_CLIENT),
                 "Client thing type should be discoverable");
         assertEquals(1, Constants.DISCOVERABLE_CLIENT_THING_TYPES.size(), "Should contain exactly 1 discoverable type");
+        assertFalse(Constants.DISCOVERABLE_CLIENT_THING_TYPES.contains(Constants.THING_TYPE_JELLYFIN_USER),
+                "User thing type should not be part of client discovery");
     }
 
     @Test
