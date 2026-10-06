@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="jellyfin"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+	<thing-type id="user">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="server"/>
+		</supported-bridge-type-refs>
+		<label>Jellyfin User</label>
+		<description><![CDATA[
+			<p>Represents a Jellyfin user account that is publicly visible on the server's login screen.</p>
+		]]></description>
+		<channels>
+			<channel id="user-name" typeId="user-name-channel"/>
+			<channel id="profile-image" typeId="profile-image-channel"/>
+		</channels>
+	</thing-type>
+</thing:thing-descriptions>
