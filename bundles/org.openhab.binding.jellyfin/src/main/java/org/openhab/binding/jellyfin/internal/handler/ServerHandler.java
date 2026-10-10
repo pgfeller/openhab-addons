@@ -38,6 +38,7 @@ import org.openhab.binding.jellyfin.internal.Constants;
 import org.openhab.binding.jellyfin.internal.api.ApiClientWrapper;
 import org.openhab.binding.jellyfin.internal.api.ImageCache;
 import org.openhab.binding.jellyfin.internal.discovery.ClientDiscoveryService;
+import org.openhab.binding.jellyfin.internal.discovery.PublicUserDiscoveryService;
 import org.openhab.binding.jellyfin.internal.events.ErrorEvent;
 import org.openhab.binding.jellyfin.internal.events.ErrorEventBus;
 import org.openhab.binding.jellyfin.internal.events.ErrorEventListener;
@@ -500,7 +501,7 @@ public class ServerHandler extends BaseBridgeHandler implements ErrorEventListen
 
     @Override
     public Collection<Class<? extends ThingHandlerService>> getServices() {
-        return Collections.singleton(ClientDiscoveryService.class);
+        return Set.of(ClientDiscoveryService.class, PublicUserDiscoveryService.class);
     }
 
     /**
