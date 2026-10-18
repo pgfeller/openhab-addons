@@ -1,0 +1,11 @@
+{
+	"mcpServers": {
+		"mcp.orchestrator": {
+			"type": "http",
+			"url": "http://192.168.0.118:4500/mcp",
+			"tools": [
+				"*"
+			]
+		}
+	}
+}

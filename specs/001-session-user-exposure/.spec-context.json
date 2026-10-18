@@ -6,5 +6,20 @@
   "currentStep": "specify",
   "status": "draft",
   "history": [],
-  "telemetryInstanceId": "d69622fa-eb7a-4059-8783-f76bff4d6747"
+  "telemetryInstanceId": "d69622fa-eb7a-4059-8783-f76bff4d6747",
+  "reviewComments": [
+    {
+      "id": "ref-1792357841163-rdlvw",
+      "doc": "quickstart",
+      "anchor": {
+        "heading": "Prerequisites",
+        "blockText": "- openHAB runtime (OH 4.x) installed and running",
+        "line": 7
+      },
+      "comment": "Target openHAB Version is 5.x; we'll use 5.2.3 for interactive testing",
+      "status": "applied",
+      "createdAt": "2026-10-18T21:10:41.260Z"
+    }
+  ],
+  "assistant": "ide-chat"
 }
