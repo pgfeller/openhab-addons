@@ -26,16 +26,19 @@ The specification covers adding read-only String channels for `user-name` and `u
 ## User Scenarios & Testing
 
 ### Scenario 1: User identifies the current session user
+
 **Given:** A Jellyfin session is active with a known user
 **When:** The user queries the `user-name` channel on their client Thing
 **Then:** The channel state contains the Jellyfin user's display name (non-null string)
 
 ### Scenario 2: Session user is null/anonymous
+
 **Given:** A Jellyfin session with no authenticated user
 **When:** The user queries the `user-name` channel
-**Then:** The channel state is `NULL` or empty string, indicating no authenticated user
+**Then:** The channel state is `NULL`, indicating no authenticated user (NULL indicates no session state, not empty string)
 
 ### Scenario 3: Session transitions
+
 **Given:** A session starts, user changes, or session ends
 **When:** The session event bus dispatches a new session state
 **Then:** Both `user-name` and `user-id` channels are updated accordingly, clearing when no session is active
@@ -43,12 +46,12 @@ The specification covers adding read-only String channels for `user-name` and `u
 ## Functional Requirements
 
 | # | Requirement | Testable |
-|---|------------|----------|
+| --- | ------------ | ---------- |
 | FR1 | Client Things expose a `user-name` channel (String type, read-only) | Read the channel state after session event |
 | FR2 | Client Things expose a `user-id` channel (String type, read-only) | Read the channel state after session event |
 | FR3 | When no session is active, both channels show NULL/empty | Verify channel state after session ends |
 | FR4 | Channel values update when session UserName/UserId changes | Monitor channel state after session update |
-| FR5 | Channels are read-only and cannot be modified by users | Check channel write permissions |
+| FR5 | Channels are read-only and cannot be modified by users | Check channel write permissions; read-only enforcement is at the openHAB binding configuration level (UI-level prevention; backend does not accept write operations for these channels) |
 
 ## Success Criteria
 
