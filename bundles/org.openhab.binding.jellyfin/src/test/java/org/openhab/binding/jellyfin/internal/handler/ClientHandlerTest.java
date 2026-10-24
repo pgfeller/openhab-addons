@@ -101,4 +101,91 @@ class ClientHandlerTest {
         assertNotNull(handler.getCurrentSession());
         assertEquals("session-1", handler.getCurrentSession().getId());
     }
+
+    /**
+     * Test that user-name channel is updated from session.
+     */
+    @Test
+    void testUserNameChannelUpdatedFromSession() throws Exception {
+        ClientHandler handler = new ClientHandler(mock(org.openhab.core.thing.Thing.class));
+        Thing thing = mock(org.openhab.core.thing.Thing.class);
+        when(thing.getUID()).thenReturn("test:jellyfin:user-exposure");
+
+        // Set up handler with the thing
+        handler = new ClientHandler(thing);
+
+        // Session with user name
+        SessionInfoDto session = new SessionInfoDto();
+        session.setUserName("JohnDoe");
+
+        handler.onSessionUpdate(session);
+
+        // Verify user-name channel was updated
+        assertNotNull(handler.getCurrentSession());
+        assertEquals("JohnDoe", handler.getCurrentSession().getUserName());
+    }
+
+    /**
+     * Test that user-id channel is updated from session.
+     */
+    @Test
+    void testUserIdChannelUpdatedFromSession() throws Exception {
+        ClientHandler handler = new ClientHandler(mock(org.openhab.core.thing.Thing.class));
+        Thing thing = mock(org.openhab.core.thing.Thing.class);
+        when(thing.getUID()).thenReturn("test:jellyfin:user-exposure");
+
+        // Set up handler with the thing
+        handler = new ClientHandler(thing);
+
+        // Session with user ID
+        SessionInfoDto session = new SessionInfoDto();
+        session.setUserId("user-12345");
+
+        handler.onSessionUpdate(session);
+
+        // Verify user-id channel was updated
+        assertNotNull(handler.getCurrentSession());
+        assertEquals("user-12345", handler.getCurrentSession().getUserId());
+    }
+
+    /**
+     * Test that user-name and user-id channels return null when no session.
+     */
+    @Test
+    void testUserChannelsNullWhenNoSession() throws Exception {
+        ClientHandler handler = new ClientHandler(mock(org.openhab.core.thing.Thing.class));
+
+        // Initially no session
+        assertNull(handler.getCurrentSession());
+
+        // Verify user channels are null when no session is active
+        assertNull(handler.getCurrentSession());
+    }
+
+    /**
+     * Test that user channels are cleared when session ends.
+     */
+    @Test
+    void testUserChannelsClearedOnSessionEnd() throws Exception {
+        ClientHandler handler = new ClientHandler(mock(org.openhab.core.thing.Thing.class));
+        Thing thing = mock(org.openhab.core.thing.Thing.class);
+        when(thing.getUID()).thenReturn("test:jellyfin:user-exposure");
+
+        // Set up handler with the thing
+        handler = new ClientHandler(thing);
+
+        // First set a session with user info
+        SessionInfoDto sessionWithUser = new SessionInfoDto();
+        sessionWithUser.setUserName("TestUser");
+        sessionWithUser.setUserId("user-999");
+        handler.onSessionUpdate(sessionWithUser);
+
+        assertNotNull(handler.getCurrentSession());
+
+        // Now clear the session
+        handler.onSessionUpdate(null);
+
+        // Verify session is cleared
+        assertNull(handler.getCurrentSession());
+    }
 }

@@ -3,9 +3,17 @@
   "specName": "001-session-user-exposure",
   "branch": "001-session-user-exposure",
   "selectedAt": "2026-10-18T12:30:51.634Z",
-  "currentStep": "specify",
-  "status": "draft",
-  "history": [],
+  "currentStep": "implement",
+  "status": "implementing",
+  "history": [
+    {
+      "step": "implement",
+      "substep": null,
+      "kind": "start",
+      "by": "user",
+      "at": "2026-10-18T21:58:02.219Z"
+    }
+  ],
   "telemetryInstanceId": "d69622fa-eb7a-4059-8783-f76bff4d6747",
   "reviewComments": [
     {
