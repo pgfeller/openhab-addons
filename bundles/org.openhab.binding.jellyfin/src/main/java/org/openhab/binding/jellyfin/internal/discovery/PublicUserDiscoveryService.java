@@ -87,15 +87,11 @@ public class PublicUserDiscoveryService extends AbstractThingHandlerDiscoverySer
     private boolean publishUsers(List<UserDto> users) {
         ThingUID bridgeUID = thingHandler.getThing().getUID();
         for (UserDto user : users) {
-            @Nullable UUID userId = user.getId();
+            UUID userId = user.getId();
             if (userId == null) {
                 LOGGER.debug("Ignoring incomplete public-user response for bridge {}", bridgeUID);
-                return false;
+                continue;
             }
-        }
-
-        for (UserDto user : users) {
-            UUID userId = user.getId();
             String name = user.getName();
             String label = name == null || name.isBlank() ? "Jellyfin User" : name;
             thingDiscovered(DiscoveryResultBuilder.create(getUserThingUID(bridgeUID, userId))
