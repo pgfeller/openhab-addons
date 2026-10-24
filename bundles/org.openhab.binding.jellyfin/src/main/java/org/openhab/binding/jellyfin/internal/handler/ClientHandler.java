@@ -407,6 +407,36 @@ public class ClientHandler extends BaseThingHandler implements SessionEventListe
             }
         });
 
+        // Update user exposure channels from session
+        if (session == null) {
+            logger.debug("Clearing user exposure channels for device {} - session is null", deviceId);
+            updateState(channel("user-name"), UnDefType.NULL);
+            updateState(channel("user-id"), UnDefType.NULL);
+        } else {
+            var userName = session.getUserName();
+            var userId = session.getUserId();
+            if (userName != null) {
+                logger.debug("Setting user-name channel for device {} to '{}'", deviceId, userName);
+                updateState(channel("user-name"), new StringType(userName));
+            } else {
+                logger.debug("Clearing user-name channel for device {} - no authenticated user", deviceId);
+                updateState(channel("user-name"), UnDefType.NULL);
+            }
+            if (userId != null) {
+                String userIdStr;
+                if (userId instanceof java.util.UUID) {
+                    userIdStr = userId.toString();
+                } else {
+                    userIdStr = String.valueOf(userId);
+                }
+                logger.debug("Setting user-id channel for device {} to '{}'", deviceId, userIdStr);
+                updateState(channel("user-id"), new StringType(userIdStr));
+            } else {
+                logger.debug("Clearing user-id channel for device {} - no authenticated user", deviceId);
+                updateState(channel("user-id"), UnDefType.NULL);
+            }
+        }
+
         // If playback is paused or nothing is playing, stop extrapolation immediately.
         if (session != null) {
             var playState = session.getPlayState();
