@@ -33,6 +33,13 @@ Three separate post-format discovery runs also passed (8 tests each). See
 [verification](../../.specify/bugs/jellyfin-public-user-cleanup/test.md).
 T003-T018 remain open; the feature remains implementing.
 
+Local-build preparation was authorized on 2026-10-30. Missing author tags in the two
+session-channel helper classes were restored. The full 319-test module suite passes, and
+`package` succeeds. Static analysis reports zero errors. Full `install` is still blocked
+by the supplied runtime snapshot's ASM 9.10 requirement versus its ASM 9.9.1 feature set,
+including after a snapshot refresh. See [the smoke-build guide](quickstart.md#first-local-smoke-build---2026-10-30).
+No runtime deployment or session-user acceptance was performed; T015-T018 remain open.
+
 ## Phase 2: Foundational - Metadata Contract Checks
 
 - [ ] T003 Extend `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerTest.java` with parsed XML checks for both client channel references, matching String channel types, and read-only state metadata; observe missing-metadata failures before XML changes (FR-001, FR-002, FR-005).

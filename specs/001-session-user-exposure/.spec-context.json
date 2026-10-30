@@ -295,6 +295,21 @@
     {
       "what": "Jellyfin cleanup exact final results and diagnostics",
       "result": "Discovery red: 6 tests, 3 failures; first green: 8/8. Three independent post-format discovery executions: 8/8 each, exit 0. Combined test command: 17/17 (9 handler, 8 discovery), exit 0. Indentation and newline follow-up discovery checks: 8/8 each. Both scoped clean-install attempts passed 17 selected tests; final install exit 1 solely on two existing missing author tags in untouched session-channel classes. get_errors found no errors in touched service/discovery/handler Java. See .specify/bugs/jellyfin-public-user-cleanup/test.md for limits."
+    },
+    {
+      "what": "Full module build after author attribution repair",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin clean install",
+      "result": "319 tests passed, zero failures/errors/skips; static analysis zero errors. Exit 1 at Karaf feature verification: core semantics requires ASM >=9.10, feature resources provide 9.9.1."
+    },
+    {
+      "what": "Snapshot-refresh full module build",
+      "command": "./mvnw -U -pl bundles/org.openhab.binding.jellyfin spotless:apply clean install",
+      "result": "319 tests passed and static analysis zero errors. Exit 1 at the same external runtime ASM mismatch despite refreshing snapshots. No skip flags or version overrides used."
+    },
+    {
+      "what": "Local manual-smoke-test package",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin package",
+      "result": "Exit 0 BUILD SUCCESS; 319 tests in 34 classes, zero failures/errors/skips; target/org.openhab.binding.jellyfin-5.3.0-SNAPSHOT.jar produced. SHA-256 3c263ec9ae6f59a00d89b3cb56574295f48e2945fdcc12e9befa8c1bc6d66a6d. This package phase does not verify Karaf runtime resolution."
     }
   ],
   "concerns": [
@@ -312,13 +327,17 @@
     },
     {
       "note": "Current cleanup repair supersedes the earlier lack-of-authorization and T002 blockers: production cleanup is now explicitly authorized and regression-tested; T002 is complete. Final module install remains blocked by pre-existing missing author tags at UserIdChannel.java:21 and UserNameChannel.java:21, deliberately left unchanged. T003-T018 remain open; no runtime acceptance or overall feature completion."
+    },
+    {
+      "note": "Local package available, but full install remains blocked by inconsistent 5.3.0-SNAPSHOT runtime requirements: ASM >=9.10 versus 9.9.1 resources. Runtime compatibility with user-selected 5.2.3 and live acceptance are unverified. Client XML still lacks planned user-name/user-id channels; T003-T018 remain open."
     }
   ],
   "context": [
     "2026-10-30 SDD setup repair only: corrected feature pointer, reviewed spec and 16 quality checks, restored plan, aligned research/model/contract/quickstart, and replaced obsolete tasks with 18 open repository-grounded tasks. No application or test source changes.",
     "Bounded T001/T002 fixture repair only. No production code, generated DTO, channel metadata, T003+ work, full module install, interactive acceptance, commits, pushes, or new branches. Earlier setup compilation concern is superseded by this executed validation; feature remains implementing.",
     "2026-10-30 bounded recommendation item 1 assessment: user stop condition triggered by malformed-response destructive cleanup. No Java, tasks, specification, plan, constitution, generated-model, or translation edits made. Existing changes preserved; feature remains implementing.",
-    "2026-10-30 bounded public-user cleanup repair only. Bug jellyfin-public-user-cleanup: fix applied, verification partial due unrelated static-analysis gate. Existing user fixture/task changes and prior Companion history retained; no further agents, commits, pushes, branches, generated-model changes, metadata changes, or T003+ work."
+    "2026-10-30 bounded public-user cleanup repair only. Bug jellyfin-public-user-cleanup: fix applied, verification partial due unrelated static-analysis gate. Existing user fixture/task changes and prior Companion history retained; no further agents, commits, pushes, branches, generated-model changes, metadata changes, or T003+ work.",
+    "2026-10-30: user requested committing cleanup repairs and preparing a local build. Cleanup/fixture repair committed as 97960f5eea. Restored human author tags only in UserNameChannel and UserIdChannel, added smoke-build guidance; did not change feature metadata or runtime dependencies."
   ],
   "workingBranch": "pgfeller/issue21850",
   "currentTask": "T003",

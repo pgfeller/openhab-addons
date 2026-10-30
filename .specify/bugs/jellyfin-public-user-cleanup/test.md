@@ -10,9 +10,29 @@
 
 The original malformed-response cleanup defect was reproduced before the fix and
 no longer reproduces in the listener-contract tests. All selected discovery and
-handler tests pass. Overall verification is partial because the module install
-gate remains blocked by two pre-existing author-tag errors in untouched
-session-channel classes, not by the cleanup change.
+handler tests pass. Overall verification remains partial because full runtime installation
+and live acceptance have not passed. The original author-tag blockers were repaired in the
+subsequently authorized local-build work; Karaf verification now exposes a runtime snapshot
+ASM-version mismatch. The package-phase build succeeds with the full module suite passing.
+
+## Local-Build Follow-Up - 2026-10-30
+
+The prior cleanup and fixture repairs were committed as `97960f5eea`. The separately
+authorized build repair restored missing author attribution in `UserNameChannel` and
+`UserIdChannel`, without changing their behavior or feature metadata.
+
+- `./mvnw -pl bundles/org.openhab.binding.jellyfin clean install`: all 319 module tests
+  passed; static analysis reported zero errors; Karaf feature verification failed.
+- `./mvnw -U -pl bundles/org.openhab.binding.jellyfin spotless:apply clean install`:
+  all 319 tests passed again; zero static-analysis errors; the same Karaf failure remained.
+- `./mvnw -pl bundles/org.openhab.binding.jellyfin package`: BUILD SUCCESS, all 319
+  tests passed across 34 classes, with zero failures, errors, or skips.
+
+The unresolved runtime feature chain reaches `org.openhab.core.semantics`, which requires
+`org.objectweb.asm` version `[9.10.0,10.0.0)` while the supplied feature resources contain
+ASM 9.9.1. No dependency versions or verifier settings were changed to bypass this.
+The local JAR is available for cautious smoke testing, not verified runtime acceptance.
+See [the smoke-build guide](../../../specs/001-session-user-exposure/quickstart.md).
 
 ## Checks Performed
 
@@ -72,16 +92,16 @@ nonfatal module findings were not cleaned up outside the authorized scope.
 - Valid mixed-response users still publish, including entries after an invalid DTO;
   unseen prior entries are protected by withholding cleanup. A later successful
   empty response resumes cleanup. Null lists and API errors do not authorize cleanup.
-- The pre-existing session-channel author errors block a successful install.
-  They belong to later feature work, not this cleanup repair.
+- The pre-existing session-channel author errors were repaired in the authorized follow-up.
+  Full install remains blocked by the external runtime snapshot's ASM-version mismatch.
 - Full session-feature validation and interactive runtime acceptance remain
   T016/T017. No generated DTO, channel metadata, or feature implementation was changed.
 
 ## Recommendation
 
 The bounded cleanup repair is ready for review with passing regression evidence.
-Keep the overall module-install gate visibly blocked until the unrelated author
-errors are addressed in their authorized task. T002 is complete because both
+Keep the overall module-install gate visibly blocked until the runtime snapshot
+dependency set resolves consistently. T002 is complete because both
 originally reported classes compile and pass; T003-T018 remain open. Preserve
 feature status implementing and all prior history. No commit, push, branch, or
 further agent was created.

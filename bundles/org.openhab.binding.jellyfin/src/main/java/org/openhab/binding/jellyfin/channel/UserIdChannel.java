@@ -17,6 +17,8 @@ package org.openhab.binding.jellyfin.channel;
  * <p>
  * Exposes the currently authenticated Jellyfin user's UUID as a read-only String channel.
  * The channel state is NULL when no session is active.
+ *
+ * @author Patrik Gfeller - Initial contribution - Session user exposure
  */
 public class UserIdChannel {
 

@@ -13,6 +13,53 @@ as part of the SDD setup repair. Follow [tasks.md](tasks.md) before claiming imp
  client Thing with the correct `serialNumber` device ID. Do not expose tokens in reports.
 - A bundle built from the repaired implementation. The spec ID is not a runtime feature toggle.
 
+## First Local Smoke Build - 2026-10-30
+
+The compilation/discovery repairs are committed as `97960f5eea`. The missing author
+attribution in the two session-channel helper classes has also been restored. Local packaging
+succeeds with all 319 module tests passing, with no failures, errors, or skipped tests:
+
+```sh
+./mvnw -pl bundles/org.openhab.binding.jellyfin package
+```
+
+The deployment artifact is
+`bundles/org.openhab.binding.jellyfin/target/org.openhab.binding.jellyfin-5.3.0-SNAPSHOT.jar`.
+Use the main JAR, not the sources JAR. This is a package-phase build, not a successful install.
+
+Both `clean install` and `-U spotless:apply clean install` passed all 319 tests and reported
+zero static-analysis errors, but failed subsequent Karaf feature verification. The supplied
+5.3.0-SNAPSHOT runtime set requires ASM 9.10 through `org.openhab.core.semantics`, while its
+resolved feature set supplies ASM 9.9.1. Refreshing snapshots did not resolve the mismatch.
+No verifier skip flags, dependency overrides, or runtime changes were applied.
+
+This artifact supports an initial discovery/regression smoke test only. The client Thing XML
+still lacks the planned `user-name` and `user-id` declarations; T003-T018 are not complete.
+Do not treat this build as session-user acceptance or proof of compatibility with openHAB 5.2.3.
+
+For a disposable or backed-up test runtime with Jellyfin already installed and its dependencies
+resolved, use the Karaf console to identify the existing binding:
+
+```text
+bundle:list -s
+bundle:headers <jellyfin-bundle-id>
+```
+
+Record the original bundle location/version for rollback. Update that existing bundle rather
+than installing a second copy, using an absolute file URL reachable from the runtime host:
+
+```text
+bundle:update <jellyfin-bundle-id> file:/absolute/path/to/org.openhab.binding.jellyfin-5.3.0-SNAPSHOT.jar
+bundle:diag <jellyfin-bundle-id>
+bundle:list -s
+```
+
+Do not proceed unless the binding resolves and becomes ACTIVE with its services available.
+If requirements cannot be resolved on 5.2.3, restore the original bundle and use a compatible
+test runtime; do not force resolution or weaken imports. No deployment was performed here.
+Check server reconnection, public-user discovery, and existing playback behavior without exposing
+credentials. Malformed-response retention is automated-test evidence, not a live-server claim.
+
 ## Automated Validation
 
 Run from the repository root, after the test fixture and feature tasks are implemented:
