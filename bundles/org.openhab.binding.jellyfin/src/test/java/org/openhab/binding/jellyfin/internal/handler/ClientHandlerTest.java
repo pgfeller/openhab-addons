@@ -15,9 +15,13 @@ package org.openhab.binding.jellyfin.internal.handler;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.UUID;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.junit.jupiter.api.Test;
 import org.openhab.binding.jellyfin.internal.gen.current.model.SessionInfoDto;
+import org.openhab.core.thing.Thing;
+import org.openhab.core.thing.ThingUID;
 
 /**
  * Unit tests for {@link ClientHandler} session timeout logic.
@@ -109,7 +113,7 @@ class ClientHandlerTest {
     void testUserNameChannelUpdatedFromSession() throws Exception {
         ClientHandler handler = new ClientHandler(mock(org.openhab.core.thing.Thing.class));
         Thing thing = mock(org.openhab.core.thing.Thing.class);
-        when(thing.getUID()).thenReturn("test:jellyfin:user-exposure");
+        when(thing.getUID()).thenReturn(new ThingUID("test:jellyfin:user-exposure"));
 
         // Set up handler with the thing
         handler = new ClientHandler(thing);
@@ -132,20 +136,21 @@ class ClientHandlerTest {
     void testUserIdChannelUpdatedFromSession() throws Exception {
         ClientHandler handler = new ClientHandler(mock(org.openhab.core.thing.Thing.class));
         Thing thing = mock(org.openhab.core.thing.Thing.class);
-        when(thing.getUID()).thenReturn("test:jellyfin:user-exposure");
+        when(thing.getUID()).thenReturn(new ThingUID("test:jellyfin:user-exposure"));
 
         // Set up handler with the thing
         handler = new ClientHandler(thing);
 
         // Session with user ID
         SessionInfoDto session = new SessionInfoDto();
-        session.setUserId("user-12345");
+        UUID userId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        session.setUserId(userId);
 
         handler.onSessionUpdate(session);
 
         // Verify user-id channel was updated
         assertNotNull(handler.getCurrentSession());
-        assertEquals("user-12345", handler.getCurrentSession().getUserId());
+        assertEquals(userId, handler.getCurrentSession().getUserId());
     }
 
     /**
@@ -169,7 +174,7 @@ class ClientHandlerTest {
     void testUserChannelsClearedOnSessionEnd() throws Exception {
         ClientHandler handler = new ClientHandler(mock(org.openhab.core.thing.Thing.class));
         Thing thing = mock(org.openhab.core.thing.Thing.class);
-        when(thing.getUID()).thenReturn("test:jellyfin:user-exposure");
+        when(thing.getUID()).thenReturn(new ThingUID("test:jellyfin:user-exposure"));
 
         // Set up handler with the thing
         handler = new ClientHandler(thing);
@@ -177,7 +182,7 @@ class ClientHandlerTest {
         // First set a session with user info
         SessionInfoDto sessionWithUser = new SessionInfoDto();
         sessionWithUser.setUserName("TestUser");
-        sessionWithUser.setUserId("user-999");
+        sessionWithUser.setUserId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
         handler.onSessionUpdate(sessionWithUser);
 
         assertNotNull(handler.getCurrentSession());

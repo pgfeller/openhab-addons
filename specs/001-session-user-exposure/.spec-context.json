@@ -12,6 +12,22 @@
       "kind": "start",
       "by": "user",
       "at": "2026-10-18T21:58:02.219Z"
+    },
+    {
+      "step": "implement",
+      "substep": null,
+      "task": "T001",
+      "kind": "complete",
+      "by": "extension",
+      "at": "2026-10-30T08:46:03.721Z"
+    },
+    {
+      "step": "implement",
+      "substep": null,
+      "task": "T002",
+      "kind": "complete",
+      "by": "extension",
+      "at": "2026-10-30T09:48:07.378Z"
     }
   ],
   "telemetryInstanceId": "d69622fa-eb7a-4059-8783-f76bff4d6747",
@@ -33,6 +49,9 @@
   "decisions": [
     {
       "decision": "Preserve the existing implementing state and historical user start while repairing earlier SDD artifacts; do not mark the feature or implementation tasks complete."
+    },
+    {
+      "decision": "User explicitly authorized bounded production public-user cleanup repair and tests on 2026-10-30, plus supporting bug/T002 records; no T003+ work, commits, pushes, branches, or further agents. Mixed responses publish valid users but suppress stale cleanup if any ID is missing."
     }
   ],
   "verified": [
@@ -51,14 +70,274 @@
       "exitCode": 0,
       "durationSeconds": 1.0,
       "result": "Finding: .specify/memory/constitution.md specs/001-session-user-exposure/**/*.md · Linting: 9 files · Summary: 0 issues in 0 files"
+    },
+    {
+      "what": "T001/T002 affected-module formatting",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin spotless:apply",
+      "exitCode": 0,
+      "result": "BUILD SUCCESS; 0 files changed; no formatter churn."
+    },
+    {
+      "what": "T001/T002 editor diagnostics",
+      "result": "No errors found in PublicUserDiscoveryServiceTest.java and ClientHandlerTest.java via get_errors."
+    },
+    {
+      "what": "T001/T002 focused fixture validation after formatting",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=ClientHandlerTest,PublicUserDiscoveryServiceTest test",
+      "source": "derived",
+      "exitCode": 1,
+      "durationSeconds": 45.0,
+      "result": "[ERROR]  · [ERROR] For more information about the errors and possible solutions, please read the following articles: · [ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException",
+      "warnings": [
+        "exited 1"
+      ]
+    },
+    {
+      "what": "T001/T002 task Markdown lint",
+      "command": "npx --yes markdownlint-cli2 --config .github/markdownlint.yaml --fix specs/001-session-user-exposure/tasks.md",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 1.0,
+      "result": "Finding: specs/001-session-user-exposure/tasks.md · Linting: 1 file · Summary: 0 issues in 0 files"
+    },
+    {
+      "what": "T001/T002 diff whitespace",
+      "command": "git diff --check",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 0.0,
+      "result": "no output"
+    },
+    {
+      "what": "T001/T002 initial focused test counts",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=ClientHandlerTest,PublicUserDiscoveryServiceTest test",
+      "exitCode": 1,
+      "result": "Initial run: module test compilation succeeded. ClientHandlerTest: 9 tests, 0 failures, 0 errors, 0 skipped. PublicUserDiscoveryServiceTest: 6 tests, 1 failure, 0 errors, 0 skipped. Total 15 tests, 14 passed, 1 failed. Failing test: testSuccessfulEmptyResponseRemovesPreviouslyDiscoveredInboxResult (thingRemoved expected; removeOlderResults invoked)."
+    },
+    {
+      "what": "T001/T002 post-format Surefire counts",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=ClientHandlerTest,PublicUserDiscoveryServiceTest test",
+      "exitCode": 1,
+      "result": "Post-format verify-run: module test compilation succeeded. ClientHandlerTest: 9 tests, 0 failures, 0 errors, 0 skipped. PublicUserDiscoveryServiceTest: 6 tests, 2 failures, 0 errors, 0 skipped. Total 15 tests, 13 passed, 2 failed. Failures: testDiscoversMultipleUsersWithBridgeScopedStableIdentity (callback order reversed) and testSuccessfulEmptyResponseRemovesPreviouslyDiscoveredInboxResult (thingRemoved expected; removeOlderResults invoked). Counts read from the latest Surefire reports."
+    },
+    {
+      "what": "Bounded discovery-assumption assessment baseline",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=PublicUserDiscoveryServiceTest test",
+      "source": "derived",
+      "exitCode": 1,
+      "durationSeconds": 78.8,
+      "result": "[ERROR]  · [ERROR] For more information about the errors and possible solutions, please read the following articles: · [ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException",
+      "warnings": [
+        "exited 1"
+      ]
+    },
+    {
+      "what": "Bounded discovery assessment affected-module formatting",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin spotless:apply",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 12.8,
+      "result": "[INFO] Total time:  10.834 s · [INFO] Finished at: 2026-10-30T10:10:13+01:00 · [INFO] ------------------------------------------------------------------------"
+    },
+    {
+      "what": "Bounded discovery assessment shared baseline",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=ClientHandlerTest,PublicUserDiscoveryServiceTest test",
+      "source": "derived",
+      "exitCode": 1,
+      "durationSeconds": 42.2,
+      "result": "[ERROR]  · [ERROR] For more information about the errors and possible solutions, please read the following articles: · [ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException",
+      "warnings": [
+        "exited 1"
+      ]
+    },
+    {
+      "what": "Bounded discovery assessment exact Surefire counts",
+      "result": "Standalone discovery: 6 tests, 1 failure, 0 errors, 0 skipped. Combined: ClientHandlerTest 9/9 passed; PublicUserDiscoveryServiceTest 5/6 passed; total 15 tests, 1 failure, 0 errors, 0 skipped. Both actual executions failed testSuccessfulEmptyResponseRemovesPreviouslyDiscoveredInboxResult (thingRemoved expected, removeOlderResults invoked). Multi-user callback order happened to pass both; no robustness claim. Malformed test passes only because it observes the wrong cleanup callback. No test repairs or post-repair repeated runs performed: explicit stop condition triggered by source-confirmed production defect."
+    },
+    {
+      "what": "Bounded discovery assessment editor diagnostics",
+      "result": "get_errors reported no errors in PublicUserDiscoveryServiceTest.java and ClientHandlerTest.java. Spotless exit 0 and no Java formatter churn. No Markdown modified by this child; tasks.md preserves prior edits and T002 remains unchecked."
+    },
+    {
+      "what": "Bounded discovery assessment authoritative cleanup contract",
+      "result": "Local org.openhab.core.config.discovery-5.0.3-sources.jar: org/openhab/core/config/discovery/AbstractDiscoveryService.java removeOlderResults at lines 369-403 delegates to DiscoveryListener.removeOlderResults with supported types and bridge; org/openhab/core/config/discovery/internal/PersistentInbox.java removeOlderResults at lines 415-431 removes matching types with creationTime.isBefore(cutoff), matching bridge, and compatible discoverer. Both methods cross-checked using javap -c -p against org.openhab.core.config.discovery-5.3.0-SNAPSHOT.jar. PublicUserDiscoveryService.startScan/publishUsers currently authorize this cleanup after invalid-ID users are skipped."
+    },
+    {
+      "what": "Bounded discovery assessment final diff whitespace",
+      "command": "git diff --check",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 0.0,
+      "result": "no output"
+    },
+    {
+      "what": "Jellyfin cleanup regression red",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=PublicUserDiscoveryServiceTest test",
+      "exitCode": 1,
+      "result": "6 tests, 3 failures, 0 errors, 0 skipped before production change. Malformed response expected one removeOlderResults callback but observed two; additional failures were callback order and the old thingRemoved expectation."
+    },
+    {
+      "what": "Jellyfin cleanup first green",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=PublicUserDiscoveryServiceTest test",
+      "exitCode": 0,
+      "result": "8 tests, 0 failures, 0 errors, 0 skipped after minimal completeness tracking and scoped test repairs."
+    },
+    {
+      "what": "Jellyfin cleanup affected-module formatting",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin spotless:apply",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 9.0,
+      "result": "[INFO] Total time:  7.185 s · [INFO] Finished at: 2026-10-30T10:27:12+01:00 · [INFO] ------------------------------------------------------------------------"
+    },
+    {
+      "what": "Jellyfin cleanup post-format discovery execution 1",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=PublicUserDiscoveryServiceTest test",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 42.5,
+      "result": "[INFO] Total time:  40.853 s · [INFO] Finished at: 2026-10-30T10:28:27+01:00 · [INFO] ------------------------------------------------------------------------"
+    },
+    {
+      "what": "Jellyfin cleanup post-format discovery execution 2",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=PublicUserDiscoveryServiceTest test",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 43.3,
+      "result": "[INFO] Total time:  40.267 s · [INFO] Finished at: 2026-10-30T10:29:10+01:00 · [INFO] ------------------------------------------------------------------------"
+    },
+    {
+      "what": "Jellyfin cleanup post-format discovery execution 3",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=PublicUserDiscoveryServiceTest test",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 48.5,
+      "result": "[INFO] Total time:  45.173 s · [INFO] Finished at: 2026-10-30T10:29:58+01:00 · [INFO] ------------------------------------------------------------------------"
+    },
+    {
+      "what": "Jellyfin cleanup combined baseline",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=ClientHandlerTest,PublicUserDiscoveryServiceTest test",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 48.6,
+      "result": "[INFO] Total time:  44.722 s · [INFO] Finished at: 2026-10-30T10:30:47+01:00 · [INFO] ------------------------------------------------------------------------"
+    },
+    {
+      "what": "Jellyfin cleanup scoped module clean install",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=ClientHandlerTest,PublicUserDiscoveryServiceTest clean install",
+      "source": "derived",
+      "exitCode": 1,
+      "durationSeconds": 267.0,
+      "result": "[ERROR]  · [ERROR] For more information about the errors and possible solutions, please read the following articles: · [ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException",
+      "warnings": [
+        "exited 1"
+      ]
+    },
+    {
+      "what": "Jellyfin cleanup indentation follow-up discovery",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=PublicUserDiscoveryServiceTest test",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 48.8,
+      "result": "[INFO] Total time:  47.184 s · [INFO] Finished at: 2026-10-30T10:39:18+01:00 · [INFO] ------------------------------------------------------------------------"
+    },
+    {
+      "what": "Jellyfin cleanup final affected-module formatting",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin spotless:apply",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 6.8,
+      "result": "[INFO] Total time:  5.330 s · [INFO] Finished at: 2026-10-30T10:39:55+01:00 · [INFO] ------------------------------------------------------------------------"
+    },
+    {
+      "what": "Jellyfin cleanup final-newline discovery",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=PublicUserDiscoveryServiceTest test",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 84.9,
+      "result": "[INFO] Total time:  01:23 min · [INFO] Finished at: 2026-10-30T10:42:07+01:00 · [INFO] ------------------------------------------------------------------------"
+    },
+    {
+      "what": "Jellyfin cleanup newline-final formatting",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin spotless:apply",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 8.2,
+      "result": "[INFO] Total time:  6.519 s · [INFO] Finished at: 2026-10-30T10:42:33+01:00 · [INFO] ------------------------------------------------------------------------"
+    },
+    {
+      "what": "Jellyfin cleanup final scoped module install",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=ClientHandlerTest,PublicUserDiscoveryServiceTest clean install > /tmp/jellyfin-cleanup-final-install.log 2>&1",
+      "source": "derived",
+      "exitCode": 1,
+      "durationSeconds": 227.1,
+      "result": "exit 1",
+      "warnings": [
+        "exited 1"
+      ]
+    },
+    {
+      "what": "Jellyfin cleanup final Markdown lint",
+      "command": "npx --yes markdownlint-cli2 --config .github/markdownlint.yaml --fix .specify/bugs/jellyfin-public-user-cleanup/*.md specs/001-session-user-exposure/tasks.md",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 1.3,
+      "result": "Linting: 4 files · Attempted: 1 fix in 1 file · Summary: 0 issues in 0 files"
+    },
+    {
+      "what": "Jellyfin cleanup final diff whitespace",
+      "command": "git diff --check",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 0.0,
+      "result": "no output"
+    },
+    {
+      "what": "Jellyfin cleanup exact final results and diagnostics",
+      "result": "Discovery red: 6 tests, 3 failures; first green: 8/8. Three independent post-format discovery executions: 8/8 each, exit 0. Combined test command: 17/17 (9 handler, 8 discovery), exit 0. Indentation and newline follow-up discovery checks: 8/8 each. Both scoped clean-install attempts passed 17 selected tests; final install exit 1 solely on two existing missing author tags in untouched session-channel classes. get_errors found no errors in touched service/discovery/handler Java. See .specify/bugs/jellyfin-public-user-cleanup/test.md for limits."
     }
   ],
   "concerns": [
     {
       "note": "The reported Jellyfin test-compilation failure remains unresolved by design. Java tests, module build, and interactive runtime acceptance were not run during the SDD setup repair."
+    },
+    {
+      "note": "T002 remains blocked: testSuccessfulEmptyResponseRemovesPreviouslyDiscoveredInboxResult expects DiscoveryListener.thingRemoved, but the existing discovery service invokes removeOlderResults. Repairing discovery assertions or production behavior is outside the authorized compilation-fixture scope. Compilation succeeds; ClientHandlerTest passes 9/9 and PublicUserDiscoveryServiceTest passes 5/6 (15 total, 1 failure, 0 errors, 0 skipped)."
+    },
+    {
+      "note": "Latest post-format validation supersedes the earlier 15-total/1-failure summary: 15 tests, 2 failures, 0 errors, 0 skipped (ClientHandlerTest 9/9 passed; discovery 4/6 passed). In addition to the deterministic thingRemoved/removeOlderResults expectation mismatch, testDiscoversMultipleUsersWithBridgeScopedStableIdentity received discovery callbacks in reverse order. Both require discovery assertion/behavior work outside compilation-fixture scope; T002 remains open. T001 is complete solely for its successful non-null fixture compilation repair."
+    },
+    {
+      "note": "Bounded discovery test repair stopped before code edits: PublicUserDiscoveryService.publishUsers skips a null user ID but always returns true, so startScan calls removeOlderResults after List.of(new UserDto()). Core AbstractDiscoveryService delegates bulk cleanup to DiscoveryListener.removeOlderResults; PersistentInbox removes older results matching type, bridge and discoverer. Local 5.0.3 source contract cross-checked against the 5.3.0-SNAPSHOT bytecode. The malformed-response test only verifies thingRemoved never, masking destructive bulk cleanup. Production changes are unauthorized; T002 remains open and no T003+ work was started."
+    },
+    {
+      "note": "Current cleanup repair supersedes the earlier lack-of-authorization and T002 blockers: production cleanup is now explicitly authorized and regression-tested; T002 is complete. Final module install remains blocked by pre-existing missing author tags at UserIdChannel.java:21 and UserNameChannel.java:21, deliberately left unchanged. T003-T018 remain open; no runtime acceptance or overall feature completion."
     }
   ],
   "context": [
-    "2026-10-30 SDD setup repair only: corrected feature pointer, reviewed spec and 16 quality checks, restored plan, aligned research/model/contract/quickstart, and replaced obsolete tasks with 18 open repository-grounded tasks. No application or test source changes."
-  ]
+    "2026-10-30 SDD setup repair only: corrected feature pointer, reviewed spec and 16 quality checks, restored plan, aligned research/model/contract/quickstart, and replaced obsolete tasks with 18 open repository-grounded tasks. No application or test source changes.",
+    "Bounded T001/T002 fixture repair only. No production code, generated DTO, channel metadata, T003+ work, full module install, interactive acceptance, commits, pushes, or new branches. Earlier setup compilation concern is superseded by this executed validation; feature remains implementing.",
+    "2026-10-30 bounded recommendation item 1 assessment: user stop condition triggered by malformed-response destructive cleanup. No Java, tasks, specification, plan, constitution, generated-model, or translation edits made. Existing changes preserved; feature remains implementing.",
+    "2026-10-30 bounded public-user cleanup repair only. Bug jellyfin-public-user-cleanup: fix applied, verification partial due unrelated static-analysis gate. Existing user fixture/task changes and prior Companion history retained; no further agents, commits, pushes, branches, generated-model changes, metadata changes, or T003+ work."
+  ],
+  "workingBranch": "pgfeller/issue21850",
+  "currentTask": "T003",
+  "task_summaries": {
+    "T001": {
+      "status": "DONE",
+      "did": "Initialized the discovery service as a final non-null fixture and removed the redundant setup assignment; module test compilation succeeds. Existing discovery behavior/assertions retained; the unrelated empty-response assertion still fails and blocks T002.",
+      "files": [
+        "bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/discovery/PublicUserDiscoveryServiceTest.java"
+      ]
+    },
+    "T002": {
+      "status": "DONE",
+      "did": "Preserved typed Thing/ThingUID and UUID fixture repairs; authorized supporting public-user cleanup blocker fixed test-first. Combined baseline passes 17/17; three independent post-format discovery runs pass 8/8 each. Final selected clean install passes tests but is blocked by pre-existing missing author tags in untouched UserIdChannel/UserNameChannel. T003+ untouched.",
+      "files": [
+        "bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/discovery/PublicUserDiscoveryService.java",
+        "bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/discovery/PublicUserDiscoveryServiceTest.java",
+        "bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerTest.java"
+      ]
+    }
+  }
 }

@@ -4,7 +4,8 @@
 
 **Reconciled**: 2026-10-30. This backlog replaces the unexecuted scaffolding list with
 repository-grounded work. No completed task markers or task completion history existed to migrate.
-IDs below identify this repaired backlog. All implementation and verification tasks remain open.
+IDs below identify this repaired backlog. Completion markers reflect executed evidence;
+unverified or blocked tasks remain open.
 
 ## Existing Baseline
 
@@ -16,10 +17,21 @@ logging configuration. The SDD setup repair does not claim implementation comple
 
 ## Phase 1: Setup - Restore Test Compilation
 
-- [ ] T001 Fix non-null fixture initialization in `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/discovery/PublicUserDiscoveryServiceTest.java` without suppressing null analysis; preserve discovery behavior.
-- [ ] T002 Fix typed Thing/ThingUID and UUID fixtures in `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerTest.java`; run both reported classes using `specs/001-session-user-exposure/quickstart.md` and record results.
+- [x] T001 Fix non-null fixture initialization in `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/discovery/PublicUserDiscoveryServiceTest.java` without suppressing null analysis; preserve discovery behavior.
+- [x] T002 Fix typed Thing/ThingUID and UUID fixtures in `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerTest.java`; run both reported classes using `specs/001-session-user-exposure/quickstart.md` and record results.
 
 Discovery behavior is outside feature scope; its test compilation blocks the shared module build.
+
+Supporting blocker repair was explicitly authorized on 2026-10-30: incomplete public-user
+responses must not authorize stale Inbox cleanup. This is not session-user feature work.
+The existing fixture repairs were preserved. Both reported classes now compile and pass:
+`./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=ClientHandlerTest,PublicUserDiscoveryServiceTest test`
+ran 17 tests (9 handler, 8 discovery), with no failures, errors, or skipped tests.
+Three separate post-format discovery runs also passed (8 tests each). See
+[bug assessment](../../.specify/bugs/jellyfin-public-user-cleanup/assessment.md),
+[fix report](../../.specify/bugs/jellyfin-public-user-cleanup/fix.md), and
+[verification](../../.specify/bugs/jellyfin-public-user-cleanup/test.md).
+T003-T018 remain open; the feature remains implementing.
 
 ## Phase 2: Foundational - Metadata Contract Checks
 

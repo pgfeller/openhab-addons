@@ -16,14 +16,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.after;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,7 +60,7 @@ class PublicUserDiscoveryServiceTest {
     private final UserApi userApi = mock(UserApi.class);
     private final DiscoveryListener listener = mock(DiscoveryListener.class);
     private final ThingUID bridgeUID = new ThingUID(Constants.THING_TYPE_SERVER, "test-server");
-    private PublicUserDiscoveryService discoveryService;
+    private final PublicUserDiscoveryService discoveryService = new PublicUserDiscoveryService(ignored -> userApi);
 
     @BeforeEach
     void setUp() {
@@ -64,7 +69,6 @@ class PublicUserDiscoveryServiceTest {
         when(serverHandler.getThing()).thenReturn(bridge);
         when(serverHandler.getApiClient()).thenReturn(apiClient);
 
-        discoveryService = new PublicUserDiscoveryService(ignored -> userApi);
         discoveryService.setThingHandler(serverHandler);
         discoveryService.addDiscoveryListener(listener);
     }
@@ -79,11 +83,13 @@ class PublicUserDiscoveryServiceTest {
 
         var results = org.mockito.ArgumentCaptor.forClass(DiscoveryResult.class);
         verify(listener, timeout(500).times(2)).thingDiscovered(any(DiscoveryService.class), results.capture());
-        assertEquals(Constants.getUserThingUID(bridgeUID, firstUserId), results.getAllValues().get(0).getThingUID());
-        assertEquals(Constants.getUserThingUID(bridgeUID, secondUserId), results.getAllValues().get(1).getThingUID());
-        assertEquals("Alice", results.getAllValues().get(0).getLabel());
-        assertEquals("Bob", results.getAllValues().get(1).getLabel());
-        assertEquals(bridgeUID, results.getAllValues().get(0).getBridgeUID());
+        var labelsByUID = results.getAllValues().stream()
+            .collect(Collectors.toMap(DiscoveryResult::getThingUID, DiscoveryResult::getLabel));
+        assertEquals(Set.of(Constants.getUserThingUID(bridgeUID, firstUserId),
+            Constants.getUserThingUID(bridgeUID, secondUserId)), labelsByUID.keySet());
+        assertEquals("Alice", labelsByUID.get(Constants.getUserThingUID(bridgeUID, firstUserId)));
+        assertEquals("Bob", labelsByUID.get(Constants.getUserThingUID(bridgeUID, secondUserId)));
+        results.getAllValues().forEach(result -> assertEquals(bridgeUID, result.getBridgeUID()));
     }
 
     @Test
@@ -98,8 +104,8 @@ class PublicUserDiscoveryServiceTest {
         verify(listener, timeout(500).times(2)).thingDiscovered(any(DiscoveryService.class), results.capture());
         assertEquals(Constants.getUserThingUID(bridgeUID, userId), results.getAllValues().get(0).getThingUID());
         assertEquals(results.getAllValues().get(0).getThingUID(), results.getAllValues().get(1).getThingUID());
-        assertEquals("Old name", results.getAllValues().get(0).getLabel());
-        assertEquals("New name", results.getAllValues().get(1).getLabel());
+        assertEquals(Set.of("Old name", "New name"),
+            results.getAllValues().stream().map(DiscoveryResult::getLabel).collect(Collectors.toSet()));
     }
 
     @Test
@@ -131,14 +137,22 @@ class PublicUserDiscoveryServiceTest {
     @Test
     void testSuccessfulEmptyResponseRemovesPreviouslyDiscoveredInboxResult() throws Exception {
         UUID userId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        ThingUID userUID = Constants.getUserThingUID(bridgeUID, userId);
         when(userApi.getPublicUsers()).thenReturn(List.of(user(userId, "Alice")), List.of());
 
         discoveryService.startScan();
         verify(listener, timeout(500)).thingDiscovered(any(DiscoveryService.class), any(DiscoveryResult.class));
+        verify(listener, timeout(500)).removeOlderResults(eq(discoveryService), any(Instant.class),
+            eq(Set.of(Constants.THING_TYPE_JELLYFIN_USER)), eq(bridgeUID));
+        clearInvocations(listener);
+        Instant beforeScan = Instant.now();
         discoveryService.startScan();
+        Instant afterScan = Instant.now();
 
-        verify(listener, timeout(500)).thingRemoved(any(DiscoveryService.class), org.mockito.ArgumentMatchers.eq(userUID));
+        var cutoff = org.mockito.ArgumentCaptor.forClass(Instant.class);
+        verify(listener, timeout(500)).removeOlderResults(eq(discoveryService), cutoff.capture(),
+            eq(Set.of(Constants.THING_TYPE_JELLYFIN_USER)), eq(bridgeUID));
+        assertTrue(!cutoff.getValue().isBefore(beforeScan));
+        assertTrue(!cutoff.getValue().isAfter(afterScan));
     }
 
     @Test
@@ -148,8 +162,60 @@ class PublicUserDiscoveryServiceTest {
 
         discoveryService.startScan();
         verify(listener, timeout(500)).thingDiscovered(any(DiscoveryService.class), any(DiscoveryResult.class));
+        verify(listener, timeout(500)).removeOlderResults(eq(discoveryService), any(Instant.class),
+            eq(Set.of(Constants.THING_TYPE_JELLYFIN_USER)), eq(bridgeUID));
+        clearInvocations(listener);
         discoveryService.startScan();
 
+        verify(listener, after(200).never()).removeOlderResults(any(DiscoveryService.class), any(Instant.class), any(),
+            any(ThingUID.class));
+        verify(listener, after(200).never()).thingRemoved(any(DiscoveryService.class), any(ThingUID.class));
+    }
+
+    @Test
+    void testMixedResponsePublishesValidUsersWithoutRemovingPreviouslyDiscoveredInboxResult() throws Exception {
+        UUID previousUserId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UUID firstUserId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
+        UUID secondUserId = UUID.fromString("323e4567-e89b-12d3-a456-426614174000");
+        when(userApi.getPublicUsers()).thenReturn(List.of(user(previousUserId, "Previous user")),
+            List.of(user(firstUserId, "Alice"), new UserDto(), user(secondUserId, "Bob")), List.of());
+
+        discoveryService.startScan();
+        verify(listener, timeout(500)).thingDiscovered(any(DiscoveryService.class), any(DiscoveryResult.class));
+        verify(listener, timeout(500)).removeOlderResults(eq(discoveryService), any(Instant.class),
+            eq(Set.of(Constants.THING_TYPE_JELLYFIN_USER)), eq(bridgeUID));
+        clearInvocations(listener);
+        discoveryService.startScan();
+
+        var results = org.mockito.ArgumentCaptor.forClass(DiscoveryResult.class);
+        verify(listener, timeout(500).times(2)).thingDiscovered(eq(discoveryService), results.capture());
+        assertEquals(Set.of(Constants.getUserThingUID(bridgeUID, firstUserId),
+            Constants.getUserThingUID(bridgeUID, secondUserId)),
+            results.getAllValues().stream().map(DiscoveryResult::getThingUID).collect(Collectors.toSet()));
+        results.getAllValues().forEach(result -> assertEquals(bridgeUID, result.getBridgeUID()));
+        verify(listener, after(200).never()).removeOlderResults(any(DiscoveryService.class), any(Instant.class), any(),
+            any(ThingUID.class));
+        verify(listener, after(200).never()).thingRemoved(any(DiscoveryService.class), any(ThingUID.class));
+
+        discoveryService.startScan();
+        verify(listener, timeout(500)).removeOlderResults(eq(discoveryService), any(Instant.class),
+            eq(Set.of(Constants.THING_TYPE_JELLYFIN_USER)), eq(bridgeUID));
+    }
+
+    @Test
+    void testNullResponseRetainsPreviouslyDiscoveredInboxResult() throws Exception {
+        UUID userId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        when(userApi.getPublicUsers()).thenReturn(List.of(user(userId, "Alice"))).thenReturn(null);
+
+        discoveryService.startScan();
+        verify(listener, timeout(500)).thingDiscovered(any(DiscoveryService.class), any(DiscoveryResult.class));
+        verify(listener, timeout(500)).removeOlderResults(eq(discoveryService), any(Instant.class),
+            eq(Set.of(Constants.THING_TYPE_JELLYFIN_USER)), eq(bridgeUID));
+        clearInvocations(listener);
+        discoveryService.startScan();
+
+        verify(listener, after(200).never()).removeOlderResults(any(DiscoveryService.class), any(Instant.class), any(),
+            any(ThingUID.class));
         verify(listener, after(200).never()).thingRemoved(any(DiscoveryService.class), any(ThingUID.class));
     }
 
@@ -161,8 +227,13 @@ class PublicUserDiscoveryServiceTest {
 
         discoveryService.startScan();
         verify(listener, timeout(500)).thingDiscovered(any(DiscoveryService.class), any(DiscoveryResult.class));
+        verify(listener, timeout(500)).removeOlderResults(eq(discoveryService), any(Instant.class),
+            eq(Set.of(Constants.THING_TYPE_JELLYFIN_USER)), eq(bridgeUID));
+        clearInvocations(listener);
         discoveryService.startScan();
 
+        verify(listener, after(200).never()).removeOlderResults(any(DiscoveryService.class), any(Instant.class), any(),
+            any(ThingUID.class));
         verify(listener, after(200).never()).thingRemoved(any(DiscoveryService.class), any(ThingUID.class));
     }
 

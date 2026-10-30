@@ -86,10 +86,12 @@ public class PublicUserDiscoveryService extends AbstractThingHandlerDiscoverySer
 
     private boolean publishUsers(List<UserDto> users) {
         ThingUID bridgeUID = thingHandler.getThing().getUID();
+        boolean complete = true;
         for (UserDto user : users) {
             UUID userId = user.getId();
             if (userId == null) {
                 LOGGER.debug("Ignoring incomplete public-user response for bridge {}", bridgeUID);
+                complete = false;
                 continue;
             }
             String name = user.getName();
@@ -99,6 +101,6 @@ public class PublicUserDiscoveryService extends AbstractThingHandlerDiscoverySer
                     .withRepresentationProperty(Thing.PROPERTY_SERIAL_NUMBER)
                     .withProperty(Thing.PROPERTY_SERIAL_NUMBER, userId.toString()).build());
         }
-        return true;
+        return complete;
     }
 }
