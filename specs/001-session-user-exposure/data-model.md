@@ -4,94 +4,71 @@
 
 ### SessionInfoDto
 
-The Jellyfin API model containing session information.
+Existing generated model; do not create or hand-edit a duplicate.
 
-| Field | Type | Description | Nullable |
-| ------- | ------ | ------------- | ---------- |
-| `UserId` | `String` | Unique identifier for the authenticated user | Yes |
-| `UserName` | `String` | Display name of the authenticated user | Yes |
-| `DeviceId` | `String` | Identifier for the client device | Yes |
-| `DeviceName` | `String` | Human-readable name of the client device | Yes |
-| `IsActive` | `Boolean` | Whether the session is currently active | Yes |
+Source: `bundles/org.openhab.binding.jellyfin/src/3rdparty/java/org/openhab/binding/jellyfin/internal/gen/current/model/SessionInfoDto.java`.
 
-### ClientThing
+| JSON field | Java type | Feature interpretation |
+| --- | --- | --- |
+| `UserId` | nullable `java.util.UUID` | Primary session user identifier; stringify with `UUID.toString()` |
+| `UserName` | nullable `String` | Primary session user's display name, preserved verbatim |
+| `DeviceId` | nullable `String` | Existing device/session association; unchanged |
+| `DeviceName` | nullable `String` | Existing device display information; unchanged |
+| `IsActive` | nullable `Boolean` | Existing session metadata; not a new identity-clearing predicate |
 
-An openHAB Thing representing a Jellyfin client device/session.
+### Client Thing
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `thingUid` | `String` | Unique Thing identifier |
-| `channels` | `Channel[]` | Collection of read-only channels |
+Existing `jellyfin:client` Thing managed by `ClientHandler`; no new `ClientThing` class.
+Its UID is an openHAB `ThingUID`, not a String returned by `Thing.getUID()`.
+The `serialNumber` configuration supplies the existing device ID used for subscription.
 
-### Channel
+### Identity Channel States
 
-A read-only channel on a client Thing carrying session user information.
+| Channel ID | Item type | Present value | Absent field or session |
+| --- | --- | --- | --- |
+| `user-name` | String | `StringType(userName)` | `UnDefType.NULL` |
+| `user-id` | String | `StringType(userId.toString())` | `UnDefType.NULL` |
 
-| Property | Type | Description |
-| ---------- | ------ | ------------- |
-| `name` | `String` | Channel name (`user-name` or `user-id`) |
-| `type` | `String` | Channel type (`String`) |
-| `readOnly` | `boolean` | Always true for these channels |
-| `defaultValue` | `String` | NULL/empty when no session active |
-| `updates` | `boolean` | Updated via session event bus |
+Read-only status belongs to XML channel-type `<state readOnly="true"/>` metadata and
+unsupported command handling, not a `defaultValue` String property. `NULL` is an openHAB
+undefined state, not Java null, the text `"NULL"`, or an empty-string substitute.
 
-### Session Event
+### Session Delivery
 
-An event dispatched by the session event bus when user identity changes.
-
-| Property | Type | Description |
-| ---------- | ------ | ------------- |
-| `type` | `String` | Event type (`session-updated`, `session-ended`) |
-| `userId` | `String` | New user ID, or null if session ended |
-| `userName` | `String` | New user name, or null if session ended |
-| `deviceId` | `String` | Associated device ID |
+The binding-local `SessionEventBus` routes a nullable `SessionInfoDto` to
+`SessionEventListener.onSessionUpdate(...)` using the existing device ID.
+There is no new event DTO or string-valued `session-updated`/`session-ended` event type.
+A null callback payload signals session end.
 
 ## Relationships
 
-### SessionInfoDto → ClientThing
+1. Existing session selection supplies the snapshot for a client device.
+1. `ClientHandler` receives the nullable snapshot through the existing listener interface.
+1. `ClientStateUpdater.calculateChannelStates(...)` calculates both identity states from
+ that same snapshot; `ClientHandler` publishes them through openHAB callbacks.
+1. Existing timeout and bridge-status paths must also clear the identity channels.
 
-- Session data maps to ClientThing channels via the ClientHandler
-- `UserId` → `user-id` channel state
-- `UserName` → `user-name` channel state
-- When `IsActive` is false, both channels clear to NULL
-
-### ClientThing → Session Event Bus
-
-- ClientHandler subscribes to session event bus
-- On `session-updated`: updates `user-name` and `user-id` channel states
-- On `session-ended`: sets both channels to NULL/empty
+The updater is the planned calculation owner; its identity mapping is not yet implemented.
 
 ## State Transitions
 
-### Active Session
-
-- `user-id`: contains Jellyfin user UUID string
-- `user-name`: contains Jellyfin user display name
-- Both channels show valid user identity
-
-### No Active Session
-
-- `user-id`: NULL/empty string
-- `user-name`: NULL/empty string
-- Both channels indicate no authenticated user
-
-### Session Change
-
-- Channels update synchronously when session event bus dispatches new state
-- Transitions happen in near real-time as per success criteria
-
-## Channel State Transition Table
-
-| Session State | user-id Channel | user-name Channel |
-| -------------- | ---------------- | ------------------- |
-| Active with user | UUID string | Display name |
-| No session | NULL | NULL |
-| Session ended | NULL | NULL |
+| Processed snapshot or transition | user-id | user-name |
+| --- | --- | --- |
+| Both identity fields supplied | Canonical UUID text | Exact display name |
+| Only name supplied | NULL | Exact display name |
+| Only identifier supplied | Canonical UUID text | NULL |
 | Anonymous session | NULL | NULL |
+| Initial absence, null session, timeout, or offline bridge | NULL | NULL |
+| Session changes from A to B | B's supplied UUID or NULL | B's supplied name or NULL |
+| Session recovers after unavailability | Current UUID or NULL | Current name or NULL |
+
+Updates share one source snapshot but are separate channel publications, not an atomic transaction.
 
 ## Validation Rules
 
-- `user-name` must be a non-null String when a user is authenticated
-- `user-id` must be a non-null String when a user is authenticated
-- Both channels must be NULL/empty when no session is active
-- Channels must update within the event bus delivery latency when session state changes
+- UserId is a nullable UUID, not an arbitrary identifier String.
+- Missing identity fields clear independently; do not infer one from the other.
+- Preserve supplied display names, including Unicode and an empty String.
+- Playback inactivity and `IsActive=false` alone do not introduce new logout semantics.
+- Existing UUID deserialization remains responsible for wire-format validation; no new parser.
+- No persistence, account lookup, new session selector, or identity cache is introduced.

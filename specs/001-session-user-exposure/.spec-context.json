@@ -29,5 +29,36 @@
       "createdAt": "2026-10-18T21:10:41.260Z"
     }
   ],
-  "assistant": "ide-chat"
+  "assistant": "ide-chat",
+  "decisions": [
+    {
+      "decision": "Preserve the existing implementing state and historical user start while repairing earlier SDD artifacts; do not mark the feature or implementation tasks complete."
+    }
+  ],
+  "verified": [
+    {
+      "what": "SDD feature prerequisites",
+      "command": ".specify/scripts/bash/check-prerequisites.sh --json --require-spec --require-tasks --include-tasks",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 0.0,
+      "result": "{\"FEATURE_DIR\":\"/home/pgfeller/Documents/GitHub/openhab-addons/specs/001-session-user-exposure\",\"AVAILABLE_DOCS\":[\"research.md\",\"data-model.md\",\"contracts/\",\"quickstart.md\",\"tasks.md\"]}"
+    },
+    {
+      "what": "SDD Markdown quality",
+      "command": "npx --yes markdownlint-cli2 --config .github/markdownlint.yaml .specify/memory/constitution.md \"specs/001-session-user-exposure/**/*.md\"",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 1.0,
+      "result": "Finding: .specify/memory/constitution.md specs/001-session-user-exposure/**/*.md · Linting: 9 files · Summary: 0 issues in 0 files"
+    }
+  ],
+  "concerns": [
+    {
+      "note": "The reported Jellyfin test-compilation failure remains unresolved by design. Java tests, module build, and interactive runtime acceptance were not run during the SDD setup repair."
+    }
+  ],
+  "context": [
+    "2026-10-30 SDD setup repair only: corrected feature pointer, reviewed spec and 16 quality checks, restored plan, aligned research/model/contract/quickstart, and replaced obsolete tasks with 18 open repository-grounded tasks. No application or test source changes."
+  ]
 }

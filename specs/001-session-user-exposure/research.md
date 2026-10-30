@@ -1,105 +1,89 @@
-# Research.md - Session User Exposure
+# Research - Session User Exposure
 
-## Research Tasks
+**Reviewed**: 2026-10-30. These findings come from source inspection, not a passing build.
+Paths below are relative to `bundles/org.openhab.binding.jellyfin/`.
 
-### 1. Jellyfin API Session User Info Integration
+## 1. Reuse the Existing API Model
 
-**Task**: Research best practices for integrating Jellyfin API session user information (`UserName`, `UserId`) into openHAB bindings.
+**Evidence**: `src/3rdparty/java/org/openhab/binding/jellyfin/internal/gen/current/model/SessionInfoDto.java`
+declares nullable UUID `UserId`, nullable String `UserName`, and PascalCase JSON property names.
 
-- Investigate Jellyfin API endpoints for session data (`GET /Sessions`)
-- Understand the structure of session response objects (`SessionInfoDto`)
-- Determine how session data is currently fetched and cached in the Jellyfin binding
-- Research patterns for exposing nullable API fields as openHAB channels
+**Decision**: Keep the generated DTO unchanged. Test fixtures use `UUID.fromString(...)`;
+channel output uses `UUID.toString()`.
 
-**Decision**: Use existing session event bus architecture to propagate user info to client Things
+**Rationale**: The generated source already defines the API contract and nullability.
 
-**Rationale**: The binding already associates sessions with client Things via DeviceId; leveraging existing architecture minimizes duplication
+**Alternatives considered**: A duplicate String-based model would conflict with existing callers.
+A new UUID parser would duplicate the binding's existing deserialization support.
 
-**Alternatives Considered**:
+## 2. Reuse the Binding-Local Session Bus
 
-- Direct API calls per channel update (higher overhead, less coherent)
-- Separate session management component (increased complexity, unnecessary indirection)
+**Evidence**: `src/main/java/org/openhab/binding/jellyfin/internal/events/SessionEventListener.java`
+defines `onSessionUpdate(@Nullable SessionInfoDto)`. `SessionEventBus` invokes listeners by device ID.
+`internal/handler/ClientHandler.java` subscribes using `serialNumber` and unsubscribes during disposal.
 
----
+**Decision**: Retain the existing callback, session selection, polling, and WebSocket paths.
+Null payloads represent session end; no separate event class is required.
 
-### 2. openHAB Binding Read-Only Channel Design Patterns
+**Rationale**: Identity is already part of each selected session snapshot.
 
-**Task**: Research openHAB binding patterns for read-only String channels that auto-clear when inactive.
+**Alternatives considered**: Extra per-client requests or a new event system would add overhead
+and could select a different user from the one already associated with the client.
 
-- Investigate openHAB Channel UIDs and configuration patterns
-- Understand how to define read-only channels in Thing configuration
-- Research null/empty state handling for optional channels
-- Look at existing bindings with similar optional channel patterns
+## 3. Reuse Channel Calculation and XML Metadata
 
-**Decision**: Use String channel type with NULL/empty default when no session active; leverage Thing configuration `readOnly` attribute
+**Evidence**: `internal/util/client/ClientStateUpdater.java` calculates existing channel states.
+`src/main/resources/OH-INF/thing/types/client-thing-type.xml` declares client channel references.
+`client-channel-types.xml` and `user-channel-types.xml` use String item types and read-only state
+metadata. The existing user Thing already references `user-name-channel`.
 
-**Rationale**: OpenHAB supports read-only channels; null state clearly indicates unauthenticated session
+**Decision**: Extend the pure state updater for identity, with corresponding handler publication.
+Add client references for `user-name`/`user-id`; reuse compatible existing types and add only
+missing types. Reconcile existing Java helper type IDs rather than adding parallel abstractions.
 
-**Alternatives Considered**:
+**Rationale**: XML metadata, not a Java constants class alone, exposes channels to openHAB.
 
-- Number channel for user ID (loses semantic meaning, can't represent UUID string)
-- Boolean channel (insufficient for user identity information)
+**Alternatives considered**: New Thing factories or a standalone library/CLI are unnecessary.
+Number channels cannot represent UUID identity. Java null and empty strings do not replace
+`UnDefType.NULL` for absent values.
 
----
+## 4. Test Clearing Through Lifecycle Paths
 
-### 3. Session Event Bus Architecture in openHAB
+**Evidence**: `ClientHandler.updateStateFromSession(...)` currently returns for non-ONLINE Things.
+Session end and timeout can change Thing status before publication. The existing handler has
+an identity-publishing block, but `ClientStateUpdater` has no identity mapping yet.
 
-**Task**: Research the openHAB session event bus architecture and how bindings propagate state changes to client Things.
+**Decision**: Test initial absence, session end, timeout, bridge offline, user switch, and recovery
+using observable state callbacks. Make the smallest identity-scoped change needed to clear stale
+state without weakening unrelated guards. Preserve a present empty name and independent fields.
 
-- Investigate `SessionEventBus` and `SessionEvent` classes
-- Understand how bindings register session listeners
-- Research patterns for updating Thing state from session events
-- Look at existing bindings that use event bus for state propagation
+**Rationale**: Stored session assertions do not prove linked Items were updated or cleared.
 
-**Decision**: Use the existing session event bus architecture; ClientHandler updates Thing channels on session events
+**Alternatives considered**: Treating `IsActive=false` or stopped playback as logout changes
+existing semantics. Atomic two-channel publication is not an openHAB contract and is not required.
 
-**Rationale**: The spec assumes this architecture already exists; leveraging it minimizes new code
+## 5. Separate Setup, Implementation, and Runtime Evidence
 
-**Alternatives Considered**:
+**Evidence**: `ClientHandlerTest.java` currently supplies Strings where typed UUIDs and ThingUIDs
+are needed. `PublicUserDiscoveryServiceTest.java` has a non-null field initialized only in setup.
+The module POM already targets Java 21 and uses inherited dependencies and logging infrastructure.
 
-- Polling Jellyfin API for session state (inefficient, higher latency)
-- Direct WebSocket connections (not consistent with openHAB patterns)
+**Decision**: Repair those compilation fixtures first during implementation. Extend existing
+test classes; do not generate duplicate test suites, dependencies, logging configs, or DTOs.
+Validate read-only metadata and initialized command handling separately.
 
----
+**Rationale**: A module compilation failure blocks even selectively requested tests.
+Public-user discovery is outside feature behavior, but its test fixture blocks the shared build.
 
-### 4. Jellyfin Binding Existing Code Patterns
+**Alternatives considered**: Marking inspected code as tested would conceal the reported failures.
+Invented console commands and a spec-specific runtime feature toggle cannot verify the binding.
 
-**Task**: Research the existing Jellyfin binding code structure and session management patterns.
+## Outstanding Verification, Not Design Ambiguity
 
-- Investigate existing binding source code at `org.openhab.binding.jellyfin`
-- Understand how sessions are currently managed
-- Research ClientHandler and session event patterns in the codebase
-- Look at how other channels are defined and updated
+- Automated tests and the affected module build remain unexecuted for this setup-only repair.
+- The requested openHAB 5.2.3 interactive target must be checked for compatibility with the
+ built bundle; the repository module currently inherits version `5.3.0-SNAPSHOT`.
+- Interactive acceptance requires a configured runtime and Jellyfin client. It must remain
+ recorded as pending until performed, rather than inferred from unit tests.
 
-**Decision**: Follow existing binding patterns for channel definition and session event handling
-
-**Rationale**: Consistency with existing code reduces errors and integration effort
-
-**Alternatives Considered**:
-
-- Rewrite binding architecture (excessive for this feature scope)
-- Different event propagation mechanism (deviates from established patterns)
-
----
-
-## Consolidated Findings
-
-### Research Summary
-
-- **API Integration**: Leverage existing Jellyfin session event bus; no need for direct per-channel API calls
-- **Channel Design**: String type with NULL defaults is the correct pattern for optional user identity fields
-- **Event Architecture**: Existing session event bus is the established pattern; ClientHandler updates Thing state
-- **Code Consistency**: Follow existing Jellyfin binding patterns for minimal diff and easier maintenance
-
-### Key Decisions
-
-1. Use `user-name` and `user-id` as String read-only channels on client Things
-2. Channels show NULL/empty when no session is active
-3. Channels update via session event bus when user identity changes
-4. Follow existing Jellyfin binding code patterns for implementation
-
-### Alternatives Considered and Rejected
-
-- Direct API polling: Higher overhead, less coherent state management
-- Custom event system: Duplicates existing openHAB session bus
-- Number channel for user ID: Loses semantic meaning, can't represent arbitrary UUID strings
+The design has no unresolved clarification markers. See [tasks.md](tasks.md) for executable work.
