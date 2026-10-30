@@ -18,6 +18,13 @@
   <dependencies>
     <dependency>
       <groupId>org.openhab.addons.bundles</groupId>
+      <artifactId>org.openhab.binding.jellyfin</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+  <!-- <dependencies>
+    <dependency>
+      <groupId>org.openhab.addons.bundles</groupId>
       <artifactId>org.openhab.automation.groovyscripting</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -2596,6 +2603,6 @@
       <artifactId>org.openhab.voice.whisperstt</artifactId>
       <version>${project.version}</version>
     </dependency>
-  </dependencies>
+  </dependencies> -->
 
 </project>
