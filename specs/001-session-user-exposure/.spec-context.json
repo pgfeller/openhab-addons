@@ -1,9 +1,9 @@
 {
   "workflow": "speckit",
   "specName": "001-session-user-exposure",
-  "branch": "001-session-user-exposure",
+  "branch": "pgfeller/issue21850",
   "selectedAt": "2026-10-18T12:30:51.634Z",
-  "currentStep": "implement",
+  "currentStep": "converge",
   "status": "implementing",
   "history": [
     {
@@ -28,6 +28,20 @@
       "kind": "complete",
       "by": "extension",
       "at": "2026-10-30T09:48:07.378Z"
+    },
+    {
+      "step": "converge",
+      "substep": null,
+      "kind": "start",
+      "by": "extension",
+      "at": "2026-10-30T11:56:46.755Z"
+    },
+    {
+      "step": "converge",
+      "substep": null,
+      "kind": "complete",
+      "by": "extension",
+      "at": "2026-10-30T12:02:13.227Z"
     }
   ],
   "telemetryInstanceId": "d69622fa-eb7a-4059-8783-f76bff4d6747",
@@ -52,6 +66,9 @@
     },
     {
       "decision": "User explicitly authorized bounded production public-user cleanup repair and tests on 2026-10-30, plus supporting bug/T002 records; no T003+ work, commits, pushes, branches, or further agents. Mixed responses publish valid users but suppress stale cleanup if any ID is missing."
+    },
+    {
+      "decision": "Current user request authorizes consolidation, signed-off commit, and normal push to origin/pgfeller/issue21850. Earlier no-commit/no-push notes describe prior bounded tasks, not the current authorization. Preserve task IDs/history and leave incomplete feature tasks open."
     }
   ],
   "verified": [
@@ -310,6 +327,38 @@
       "what": "Local manual-smoke-test package",
       "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin package",
       "result": "Exit 0 BUILD SUCCESS; 319 tests in 34 classes, zero failures/errors/skips; target/org.openhab.binding.jellyfin-5.3.0-SNAPSHOT.jar produced. SHA-256 3c263ec9ae6f59a00d89b3cb56574295f48e2945fdcc12e9befa8c1bc6d66a6d. This package phase does not verify Karaf runtime resolution."
+    },
+    {
+      "what": "Container startup smoke on openHAB 5.2.3",
+      "result": "Observed candidate bundle269 Active, API/handler/server discovery components Active, client/public-user discovery Satisfied; no unresolved diagnostics. See .specify/bugs/jellyfin-public-user-cleanup/container-smoke.md. This is observed runtime evidence, not a feature-complete claim."
+    },
+    {
+      "what": "Interactive browser bridge-client-user discovery smoke",
+      "result": "2026-10-30: live bridge ONLINE; temporary discovered client transitioned OFFLINE to ONLINE without test commands, then was removed. Normal scan showed9clients+2public users and11distinct UIDs. Final UI one ONLINE bridge and11Inbox entries. Planned identity channels absent. No playback commands, Items/links, or remote account changes. Natural600-second scan expiry and full identity acceptance were not tested."
+    },
+    {
+      "what": "Upstream progress comment with privacy-reviewed screenshot",
+      "result": "Published as pgfeller at https://github.com/openhab/openhab-addons/issues/21850#issuecomment-6521984589. Comment explicitly says work in progress. Screenshot only shows Jellyfin ONLINE; public attachment HTTP200 and byte-for-byte match confirmed. Issue remains OPEN."
+    },
+    {
+      "what": "Consolidated handoff structural consistency",
+      "result": "Node assertions passed: nine artifact titles and relative links, unchanged T001-T018 IDs, only T001/T002 complete, FR coverage, one current spec status, actual branch and nextAction, original user history and current smoke evidence preserved. Documentation-only consolidation; prior Java tests were not rerun."
+    },
+    {
+      "what": "Consolidated SDD Markdown quality",
+      "command": "npx --yes markdownlint-cli2 --config .github/markdownlint.yaml \"specs/001-session-user-exposure/**/*.md\" \".specify/bugs/jellyfin-public-user-cleanup/*.md\"",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 1.7,
+      "result": "Finding: specs/001-session-user-exposure/**/*.md .specify/bugs/jellyfin-public-user-cleanup/*.md · Linting: 13 files · Summary: 0 issues in 0 files"
+    },
+    {
+      "what": "Consolidated SDD feature prerequisites",
+      "command": ".specify/scripts/bash/check-prerequisites.sh --json --require-spec --require-tasks --include-tasks",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 0.1,
+      "result": "{\"FEATURE_DIR\":\"/home/pgfeller/Documents/GitHub/openhab-addons/specs/001-session-user-exposure\",\"AVAILABLE_DOCS\":[\"research.md\",\"data-model.md\",\"contracts/\",\"quickstart.md\",\"tasks.md\"]}"
     }
   ],
   "concerns": [
@@ -337,7 +386,8 @@
     "Bounded T001/T002 fixture repair only. No production code, generated DTO, channel metadata, T003+ work, full module install, interactive acceptance, commits, pushes, or new branches. Earlier setup compilation concern is superseded by this executed validation; feature remains implementing.",
     "2026-10-30 bounded recommendation item 1 assessment: user stop condition triggered by malformed-response destructive cleanup. No Java, tasks, specification, plan, constitution, generated-model, or translation edits made. Existing changes preserved; feature remains implementing.",
     "2026-10-30 bounded public-user cleanup repair only. Bug jellyfin-public-user-cleanup: fix applied, verification partial due unrelated static-analysis gate. Existing user fixture/task changes and prior Companion history retained; no further agents, commits, pushes, branches, generated-model changes, metadata changes, or T003+ work.",
-    "2026-10-30: user requested committing cleanup repairs and preparing a local build. Cleanup/fixture repair committed as 97960f5eea. Restored human author tags only in UserNameChannel and UserIdChannel, added smoke-build guidance; did not change feature metadata or runtime dependencies."
+    "2026-10-30: user requested committing cleanup repairs and preparing a local build. Cleanup/fixture repair committed as 97960f5eea. Restored human author tags only in UserNameChannel and UserIdChannel, added smoke-build guidance; did not change feature metadata or runtime dependencies.",
+    "Read specs/001-session-user-exposure/handoff.md first in a future session. The actual branch is pgfeller/issue21850; the local feature selector can be re-established with SPECIFY_FEATURE_DIRECTORY=specs/001-session-user-exposure and the prerequisite script. Use quickstart.md for watched-addons deployment, secure interactive console access, browser testing, and rollback."
   ],
   "workingBranch": "pgfeller/issue21850",
   "currentTask": "T003",
@@ -356,6 +406,19 @@
         "bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/discovery/PublicUserDiscoveryService.java",
         "bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/discovery/PublicUserDiscoveryServiceTest.java",
         "bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerTest.java"
+      ]
+    }
+  },
+  "handoff": "specs/001-session-user-exposure/handoff.md",
+  "nextAction": "Resume implementation at T003, then T004-T013; do not mark feature complete from baseline smoke tests.",
+  "step_summaries": {
+    "converge": {
+      "summary": "Current-state handoff consolidated on 2026-10-30. T001/T002 complete; T003-T018 remain open. No source changes and no newly uncovered implementation work beyond the existing backlog.",
+      "key_finding": "Client channel declarations and pure identity-state mappings remain absent; ONLINE-gated publication needs clearing/transition tests. Resume at T003.",
+      "risks": [
+        "Full install blocked by supplied core snapshot ASM>=9.10 versus9.9.1 feature resources.",
+        "319 passing baseline tests and live smoke success do not prove identity-channel acceptance.",
+        "Protect credentials and household account identities when inspecting browser configuration or publishing evidence."
       ]
     }
   }

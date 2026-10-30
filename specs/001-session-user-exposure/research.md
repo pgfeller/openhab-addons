@@ -1,6 +1,8 @@
 # Research - Session User Exposure
 
-**Reviewed**: 2026-10-30. These findings come from source inspection, not a passing build.
+**Reviewed**: 2026-10-30. Design findings come from source inspection. The repaired baseline
+now has passing automated/package and runtime smoke evidence; feature acceptance is still open.
+See [handoff.md](handoff.md) for the current state and source evidence.
 Paths below are relative to `bundles/org.openhab.binding.jellyfin/`.
 
 ## 1. Reuse the Existing API Model
@@ -64,26 +66,31 @@ existing semantics. Atomic two-channel publication is not an openHAB contract an
 
 ## 5. Separate Setup, Implementation, and Runtime Evidence
 
-**Evidence**: `ClientHandlerTest.java` currently supplies Strings where typed UUIDs and ThingUIDs
-are needed. `PublicUserDiscoveryServiceTest.java` has a non-null field initialized only in setup.
-The module POM already targets Java 21 and uses inherited dependencies and logging infrastructure.
+**Evidence**: The original handler fixtures supplied Strings where typed UUIDs and ThingUIDs
+were required, and the discovery fixture initialized a non-null field only in setup. Those
+compilation errors are repaired. The module POM already targets Java 21 and uses inherited
+dependencies and logging infrastructure. The supporting malformed-response cleanup defect
+was also repaired and covered by regression tests.
 
-**Decision**: Repair those compilation fixtures first during implementation. Extend existing
-test classes; do not generate duplicate test suites, dependencies, logging configs, or DTOs.
+**Decision**: Retain the completed fixture repairs and extend existing test classes; do not
+generate duplicate test suites, dependencies, logging configs, or DTOs.
 Validate read-only metadata and initialized command handling separately.
 
 **Rationale**: A module compilation failure blocks even selectively requested tests.
-Public-user discovery is outside feature behavior, but its test fixture blocks the shared build.
+Public-user discovery is outside feature behavior; its supporting repair was separately authorized.
 
-**Alternatives considered**: Marking inspected code as tested would conceal the reported failures.
+**Alternatives considered**: Marking inspected feature code as acceptance-tested would conceal gaps.
 Invented console commands and a spec-specific runtime feature toggle cannot verify the binding.
 
 ## Outstanding Verification, Not Design Ambiguity
 
-- Automated tests and the affected module build remain unexecuted for this setup-only repair.
-- The requested openHAB 5.2.3 interactive target must be checked for compatibility with the
- built bundle; the repository module currently inherits version `5.3.0-SNAPSHOT`.
-- Interactive acceptance requires a configured runtime and Jellyfin client. It must remain
- recorded as pending until performed, rather than inferred from unit tests.
+- The baseline module suite passes all 319 tests, and `package` succeeds. Full install remains
+ blocked by the supplied core snapshot's ASM dependency mismatch, not test compilation or author tags.
+- The candidate was deployed to the requested openHAB 5.2.3 / Java 21 container. Startup,
+ live bridge connectivity, client availability, and public-user discovery smoke checks passed.
+- Identity-channel metadata, state mapping, transitions, and linked-Item acceptance remain open.
+ Existing passing tests and ONLINE status do not prove this unfinished feature works.
+- The runtime and user-configured bridge remain available. Temporary client setup was removed,
+ and no playback commands or remote identity changes were made.
 
 The design has no unresolved clarification markers. See [tasks.md](tasks.md) for executable work.

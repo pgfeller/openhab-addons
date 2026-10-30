@@ -2,6 +2,9 @@
 
 **Input**: [spec.md](spec.md), [plan.md](plan.md), and supporting design artifacts.
 
+**Current state**: T001/T002 complete; T003-T018 open. Resume at T003.
+See [handoff.md](handoff.md) for the current branch, evidence, runtime setup, and privacy rules.
+
 **Reconciled**: 2026-10-30. This backlog replaces the unexecuted scaffolding list with
 repository-grounded work. No completed task markers or task completion history existed to migrate.
 IDs below identify this repaired backlog. Completion markers reflect executed evidence;
@@ -38,7 +41,11 @@ session-channel helper classes were restored. The full 319-test module suite pas
 `package` succeeds. Static analysis reports zero errors. Full `install` is still blocked
 by the supplied runtime snapshot's ASM 9.10 requirement versus its ASM 9.9.1 feature set,
 including after a snapshot refresh. See [the smoke-build guide](quickstart.md#first-local-smoke-build---2026-10-30).
-No runtime deployment or session-user acceptance was performed; T015-T018 remain open.
+Runtime deployment and baseline smoke checks have since passed on openHAB 5.2.3: the bridge
+remained ONLINE, a temporary discovered client reached ONLINE and was removed, and discovery
+displayed nine clients plus two public users with eleven distinct UIDs. No playback commands or
+identity-channel acceptance checks were performed. T015-T018 remain open. The complete evidence
+is in [the runtime smoke report](../../.specify/bugs/jellyfin-public-user-cleanup/container-smoke.md).
 
 ## Phase 2: Foundational - Metadata Contract Checks
 

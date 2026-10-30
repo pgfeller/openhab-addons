@@ -4,14 +4,16 @@
 
 **Input**: Existing partial implementation and reviewed feature specification.
 
-**Status**: Design repaired; implementation and runtime verification remain open.
+**Status**: Implementing; T001/T002 complete, T003-T018 open. Baseline runtime smoke checks
+passed; identity-channel acceptance and the full install gate remain open. See [handoff.md](handoff.md).
 
 ## Summary
 
 Expose `user-name` and `user-id` as read-only String channels on existing Jellyfin client Things.
 Reuse the generated session DTO, binding-local event bus, and state updater. Map absent fields
 to `UnDefType.NULL`, UUIDs through `UUID.toString()`, and clear identity on unavailable-session
-paths. Correct the existing test fixtures before implementing missing behavior.
+paths. Test fixtures are repaired; continue with metadata and published-state tests before
+implementing the missing behavior.
 
 ## Technical Context
 
@@ -26,7 +28,8 @@ Jackson, SLF4J; no added dependencies.
 metadata validation, and interactive runtime acceptance.
 
 **Target Platform**: Repository openHAB 5.x baseline. The user-selected interactive runtime
-is openHAB 5.2.3; confirm built-bundle compatibility before installation rather than assume it.
+is openHAB 5.2.3. Startup, live bridge connectivity, client availability, and public-user discovery
+were smoke-tested successfully. Full feature compatibility remains unverified.
 
 **Project Type**: Existing OSGi binding module, not a new library or CLI.
 
@@ -67,6 +70,7 @@ specs/001-session-user-exposure/
   research.md
   data-model.md
   quickstart.md
+  handoff.md
   checklists/requirements.md
   contracts/jellyfin-session-contract.md
   tasks.md
@@ -119,11 +123,13 @@ Source inspection on 2026-10-30 confirms a generated UUID-typed DTO, session sub
 and a handler identity-publishing block. Client Thing XML has no identity channel declarations.
 The pure state updater has no identity mappings. Handler publication is ONLINE-gated, so clearing
 must be tested across offline transitions. Existing handler tests mostly inspect stored session
-data and currently have the reported compilation errors. Public-user discovery test compilation
-also blocks running the module tests, but discovery behavior remains out of feature scope.
+data rather than fully asserting identity publications. The reported compilation errors and
+supporting public-user cleanup blocker were repaired; all 319 module tests now pass. Packaging
+succeeds, but full install is blocked by the supplied core snapshot's ASM dependency mismatch.
+Discovery changes remain a separately authorized supporting repair, not session-user feature scope.
 
-These are inspection findings, not verification results. [tasks.md](tasks.md) tracks the
-remaining work and evidence required before declaring the feature complete.
+The implementation gaps are source-inspection findings; passing baseline checks are recorded
+separately in [handoff.md](handoff.md). [tasks.md](tasks.md) tracks the remaining feature work.
 
 ## Complexity Tracking
 

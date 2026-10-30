@@ -1,16 +1,14 @@
 # Feature Specification: Session User Exposure
 
-**Issue:** openHAB Add-ons #21850
-**Binding:** Jellyfin
-**Status:** Ready for implementation
-
 **Feature**: `001-session-user-exposure`
 
 **Created**: 2026-10-18 | **Reviewed**: 2026-10-30
 
 **Issue**: openHAB Add-ons #21850 | **Binding**: Jellyfin
 
-**Status**: Specification reviewed; partially implemented, not yet verified
+**Status**: Implementing; baseline smoke-tested, feature acceptance pending
+
+**Continuation**: [Current implementation state and handoff](handoff.md).
 
 **Input**: Expose the current Jellyfin session user's name and identifier on client Things
 so users can use the identity in rules and UI integrations without changing authentication.
