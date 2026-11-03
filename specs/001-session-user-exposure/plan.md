@@ -4,7 +4,7 @@
 
 **Input**: Existing partial implementation and reviewed feature specification.
 
-**Status**: Implementing; T001/T002 complete, T003-T018 open. Baseline runtime smoke checks
+**Status**: Implementing; T001-T003 complete, T004-T018 open. Baseline runtime smoke checks
 passed; identity-channel acceptance and the full install gate remain open. See [handoff.md](handoff.md).
 
 ## Summary
@@ -12,8 +12,9 @@ passed; identity-channel acceptance and the full install gate remain open. See [
 Expose `user-name` and `user-id` as read-only String channels on existing Jellyfin client Things.
 Reuse the generated session DTO, binding-local event bus, and state updater. Map absent fields
 to `UnDefType.NULL`, UUIDs through `UUID.toString()`, and clear identity on unavailable-session
-paths. Test fixtures are repaired; continue with metadata and published-state tests before
-implementing the missing behavior.
+paths. Use openHAB's detail-derived Thing status API and preserve lifecycle distinctions for
+uninitialized bridges, offline bridges, missing sessions, and invalid configuration. This API
+requires openHAB 5.3 or later, so acceptance testing must move from the 5.2.3 baseline runtime.
 
 ## Technical Context
 
@@ -27,9 +28,11 @@ Jackson, SLF4J; no added dependencies.
 **Testing**: Existing JUnit 5 and Mockito tests, Maven compiler and Surefire, Spotless,
 metadata validation, and interactive runtime acceptance.
 
-**Target Platform**: Repository openHAB 5.x baseline. The user-selected interactive runtime
-is openHAB 5.2.3. Startup, live bridge connectivity, client availability, and public-user discovery
-were smoke-tested successfully. Full feature compatibility remains unverified.
+**Target Platform**: Repository openHAB 5.3.0-SNAPSHOT baseline. The previous interactive
+runtime was openHAB 5.2.3, where startup, live bridge connectivity, client availability, and
+public-user discovery were smoke-tested before status API migration. The detail-derived status
+API is absent in 5.2.3. Use openHAB 5.3 or later for feature acceptance; the migrated bundle is
+not runtime-compatible with 5.2.3.
 
 **Project Type**: Existing OSGi binding module, not a new library or CLI.
 
@@ -37,9 +40,12 @@ were smoke-tested successfully. Full feature compatibility remains unverified.
 requests, schedulers, or identity cache.
 
 **Constraints**: Preserve device matching, session selection, timeout, transport, existing channel
-IDs, and unrelated user-Thing discovery. Do not edit generated DTOs or translations.
+IDs, and unrelated user-Thing discovery. Do not edit generated DTOs or translations. For detailed
+Thing states, use `updateStatus(ThingStatusDetail, description)` without a separate status;
+use the status-only overload when there is no detail, and never pass `ThingStatusDetail.NONE`
+to the detail-derived overload.
 
-**Scale/Scope**: Two channels per existing client Thing, five functional requirements.
+**Scale/Scope**: Two channels per existing client Thing, seven functional requirements.
 
 ## Constitution Check
 
@@ -112,6 +118,13 @@ No unresolved design questions require new research agents.
 - Declare `user-name` and `user-id` in client Thing XML with matching String, read-only types.
 - Ensure initial absence, null session, timeout, and bridge-offline paths publish `NULL` even
   when the Thing has just transitioned offline. Do not weaken unrelated ONLINE guards.
+- Use the detail-derived status API for detailed states. Leave the client UNINITIALIZED while
+  its bridge is unresolved during initial setup or reports `BRIDGE_UNINITIALIZED`; use
+  `BRIDGE_OFFLINE` only for an offline bridge, `COMMUNICATION_ERROR` for an absent/timed-out
+  session, and `CONFIGURATION_ERROR` for invalid configuration or bridge type. Clear identity
+  on recognized unavailable-bridge transitions.
+- Require an openHAB 5.3+ runtime for interactive acceptance because 5.2.3 lacks the new
+  status API. Treat the earlier 5.2.3 deployment as historical baseline smoke evidence only.
 - Keep ordinary identity commands unsupported and retain non-mutating refresh behavior.
 - Follow [data-model.md](data-model.md) and [the contract](contracts/jellyfin-session-contract.md).
 - Validate with [quickstart.md](quickstart.md), including linked Item states rather than only
@@ -129,7 +142,12 @@ succeeds, but full install is blocked by the supplied core snapshot's ASM depend
 Discovery changes remain a separately authorized supporting repair, not session-user feature scope.
 
 The implementation gaps are source-inspection findings; passing baseline checks are recorded
-separately in [handoff.md](handoff.md). [tasks.md](tasks.md) tracks the remaining feature work.
+separately in [handoff.md](handoff.md). The current handler still uses deprecated status-plus-detail
+overloads and classifies a missing bridge as an error. T004 verifies identity mapping and published
+identity states with an ONLINE client and bridge; it does not verify Thing status callbacks or
+unresolved-bridge initialization. T010 owns status-detail and lifecycle callback tests, and T011
+owns the detail-derived API migration and status mapping. [tasks.md](tasks.md) tracks the remaining
+feature work.
 
 ## Complexity Tracking
 

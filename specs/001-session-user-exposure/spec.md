@@ -99,6 +99,14 @@ check both linked Items and attempt to send channel commands.
 - **FR-005**: Both channels MUST be advertised as read-only. Commands MUST NOT change their
  reported identity or cause Jellyfin identity-changing requests. Reading or refreshing identity
  MUST NOT change the session user.
+- **FR-006**: Detailed Thing status updates MUST use openHAB's detail-derived status API. Updates
+ with a detail MUST NOT also provide a separate `ThingStatus`; status-only updates MUST use the
+ status-only API. `ThingStatusDetail.NONE` MUST NOT be passed to the detail-derived API.
+- **FR-007**: A client with no bridge resolved during initial setup MUST retain its uninitialized
+ lifecycle status rather than being reported as a configuration or bridge-offline error. A bridge
+ reported as uninitialized MUST use `BRIDGE_UNINITIALIZED`; an offline bridge MUST use
+ `BRIDGE_OFFLINE`. Missing or timed-out sessions MUST use `COMMUNICATION_ERROR`, and invalid
+ configuration or bridge type MUST use `CONFIGURATION_ERROR`.
 
 ### Key Entities
 
@@ -119,11 +127,16 @@ check both linked Items and attempt to send channel commands.
  processed session update, without an additional identity refresh cycle.
 - **SC-004**: All attempted identity-changing channel commands leave session identity unchanged,
  and both channels are shown as read-only in their metadata.
+- **SC-005**: Status callbacks use the detail-derived API and map bridge uninitialized/offline,
+  session unavailable, and invalid configuration to the corresponding openHAB lifecycle details.
+ Missing bridge lookup during initial setup does not produce a false offline or configuration error.
 
 ## Assumptions
 
 - The existing binding already obtains session identity and associates sessions with clients.
-- A configured Jellyfin server and client are available for interactive validation.
+- A configured Jellyfin server and client are available for interactive validation on openHAB
+  5.3 or later. The migrated binding requires the detail-derived status API introduced after
+  5.2.3; 5.2.3 is not a compatible acceptance-test runtime.
 - Session end is measured from the binding's recognition of unavailability, not the instant
  the remote application closes. Existing timeout and delivery behavior are unchanged.
 - A valid session may lack either identity field; fields are interpreted independently.
@@ -135,3 +148,4 @@ check both linked Items and attempt to send channel commands.
 - No new user Things or user discovery behavior; existing discovery remains out of scope.
 - No change to device matching, session selection, polling intervals, or timeout thresholds.
 - No replacement of the binding's existing session management or transport.
+- Runtime compatibility with openHAB 5.2.3 after adopting the newer Thing status API.

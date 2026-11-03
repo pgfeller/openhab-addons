@@ -55,6 +55,63 @@ class ClientStateUpdaterTest {
     }
 
     @Test
+    void calculateChannelStatesMapsSessionUserName() {
+        SessionInfoDto session = new SessionInfoDto();
+        session.setUserName("Jane Doe");
+
+        Map<String, State> states = ClientStateUpdater.calculateChannelStates(session);
+
+        assertEquals(new StringType("Jane Doe"), states.get("user-name"));
+    }
+
+    @Test
+    void calculateChannelStatesPreservesUnicodeUserName() {
+        SessionInfoDto session = new SessionInfoDto();
+        session.setUserName("Jörg 東京");
+
+        Map<String, State> states = ClientStateUpdater.calculateChannelStates(session);
+
+        assertEquals(new StringType("Jörg 東京"), states.get("user-name"));
+    }
+
+    @Test
+    void calculateChannelStatesPreservesEmptyUserName() {
+        SessionInfoDto session = new SessionInfoDto();
+        session.setUserName("");
+
+        Map<String, State> states = ClientStateUpdater.calculateChannelStates(session);
+
+        assertEquals(new StringType(""), states.get("user-name"));
+    }
+
+    @Test
+    void calculateChannelStatesClearsAbsentUserNameIncludingIdOnlySession() {
+        SessionInfoDto anonymousSession = new SessionInfoDto();
+
+        Map<String, State> anonymousStates = ClientStateUpdater.calculateChannelStates(anonymousSession);
+
+        assertEquals(UnDefType.NULL, anonymousStates.get("user-name"));
+
+        SessionInfoDto idOnlySession = new SessionInfoDto();
+        idOnlySession.setUserId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+
+        Map<String, State> idOnlyStates = ClientStateUpdater.calculateChannelStates(idOnlySession);
+
+        assertEquals(UnDefType.NULL, idOnlyStates.get("user-name"));
+    }
+
+    @Test
+    void calculateChannelStatesMapsUserNameWhenSessionHasNoMedia() {
+        SessionInfoDto session = new SessionInfoDto();
+        session.setUserName("Jane Doe");
+
+        Map<String, State> states = ClientStateUpdater.calculateChannelStates(session);
+
+        assertEquals(new StringType("Jane Doe"), states.get("user-name"));
+        assertEquals(UnDefType.NULL, states.get(Constants.PLAYING_ITEM_NAME_CHANNEL));
+    }
+
+    @Test
     void calculateChannelStatesPopulatesMetadataAndPlayback() {
         BaseItemDto playingItem = new BaseItemDto();
         playingItem.setId(UUID.fromString("11111111-1111-1111-1111-111111111111"));

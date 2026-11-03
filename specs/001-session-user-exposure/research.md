@@ -1,6 +1,6 @@
 # Research - Session User Exposure
 
-**Reviewed**: 2026-10-30. Design findings come from source inspection. The repaired baseline
+**Reviewed**: 2026-11-03. Design findings come from source inspection. The repaired baseline
 now has passing automated/package and runtime smoke evidence; feature acceptance is still open.
 See [handoff.md](handoff.md) for the current state and source evidence.
 Paths below are relative to `bundles/org.openhab.binding.jellyfin/`.
@@ -94,3 +94,25 @@ Invented console commands and a spec-specific runtime feature toggle cannot veri
  and no playback commands or remote identity changes were made.
 
 The design has no unresolved clarification markers. See [tasks.md](tasks.md) for executable work.
+
+## 6. Thing Status API and Runtime Compatibility
+
+**Evidence**: [openHAB core PR #5874](https://github.com/openhab/openhab-core/pull/5874)
+introduced `updateStatus(ThingStatusDetail, description)`, which derives the Thing status from
+the detail and rejects `ThingStatusDetail.NONE`. The old overloads that take both a status and
+a detail are deprecated. Core 5.2.3's `BaseThingHandler` exposes only those legacy overloads;
+the new method is absent. [Add-ons PR #21904](https://github.com/openhab/openhab-addons/pull/21904)
+migrates Jellyfin status calls and leaves a client without a resolved bridge in its initial
+uninitialized state rather than reporting a configuration or bridge-offline error.
+
+**Decision**: Adopt the detail-derived status API and require openHAB 5.3 or later for build and
+interactive acceptance of the migrated binding. Preserve the earlier 5.2.3 run only as historical
+baseline smoke evidence.
+
+**Rationale**: Calling a method absent from the 5.2.3 core at runtime can cause
+`NoSuchMethodError` when the handler reports status. The API's mapping also distinguishes an
+uninitialized bridge from an offline bridge.
+
+**Alternatives considered**: Retaining deprecated status-plus-detail calls would keep source and
+binary compatibility with 5.2.3 but would not complete the migration. A reflective fallback would
+duplicate framework behavior and add unnecessary complexity.

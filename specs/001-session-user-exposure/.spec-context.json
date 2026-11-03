@@ -3,7 +3,7 @@
   "specName": "001-session-user-exposure",
   "branch": "pgfeller/issue21850",
   "selectedAt": "2026-10-18T12:30:51.634Z",
-  "currentStep": "converge",
+  "currentStep": "implement",
   "status": "implementing",
   "history": [
     {
@@ -42,6 +42,14 @@
       "kind": "complete",
       "by": "extension",
       "at": "2026-10-30T12:02:13.227Z"
+    },
+    {
+      "step": "implement",
+      "substep": null,
+      "task": "T003",
+      "kind": "complete",
+      "by": "ai",
+      "at": "2026-11-03T04:13:08.821Z"
     }
   ],
   "telemetryInstanceId": "d69622fa-eb7a-4059-8783-f76bff4d6747",
@@ -69,6 +77,16 @@
     },
     {
       "decision": "Current user request authorizes consolidation, signed-off commit, and normal push to origin/pgfeller/issue21850. Earlier no-commit/no-push notes describe prior bounded tasks, not the current authorization. Preserve task IDs/history and leave incomplete feature tasks open."
+    },
+    {
+      "decision": "Parse the actual Thing and channel-type XML with the secure JDK DOM parser.",
+      "why": "T003 requires validating XML structure rather than text formatting, and external DTD/schema access is disabled.",
+      "rejected": "String or regex matching of descriptor files."
+    },
+    {
+      "decision": "Use openhab/openhab:snapshot-debian for future local interactive tests of the migrated Jellyfin binding instead of the historical 5.2.3 image.",
+      "why": "The binding now relies on BaseThingHandler.updateStatus(ThingStatusDetail, ...), absent from openHAB 5.2.3. The snapshot image was inspected locally as 5.3.0-snapshot with Java 21.0.11; re-verify the mutable tag on each workstation.",
+      "rejected": "Reusing openhab-development-server on openhab/openhab:5.2.3-debian."
     }
   ],
   "verified": [
@@ -359,6 +377,41 @@
       "exitCode": 0,
       "durationSeconds": 0.1,
       "result": "{\"FEATURE_DIR\":\"/home/pgfeller/Documents/GitHub/openhab-addons/specs/001-session-user-exposure\",\"AVAILABLE_DOCS\":[\"research.md\",\"data-model.md\",\"contracts/\",\"quickstart.md\",\"tasks.md\"]}"
+    },
+    {
+      "what": "Jellyfin Spotless",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin spotless:apply",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 8.8,
+      "result": "[INFO] Total time:  7.159 s · [INFO] Finished at: 2026-11-03T05:11:56+01:00 · [INFO] ------------------------------------------------------------------------"
+    },
+    {
+      "what": "T003 metadata contract checks before XML updates",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=ClientHandlerTest test",
+      "source": "derived",
+      "exitCode": 1,
+      "durationSeconds": 29.7,
+      "result": "[ERROR]  · [ERROR] For more information about the errors and possible solutions, please read the following articles: · [ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException",
+      "warnings": [
+        "exited 1"
+      ]
+    },
+    {
+      "what": "Inspect replacement snapshot image",
+      "command": "docker image inspect openhab/openhab:snapshot-debian",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 0.0,
+      "result": "        } ·     } · ]"
+    },
+    {
+      "what": "Check replacement image Java",
+      "command": "docker run --rm --entrypoint java openhab/openhab:snapshot-debian -version",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 0.4,
+      "result": "openjdk version \"21.0.11\" 2026-04-21 · OpenJDK Runtime Environment (build 21.0.11+10-1-deb13u2-Debian) · OpenJDK 64-Bit Server VM (build 21.0.11+10-1-deb13u2-Debian, mixed mode, sharing)"
     }
   ],
   "concerns": [
@@ -379,6 +432,14 @@
     },
     {
       "note": "Local package available, but full install remains blocked by inconsistent 5.3.0-SNAPSHOT runtime requirements: ASM >=9.10 versus 9.9.1 resources. Runtime compatibility with user-selected 5.2.3 and live acceptance are unverified. Client XML still lacks planned user-name/user-id channels; T003-T018 remain open."
+    },
+    {
+      "note": "T003 intentionally leaves the new contract test failing until T005/T008 declare the client channels and missing user-id type; no XML changes were in scope.",
+      "step": "implement"
+    },
+    {
+      "note": "A compatible 5.3-or-later image is verified locally, but no 5.3 test container has been created and no migrated-bundle runtime acceptance has run. The old 5.2.3 container is stopped. T004 and the feature remain open.",
+      "step": "implement"
     }
   ],
   "context": [
@@ -389,7 +450,6 @@
     "2026-10-30: user requested committing cleanup repairs and preparing a local build. Cleanup/fixture repair committed as 97960f5eea. Restored human author tags only in UserNameChannel and UserIdChannel, added smoke-build guidance; did not change feature metadata or runtime dependencies.",
     "Read specs/001-session-user-exposure/handoff.md first in a future session. The actual branch is pgfeller/issue21850; the local feature selector can be re-established with SPECIFY_FEATURE_DIRECTORY=specs/001-session-user-exposure and the prerequisite script. Use quickstart.md for watched-addons deployment, secure interactive console access, browser testing, and rollback."
   ],
-  "workingBranch": "pgfeller/issue21850",
   "currentTask": "T003",
   "task_summaries": {
     "T001": {
@@ -407,6 +467,13 @@
         "bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/discovery/PublicUserDiscoveryServiceTest.java",
         "bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerTest.java"
       ]
+    },
+    "T003": {
+      "status": "DONE",
+      "did": "Added parsed XML contract checks for both client identity channel references and read-only String types; confirmed expected missing-metadata failures before XML changes.",
+      "files": [
+        "bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerTest.java"
+      ]
     }
   },
   "handoff": "specs/001-session-user-exposure/handoff.md",
@@ -420,6 +487,27 @@
         "319 passing baseline tests and live smoke success do not prove identity-channel acceptance.",
         "Protect credentials and household account identities when inspecting browser configuration or publishing evidence."
       ]
+    },
+    "implement": {
+      "summary": "Recorded the portable 5.3 snapshot Docker test target and separated historical 5.2.3 smoke evidence from future acceptance."
     }
-  }
+  },
+  "coverage": {
+    "FR-001": {
+      "tests": [
+        "ClientHandlerTest#testClientIdentityChannelsAreReadOnlyStringChannels"
+      ]
+    },
+    "FR-002": {
+      "tests": [
+        "ClientHandlerTest#testClientIdentityChannelsAreReadOnlyStringChannels"
+      ]
+    },
+    "FR-005": {
+      "tests": [
+        "ClientHandlerTest#testClientIdentityChannelsAreReadOnlyStringChannels"
+      ]
+    }
+  },
+  "last_action": "Handoff updated with image tag/digest, mutable-tag verification steps, stopped old container, and uncommitted-work transfer warning."
 }

@@ -1,12 +1,12 @@
 # Session User Exposure - Session Handoff
 
-**Updated**: 2026-10-30 | **Feature status**: implementing, not feature-complete.
+**Updated**: 2026-11-03 | **Feature status**: implementing, not feature-complete.
 
 ## Resume Here
 
 Read this file, [tasks.md](tasks.md), [plan.md](plan.md), and the applicable repository
-instructions. Continue with **T003**, then T004-T013 in dependency order. Only T001/T002
-are complete. Smoke testing does not close T015-T018 or prove identity-channel acceptance.
+instructions. Continue with **T004**, then T005-T013 in dependency order. T001-T003 are complete.
+Smoke testing does not close T015-T018 or prove identity-channel acceptance.
 
 The actual contributor branch is `pgfeller/issue21850`; `001-session-user-exposure` is the
 feature directory name, not the current Git branch. Push to the contributor fork `origin`
@@ -33,6 +33,9 @@ earlier blocker status. Do not mark the overall feature completed.
   `user-name`/`user-id`. The existing helper classes are not channel registration.
 - `ClientStateUpdater.calculateChannelStates(...)` has no identity mappings. It is the planned
   pure calculation owner; extend existing tests before adding mappings.
+- T004 covers identity calculation and `stateUpdated` publication with an ONLINE client and
+  bridge. It is not evidence for the 5.3 detail-derived status API or bridge-uninitialized
+  behavior. T010 owns those status callback and lifecycle tests; T011 owns the migration.
 - Handler state publication is ONLINE-gated. Test null-session, timeout, and bridge-offline
   clearing through observable callbacks, not merely `getCurrentSession()` assertions.
 - Reconcile Java helper/constants and actual XML type IDs. Existing `user-name-channel` metadata
@@ -40,7 +43,7 @@ earlier blocker status. Do not mark the overall feature completed.
 - Follow the spec's independent field clearing and present-empty-name semantics. Playback
   inactivity alone is not logout. Read-only metadata and ignored commands need separate checks.
 
-See the requirement/task coverage table in [tasks.md](tasks.md). All five functional requirements
+See the requirement/task coverage table in [tasks.md](tasks.md). All seven functional requirements
 still need feature-level implementation or verification; no uncovered implementation task was
 identified beyond the existing open backlog during this handoff reconciliation.
 
@@ -77,22 +80,40 @@ Evidence: [assessment](../../.specify/bugs/jellyfin-public-user-cleanup/assessme
 
 ## Interactive Test Environment
 
-- Container name: `openhab-development-server`; last ID prefix: `ad76edf43416`.
-  Reinspect rather than assume container or bundle IDs are stable.
-- Runtime: `openhab/openhab:5.2.3-debian`, Java 21; shared Main UI: `http://localhost:8080`.
-- Host `~/Temp/openhab/{addons,conf,userdata}` bind-mounts to the corresponding `/openhab` paths.
-- The candidate remains installed through `/openhab/addons/org.openhab.binding.jellyfin-5.3.0-SNAPSHOT.jar`.
-  Last observed OSGi bundle ID: 269; version: `5.3.0.202610301015`.
-- Deployed SHA-256: `3c263ec9ae6f59a00d89b3cb56574295f48e2945fdcc12e9befa8c1bc6d66a6d`.
-  Rebuilds can change this; verify the actual JAR before deployment.
-- The user-configured bridge remains ONLINE. Normal discovery displayed nine clients and two
-  public users with eleven distinct UIDs. Counts are observations, not fixed expectations.
-- A temporary client transitioned OFFLINE to ONLINE without test commands, then was removed.
-  No temporary Items/links remain. Existing media channels render; identity channels are absent.
+- The previous `openhab-development-server` container (ID prefix `ad76edf43416`) used
+  `openhab/openhab:5.2.3-debian`; it exited with code 137 three days before this handoff. Do not
+  assume it is running or use it for the migrated bundle.
+- The compatible image available locally on 2026-11-03 is `openhab/openhab:snapshot-debian`,
+  labeled `5.3.0-snapshot`, with Java 21.0.11. Its registry digest is
+  `openhab/openhab@sha256:0b6782ed409150c3ec89c4f3656b4fbf1dedd08db98bb4038cc0f22408ca99ef`.
+  The tag is mutable. Pull and inspect it on another workstation; `snapshot-debian` is the
+  required replacement image, not `5.2.3-debian`. The compatible image is present locally, but a
+  5.3-or-later test container has not yet been created.
+- The old workstation-specific UI and mounts were `http://localhost:8080` and
+  `~/Temp/openhab/{addons,conf,userdata}`. On another workstation, inspect container mounts and
+  create isolated test configuration as needed; never assume these paths or IDs are portable.
+- Historical pre-migration smoke evidence from 2026-10-30: on 5.2.3 the bridge was ONLINE,
+  discovery displayed nine clients and two public users with eleven distinct UIDs, and a temporary
+  client transitioned OFFLINE to ONLINE before removal. These are not current runtime checks or
+  migrated-bundle acceptance evidence.
+- The previous deployed candidate was reported as bundle version `5.3.0.202610301015` with SHA-256
+  `3c263ec9ae6f59a00d89b3cb56574295f48e2945fdcc12e9befa8c1bc6d66a6d`; rebuilds can change it.
+  Verify the built JAR checksum before any deployment.
 - Playback controls, linked Item values, identity switching/clearing, and live malformed/empty
   responses were not acceptance-tested. Do not infer completion from discovery or ONLINE status.
-- No newer runtime is indicated for the observed startup/session paths. Full feature compatibility
-  still requires the remaining automated and runtime acceptance checks.
+- Core 5.2.3 lacks `BaseThingHandler.updateStatus(ThingStatusDetail, ...)`; use openHAB 5.3 or later
+  for all further runtime acceptance.
+
+## Commit Handoff
+
+The working branch is `pgfeller/issue21850`. T003/T004 test changes, Companion records, and the
+5.3 status-convention documentation remain uncommitted in this workstation's worktree; they will
+not appear on another workstation unless the worktree is transferred or committed and shared.
+T004 remains open pending review and its planned test-first verification. Before committing
+elsewhere, inspect `git status` and the scoped diff, verify the local real author name and reachable
+email, sign off the commit, and include the required
+`Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>` trailer. Do not push unless
+separately requested.
 
 Deployment, secure console access, browser precautions, and rollback are in [quickstart.md](quickstart.md).
 Bridge-associated discovery currently uses a 600-second constructor timeout; shorter UI waits

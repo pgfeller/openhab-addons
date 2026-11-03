@@ -2,7 +2,7 @@
 
 **Input**: [spec.md](spec.md), [plan.md](plan.md), and supporting design artifacts.
 
-**Current state**: T001/T002 complete; T003-T018 open. Resume at T003.
+**Current state**: T001-T003 complete; T004-T018 open. Resume at T004.
 See [handoff.md](handoff.md) for the current branch, evidence, runtime setup, and privacy rules.
 
 **Reconciled**: 2026-10-30. This backlog replaces the unexecuted scaffolding list with
@@ -34,7 +34,7 @@ Three separate post-format discovery runs also passed (8 tests each). See
 [bug assessment](../../.specify/bugs/jellyfin-public-user-cleanup/assessment.md),
 [fix report](../../.specify/bugs/jellyfin-public-user-cleanup/fix.md), and
 [verification](../../.specify/bugs/jellyfin-public-user-cleanup/test.md).
-T003-T018 remain open; the feature remains implementing.
+T004-T018 remain open; the feature remains implementing.
 
 Local-build preparation was authorized on 2026-10-30. Missing author tags in the two
 session-channel helper classes were restored. The full 319-test module suite passes, and
@@ -49,7 +49,7 @@ is in [the runtime smoke report](../../.specify/bugs/jellyfin-public-user-cleanu
 
 ## Phase 2: Foundational - Metadata Contract Checks
 
-- [ ] T003 Extend `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerTest.java` with parsed XML checks for both client channel references, matching String channel types, and read-only state metadata; observe missing-metadata failures before XML changes (FR-001, FR-002, FR-005).
+- [x] T003 Extend `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerTest.java` with parsed XML checks for both client channel references, matching String channel types, and read-only state metadata; observe missing-metadata failures before XML changes (FR-001, FR-002, FR-005).
 
 Reuse existing fixtures and XML parsers. Handler tests must assert observable state callbacks
 with typed UIDs, initialized handlers, linked channels, and valid bridge state; stored-session
@@ -61,7 +61,7 @@ assertions alone do not verify channel publication. Do not hand-edit generated D
 
 **Independent test**: Exact name or `UnDefType.NULL`, including when only an identifier exists.
 
-- [ ] T004 [US1] Add name-state tests to `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/util/client/ClientStateUpdaterTest.java` and callback assertions to `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerTest.java`; cover normal, Unicode, empty, absent-name, and no-media sessions; observe failures (FR-001, FR-004).
+- [ ] T004 [US1] Add name-state tests to `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/util/client/ClientStateUpdaterTest.java` and `stateUpdated` callback assertions to `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerTest.java`; cover normal, Unicode, empty, absent-name, and no-media sessions with an ONLINE client and bridge; observe failures (FR-001, FR-004). This task does not verify Thing status callbacks, status-detail mapping, or unresolved-bridge initialization; T010 owns those tests and T011 owns the status migration (FR-006, FR-007, SC-005).
 - [ ] T005 [US1] Add `user-name` to `bundles/org.openhab.binding.jellyfin/src/main/resources/OH-INF/thing/types/client-thing-type.xml` using compatible existing `user-name-channel` metadata in `bundles/org.openhab.binding.jellyfin/src/main/resources/OH-INF/thing/types/user-channel-types.xml`; preserve user-Thing compatibility (FR-001).
 - [ ] T006 [US1] Implement name calculation in `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/util/client/ClientStateUpdater.java` and reconcile publication in `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/handler/ClientHandler.java`; "Missing identity fields clear independently" and "Preserve supplied display names, including Unicode and an empty String"; rerun T003/T004 (FR-001, FR-004).
 
@@ -82,8 +82,8 @@ assertions alone do not verify channel publication. Do not hand-edit generated D
 **Independent test**: Both states clear on recognized unavailability, recover on the next
 valid session, and remain unaffected by ordinary channel commands.
 
-- [ ] T010 [US3] Extend `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerEventIntegrationTest.java` and `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerStatusCheckTest.java` with published-state assertions for initial absence, anonymous session, switch, null-session end, timeout, bridge offline, and reconnect; bound asynchronous checks and observe failures (FR-003, FR-004).
-- [ ] T011 [US3] Repair identity invalidation/publication in `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/handler/ClientHandler.java` and null mappings in `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/util/client/ClientStateUpdater.java`; clear after OFFLINE transitions, preserve unrelated guards and selection/timeout behavior, then rerun T010 (FR-003, FR-004).
+- [ ] T010 [US3] Extend `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerEventIntegrationTest.java` and `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerStatusCheckTest.java` with published-state and status-callback assertions for initial absence, anonymous session, switch, null-session end, timeout, bridge uninitialized/offline, and reconnect; assert resulting status details and that an unresolved bridge during initial setup does not publish a false error status, use bounded asynchronous checks, and observe failures (FR-003, FR-004, FR-007, SC-005).
+- [ ] T011 [US3] Repair identity invalidation/publication in `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/handler/ClientHandler.java` and null mappings in `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/util/client/ClientStateUpdater.java`; migrate detailed states to `updateStatus(ThingStatusDetail, description)` without the deprecated status-plus-detail overload, preserve UNINITIALIZED for an unresolved/uninitialized bridge, use `BRIDGE_OFFLINE` only when offline, and clear after recognized unavailable-bridge/session transitions while preserving selection/timeout behavior; then rerun T010 (FR-003, FR-004, FR-006, FR-007).
 - [ ] T012 [US3] Extend initialized-handler tests in `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerTest.java` and routing tests in `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/util/command/ClientCommandRouterTest.java` to verify ordinary identity commands cause no identity state change or remote identity-changing request and refresh republishes available identity without mutation; run metadata checks too (FR-005).
 - [ ] T013 [US3] Make only changes demonstrated necessary by T012 in `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/handler/ClientHandler.java` or `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/util/command/ClientCommandRouter.java`; if existing command behavior passes, record that evidence instead of adding redundant guards (FR-005).
 
@@ -91,8 +91,8 @@ valid session, and remain unaffected by ordinary channel commands.
 
 - [ ] T014 [P] Document both channels, String Item links, and independent NULL behavior in `bundles/org.openhab.binding.jellyfin/README.md` (FR-001 through FR-005).
 - [ ] T015 Reconcile channel constants/type IDs and relevant Javadoc in `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/Constants.java`, `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/channel/UserNameChannel.java`, and `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/channel/UserIdChannel.java` with XML; reuse existing conventions rather than parallel unused abstractions.
-- [ ] T016 Run focused tests, Spotless, full module `clean install`, and Markdown lint documented in `specs/001-session-user-exposure/quickstart.md`; inspect the diff for unrelated generated changes and record actual results in `specs/001-session-user-exposure/.spec-context.json` (FR-001 through FR-005, SC-001 through SC-004).
-- [ ] T017 Perform and record interactive linked-Item acceptance from `specs/001-session-user-exposure/quickstart.md`, confirming bundle compatibility with the chosen openHAB 5.2.3 runtime first; keep this task open if that environment is unavailable (SC-001 through SC-004).
+- [ ] T016 Run focused tests, Spotless, full module `clean install` against the repository's 5.3+ core baseline, and Markdown lint documented in `specs/001-session-user-exposure/quickstart.md`; inspect the diff for unrelated generated changes and record actual results in `specs/001-session-user-exposure/.spec-context.json` (FR-001 through FR-007, SC-001 through SC-005).
+- [ ] T017 Perform and record interactive linked-Item acceptance from `specs/001-session-user-exposure/quickstart.md` on openHAB 5.3 or later. Do not deploy the migrated bundle to 5.2.3, which lacks the required status API; retain that runtime's results as pre-migration baseline evidence only (SC-001 through SC-005).
 - [ ] T018 Reconcile completed markers in `specs/001-session-user-exposure/tasks.md` and journal evidence in `specs/001-session-user-exposure/.spec-context.json` using Companion hooks; run cross-artifact analysis and mark complete only when all acceptance/build gates actually pass.
 
 ## Dependencies and Execution Strategy
@@ -100,7 +100,7 @@ valid session, and remain unaffected by ordinary channel commands.
 1. T001 and T002 restore compilation; T003 establishes failing metadata checks.
 1. US1: T004 tests, then T005/T006 implementation and focused validation.
 1. US2: T007 tests, then T008/T009 implementation and focused validation.
-1. US3: T010 tests, T011 repair, T012 command checks, then T013 only if needed.
+1. US3: T010 tests, T011 status and identity repair, T012 command checks, then T013 only if needed.
 1. T014/T015 follow settled metadata; T016 precedes interactive acceptance T017 and closure T018.
 
 US1 is the smallest useful slice, but all stories are required for feature completion.
@@ -117,7 +117,10 @@ complete until its stated checks have run.
 | FR-003 | T010-T011, T016-T017 | Initial absence, anonymous/end/timeout/offline clearing |
 | FR-004 | T004, T006-T007, T009-T011, T016-T017 | Partial identity, no media, switch, recovery |
 | FR-005 | T003, T012-T013, T016-T017 | Read-only XML, ignored commands, non-mutating refresh |
+| FR-006 | T010-T011, T016 | Detail-derived API use; status-only updates where appropriate |
+| FR-007 | T010-T011, T016-T017 | Bridge lifecycle, session, and configuration status mapping |
 | SC-001 | T004-T009, T016-T017 | Supplied values match |
 | SC-002 | T004, T007, T010-T011, T016-T017 | No stale values after processed transition |
 | SC-003 | T010-T011, T016-T017 | Current identity on next processed update |
 | SC-004 | T003, T012-T013, T016-T017 | No identity-changing commands |
+| SC-005 | T010-T011, T016-T017 | Correct status details and no false missing-bridge error |

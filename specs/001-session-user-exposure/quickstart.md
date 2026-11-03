@@ -6,10 +6,25 @@ acceptance. Start with [handoff.md](handoff.md) and [tasks.md](tasks.md) when re
 ## Prerequisites
 
 - Java 21 and the repository Maven wrapper for automated validation.
-- A configured openHAB 5.x runtime and reachable Jellyfin server/client for interactive checks.
-- The user-selected runtime is openHAB 5.2.3. Startup, bridge connectivity, client availability,
- and discovery smoke checks passed for the tested `5.3.0-SNAPSHOT` bundle. Recheck newly built
- bundles; smoke success is not full feature acceptance.
+- A configured openHAB 5.3-or-later runtime and reachable Jellyfin server/client for interactive
+ checks. Use `openhab/openhab:snapshot-debian`, not the historical `5.2.3-debian` image. The
+ detail-derived status API used by this implementation is absent from openHAB 5.2.3.
+- The snapshot image last verified locally on 2026-11-03 was labeled `5.3.0-snapshot`, ran
+ Java 21.0.11, and had registry digest
+ `openhab/openhab@sha256:0b6782ed409150c3ec89c4f3656b4fbf1dedd08db98bb4038cc0f22408ca99ef`.
+ The `snapshot-debian` tag is mutable. On another workstation, pull and inspect it before use:
+
+  ```sh
+  docker pull openhab/openhab:snapshot-debian
+  docker image inspect openhab/openhab:snapshot-debian --format 'version={{index .Config.Labels "org.opencontainers.image.version"}} revision={{index .Config.Labels "org.opencontainers.image.revision"}}'
+  docker run --rm --entrypoint java openhab/openhab:snapshot-debian -version
+  ```
+
+  Confirm the image is 5.3 or later and Java 21. Use the recorded digest only when reproducing
+  the exact locally verified image; prefer a current 5.3-or-later snapshot for acceptance.
+- The openHAB 5.2.3 runtime passed startup, bridge connectivity, client availability, and discovery
+ smoke checks for a pre-migration `5.3.0-SNAPSHOT` bundle. That is historical baseline evidence,
+ not compatibility or acceptance evidence for a bundle using the new status API.
 - A Jellyfin server bridge with existing authentication configured securely, and an existing
  client Thing with the correct `serialNumber` device ID. Do not expose tokens in reports.
 - A bundle built from the repaired implementation. The spec ID is not a runtime feature toggle.
@@ -35,15 +50,20 @@ resolved feature set supplies ASM 9.9.1. Refreshing snapshots did not resolve th
 No verifier skip flags, dependency overrides, or runtime changes were applied.
 
 This artifact supports an initial discovery/regression smoke test only. The client Thing XML
-still lacks the planned `user-name` and `user-id` declarations; T003-T018 are not complete.
-It has since passed the baseline runtime smoke checks below on openHAB 5.2.3, but not session-user
-acceptance or every compatibility path.
+still lacks the planned `user-name` and `user-id` declarations; T004-T018 are not complete.
+It passed the baseline runtime smoke checks below on openHAB 5.2.3 before the status API migration.
+Do not install a migrated candidate there. A 5.3-or-later runtime is mandatory for acceptance.
 
 ## Interactive Deployment and Console
 
-Reinspect the target before each deployment. The verified development container is named
-`openhab-development-server` (last ID prefix `ad76edf43416`) and exposes Main UI at
-`http://localhost:8080`. Its persistent host mounts are `~/Temp/openhab/{addons,conf,userdata}`.
+Reinspect the target before each deployment. Use an openHAB 5.3-or-later development runtime for
+the migrated candidate. Do not deploy it to the historical 5.2.3 environment because the new
+`BaseThingHandler.updateStatus(ThingStatusDetail, ...)` method is absent there. The previous
+`openhab-development-server` container (ID prefix `ad76edf43416`) used `5.2.3-debian` and is
+currently stopped. A compatible container has not yet been created from the snapshot image. Do not
+assume container names, ports, bind mounts, or configuration exist on another workstation. The
+previous host mounts `~/Temp/openhab/{addons,conf,userdata}` and UI `http://localhost:8080` are
+specific to this workstation; inspect and back up any existing persistent data before reuse.
 
 Build the main JAR and copy it to the watched add-ons folder, which is the user's preferred
 installation/update method:
@@ -75,8 +95,8 @@ takes a positional bundle ID on this runtime, not `-b`. Satisfied delayed discov
 are not the same as unsatisfied dependencies. Logout when checks are complete.
 
 Do not proceed unless the binding resolves and becomes ACTIVE with its services available.
-If requirements cannot be resolved on 5.2.3, restore the original bundle and use a compatible
-test runtime; do not force resolution or weaken imports. Roll back a new add-on by removing only
+If requirements cannot be resolved on the selected 5.3-or-later runtime, restore the original
+bundle and use a compatible test runtime; do not force resolution or weaken imports. Roll back a new add-on by removing only
 its JAR; restore the backed-up JAR for an update. Never delete persistent configuration/userdata.
 
 The installed candidate passed startup/service checks. The user then configured a live ONLINE
@@ -119,7 +139,8 @@ No resolver change is planned; use `-DwithResolver` if implementation changes de
 
 ## Feature Acceptance Setup - Still Pending
 
-1. Install the compatible tested bundle using the normal development deployment procedure.
+1. Install the compatible tested bundle in openHAB 5.3 or later using the normal development
+ deployment procedure.
 1. In Main UI, confirm the Jellyfin server bridge and selected client are available.
 1. Open the client's Channels tab. Confirm `user-name` and `user-id` exist as read-only
   String channels. Use the actual discovered UID, not an invented `client-thing` type.
@@ -145,6 +166,7 @@ String JellyfinSessionUserId { channel="jellyfin:client:serverId:clientId:user-i
 | Session end recognized by binding | Both NULL, even after client becomes OFFLINE | FR-003 |
 | Existing timeout expires | Both NULL | FR-003 |
 | Bridge becomes offline | Both NULL | FR-003 |
+| Bridge is initializing or uninitialized | Both NULL; client remains UNINITIALIZED | FR-003, FR-007 |
 | Session reconnects with current identity | Both current values, not the previous user's values | FR-004 |
 | Playback stops but identity remains in session | Identity remains available | FR-004 |
 | Identity-channel command attempted | No reported identity change or remote identity-changing request | FR-005 |
