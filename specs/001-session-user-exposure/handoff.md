@@ -5,8 +5,12 @@
 ## Resume Here
 
 Read this file, [tasks.md](tasks.md), [plan.md](plan.md), and the applicable repository
-instructions. Continue with **T004**, then T005-T013 in dependency order. T001-T003 are complete.
-Smoke testing does not close T015-T018 or prove identity-channel acceptance.
+instructions. T001-T003 are complete; **leave T004 open**. Its test-first run confirms the new
+handler publication cases pass, while five name-mapping tests await implementation and the T003
+metadata assertion awaits the later XML tasks. Implement T005, then T006; rerun T004 after the
+name mapping is implemented. T003's XML assertion remains pending until both T005 and T008 are
+complete. Close T004 only when its required tests pass, then continue T007-T013 in dependency
+order. Smoke testing does not close T015-T018 or prove identity-channel acceptance.
 
 The actual contributor branch is `pgfeller/issue21850`; `001-session-user-exposure` is the
 feature directory name, not the current Git branch. Push to the contributor fork `origin`
@@ -70,6 +74,17 @@ Evidence: [assessment](../../.specify/bugs/jellyfin-public-user-cleanup/assessme
 - Focused handler/discovery baseline: 17/17 passed; discovery class: 8/8 across three
   independent repeated runs, without retry masking.
 - Full module suite: **319 tests across 34 classes**, zero failures, errors, or skips.
+- T004 focused test-first run:
+
+  ```sh
+  ./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=ClientStateUpdaterTest,ClientHandlerTest test
+  ```
+
+  **27 tests: 6 failures, 0 errors, 0 skipped.** `ClientStateUpdaterTest` had five expected
+  failures because name calculation/clearing is not implemented yet (T006). `ClientHandlerTest`
+  had one failing T003 XML metadata assertion because the client channel declarations/types are
+  still absent (T005/T008); the new `stateUpdated` publication cases passed. This is test-first
+  evidence, not a green T004 acceptance run; keep T004 open.
 - `./mvnw -pl bundles/org.openhab.binding.jellyfin package`: **BUILD SUCCESS**.
 - Static analysis in the full install attempts: zero errors, with existing warnings.
 - Full `clean install`, also after `-U spotless:apply clean install`, fails at Karaf verification:
@@ -83,12 +98,14 @@ Evidence: [assessment](../../.specify/bugs/jellyfin-public-user-cleanup/assessme
 - The previous `openhab-development-server` container (ID prefix `ad76edf43416`) used
   `openhab/openhab:5.2.3-debian`; it exited with code 137 three days before this handoff. Do not
   assume it is running or use it for the migrated bundle.
-- The compatible image available locally on 2026-11-03 is `openhab/openhab:snapshot-debian`,
+- Every workstation used for migrated-bundle runtime acceptance must provide openHAB 5.3 or later.
+  The compatible image available locally on 2026-11-03 is `openhab/openhab:snapshot-debian`,
   labeled `5.3.0-snapshot`, with Java 21.0.11. Its registry digest is
   `openhab/openhab@sha256:0b6782ed409150c3ec89c4f3656b4fbf1dedd08db98bb4038cc0f22408ca99ef`.
-  The tag is mutable. Pull and inspect it on another workstation; `snapshot-debian` is the
-  required replacement image, not `5.2.3-debian`. The compatible image is present locally, but a
-  5.3-or-later test container has not yet been created.
+  The tag is mutable. On a fresh workstation, pull and inspect the tag and verify the actual
+  openHAB version and Java version before use; `snapshot-debian` is the required replacement image,
+  not `5.2.3-debian`. The image was available locally, but a 5.3-or-later test container has not
+  yet been created.
 - The old workstation-specific UI and mounts were `http://localhost:8080` and
   `~/Temp/openhab/{addons,conf,userdata}`. On another workstation, inspect container mounts and
   create isolated test configuration as needed; never assume these paths or IDs are portable.
@@ -106,14 +123,12 @@ Evidence: [assessment](../../.specify/bugs/jellyfin-public-user-cleanup/assessme
 
 ## Commit Handoff
 
-The working branch is `pgfeller/issue21850`. T003/T004 test changes, Companion records, and the
-5.3 status-convention documentation remain uncommitted in this workstation's worktree; they will
-not appear on another workstation unless the worktree is transferred or committed and shared.
-T004 remains open pending review and its planned test-first verification. Before committing
-elsewhere, inspect `git status` and the scoped diff, verify the local real author name and reachable
-email, sign off the commit, and include the required
-`Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>` trailer. Do not push unless
-separately requested.
+The T003/T004 test-first changes, Companion records, and 5.3 status-convention documentation were
+committed as `106e47d19ec2f3cc194ce2d9598e5630723713dd` and pushed to
+`origin/pgfeller/issue21850` on 2026-11-03. The remote branch matched that commit, and the
+worktree was clean after the push. This commit does not mean T004 or the feature is complete.
+Continue on `pgfeller/issue21850`; commit and push any subsequent handoff corrections needed for
+another workstation.
 
 Deployment, secure console access, browser precautions, and rollback are in [quickstart.md](quickstart.md).
 Bridge-associated discovery currently uses a 600-second constructor timeout; shorter UI waits

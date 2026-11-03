@@ -412,6 +412,15 @@
       "exitCode": 0,
       "durationSeconds": 0.4,
       "result": "openjdk version \"21.0.11\" 2026-04-21 · OpenJDK Runtime Environment (build 21.0.11+10-1-deb13u2-Debian) · OpenJDK 64-Bit Server VM (build 21.0.11+10-1-deb13u2-Debian, mixed mode, sharing)"
+    },
+    {
+      "what": "T004 focused test-first validation",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=ClientStateUpdaterTest,ClientHandlerTest test",
+      "exitCode": 1,
+      "result": "27 tests run: 6 failures, 0 errors, 0 skipped. ClientStateUpdaterTest: 12 tests, 5 failures, all five name-mapping/clearing cases pending T006. ClientHandlerTest: 15 tests, 1 failure, the T003 metadata assertion pending XML tasks T005/T008. The new stateUpdated handler publication cases passed.",
+      "warnings": [
+        "Expected red test-first result; T004 remains open."
+      ]
     }
   ],
   "concerns": [
@@ -448,9 +457,10 @@
     "2026-10-30 bounded recommendation item 1 assessment: user stop condition triggered by malformed-response destructive cleanup. No Java, tasks, specification, plan, constitution, generated-model, or translation edits made. Existing changes preserved; feature remains implementing.",
     "2026-10-30 bounded public-user cleanup repair only. Bug jellyfin-public-user-cleanup: fix applied, verification partial due unrelated static-analysis gate. Existing user fixture/task changes and prior Companion history retained; no further agents, commits, pushes, branches, generated-model changes, metadata changes, or T003+ work.",
     "2026-10-30: user requested committing cleanup repairs and preparing a local build. Cleanup/fixture repair committed as 97960f5eea. Restored human author tags only in UserNameChannel and UserIdChannel, added smoke-build guidance; did not change feature metadata or runtime dependencies.",
-    "Read specs/001-session-user-exposure/handoff.md first in a future session. The actual branch is pgfeller/issue21850; the local feature selector can be re-established with SPECIFY_FEATURE_DIRECTORY=specs/001-session-user-exposure and the prerequisite script. Use quickstart.md for watched-addons deployment, secure interactive console access, browser testing, and rollback."
+    "Read specs/001-session-user-exposure/handoff.md first in a future session. The actual branch is pgfeller/issue21850; the local feature selector can be re-established with SPECIFY_FEATURE_DIRECTORY=specs/001-session-user-exposure and the prerequisite script. Use quickstart.md for watched-addons deployment, secure interactive console access, browser testing, and rollback.",
+    "Fresh-workstation interactive acceptance requires openHAB 5.3 or later: pull and inspect mutable openhab/openhab:snapshot-debian, verify its actual version and Java 21, and retain 5.2.3 results as historical evidence only."
   ],
-  "currentTask": "T003",
+  "currentTask": "T004",
   "task_summaries": {
     "T001": {
       "status": "DONE",
@@ -477,7 +487,7 @@
     }
   },
   "handoff": "specs/001-session-user-exposure/handoff.md",
-  "nextAction": "Resume implementation at T003, then T004-T013; do not mark feature complete from baseline smoke tests.",
+  "nextAction": "Implement T005 then T006; keep T004 open until its name-state tests pass. Rerun T003 after both T005 and T008; then continue T007-T013 in dependency order.",
   "step_summaries": {
     "converge": {
       "summary": "Current-state handoff consolidated on 2026-10-30. T001/T002 complete; T003-T018 remain open. No source changes and no newly uncovered implementation work beyond the existing backlog.",
@@ -489,7 +499,12 @@
       ]
     },
     "implement": {
-      "summary": "Recorded the portable 5.3 snapshot Docker test target and separated historical 5.2.3 smoke evidence from future acceptance."
+      "summary": "T003 is complete; T004 remains open. Focused test-first validation recorded six expected failures pending T005/T006/T008, while new handler publication cases pass.",
+      "key_finding": "Implement T005 channel metadata, then T006 name calculation/publication; rerun T004 after T006. The T003 XML assertion needs both T005 and T008.",
+      "risks": [
+        "Do not mark T004 complete or feature implemented from the current red test-first run.",
+        "Use an inspected openHAB 5.3-or-later Docker runtime on every workstation; the snapshot-debian tag is mutable and 5.2.3 is historical only."
+      ]
     }
   },
   "coverage": {
@@ -509,5 +524,5 @@
       ]
     }
   },
-  "last_action": "Handoff updated with image tag/digest, mutable-tag verification steps, stopped old container, and uncommitted-work transfer warning."
+  "last_action": "Recorded prior pushed commit 106e47d19ec2f3cc194ce2d9598e5630723713dd and clean post-push state; updated handoff/context with test-first result and fresh-workstation 5.3+ requirement."
 }
