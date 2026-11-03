@@ -5,12 +5,11 @@
 ## Resume Here
 
 Read this file, [tasks.md](tasks.md), [plan.md](plan.md), and the applicable repository
-instructions. T001-T003 are complete; **leave T004 open**. Its test-first run confirms the new
-handler publication cases pass, while five name-mapping tests await implementation and the T003
-metadata assertion awaits the later XML tasks. Implement T005, then T006; rerun T004 after the
-name mapping is implemented. T003's XML assertion remains pending until both T005 and T008 are
-complete. Close T004 only when its required tests pass, then continue T007-T013 in dependency
-order. Smoke testing does not close T015-T018 or prove identity-channel acceptance.
+instructions. T001-T009 are complete; resume at T010. The client exposes both identity channels
+as read-only String channels, and `ClientStateUpdater` calculates the name and nullable UUID
+independently. The focused updater and handler tests pass, including the T003 metadata contract.
+Continue T010-T013 in dependency order. Smoke testing does not close T015-T018 or prove
+identity-channel acceptance.
 
 The actual contributor branch is `pgfeller/issue21850`; `001-session-user-exposure` is the
 feature directory name, not the current Git branch. Push to the contributor fork `origin`
@@ -33,23 +32,21 @@ earlier blocker status. Do not mark the overall feature completed.
   subscription already exist. Do not recreate them or add a new session model/factory.
 - Generated `SessionInfoDto.UserId` is a nullable UUID; `UserName` is a nullable String.
   Retain generated sources and existing deserialization. Use typed UUID fixtures.
-- `ClientHandler` contains partial identity publication, but client Thing XML does not declare
-  `user-name`/`user-id`. The existing helper classes are not channel registration.
-- `ClientStateUpdater.calculateChannelStates(...)` has no identity mappings. It is the planned
-  pure calculation owner; extend existing tests before adding mappings.
-- T004 covers identity calculation and `stateUpdated` publication with an ONLINE client and
-  bridge. It is not evidence for the 5.3 detail-derived status API or bridge-uninitialized
+- Client Thing XML declares `user-name` and `user-id` as read-only String channels. The existing
+  `user-name-channel` type remains shared with the user Thing.
+- `ClientStateUpdater.calculateChannelStates(...)` maps name and UUID independently. Names retain
+  empty-string semantics; IDs use `UUID.toString()` and become `NULL` when absent.
+- T004 and T007 cover identity calculation and `stateUpdated` publication with an ONLINE client
+  and bridge. They do not cover the 5.3 detail-derived status API or bridge-uninitialized
   behavior. T010 owns those status callback and lifecycle tests; T011 owns the migration.
 - Handler state publication is ONLINE-gated. Test null-session, timeout, and bridge-offline
   clearing through observable callbacks, not merely `getCurrentSession()` assertions.
-- Reconcile Java helper/constants and actual XML type IDs. Existing `user-name-channel` metadata
-  is shared with the user Thing; preserve that compatibility.
 - Follow the spec's independent field clearing and present-empty-name semantics. Playback
   inactivity alone is not logout. Read-only metadata and ignored commands need separate checks.
 
-See the requirement/task coverage table in [tasks.md](tasks.md). All seven functional requirements
-still need feature-level implementation or verification; no uncovered implementation task was
-identified beyond the existing open backlog during this handoff reconciliation.
+See the requirement/task coverage table in [tasks.md](tasks.md). T010-T018 remain open; status
+transitions, command behavior, runtime acceptance, and the remaining feature-level checks are not
+yet verified.
 
 ## Completed Baseline and Commits
 
@@ -74,17 +71,30 @@ Evidence: [assessment](../../.specify/bugs/jellyfin-public-user-cleanup/assessme
 - Focused handler/discovery baseline: 17/17 passed; discovery class: 8/8 across three
   independent repeated runs, without retry masking.
 - Full module suite: **319 tests across 34 classes**, zero failures, errors, or skips.
-- T004 focused test-first run:
+- Historical T004 test-first run, before T006:
 
   ```sh
   ./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=ClientStateUpdaterTest,ClientHandlerTest test
   ```
 
-  **27 tests: 6 failures, 0 errors, 0 skipped.** `ClientStateUpdaterTest` had five expected
-  failures because name calculation/clearing is not implemented yet (T006). `ClientHandlerTest`
-  had one failing T003 XML metadata assertion because the client channel declarations/types are
-  still absent (T005/T008); the new `stateUpdated` publication cases passed. This is test-first
-  evidence, not a green T004 acceptance run; keep T004 open.
+  **27 tests: 6 failures, 0 errors, 0 skipped.** Five failures were the T006 name mappings; the
+  remaining failure was the T003 metadata assertion before the identity XML changes.
+- T004/T006 validation after implementation:
+
+  ```sh
+  ./mvnw -pl bundles/org.openhab.binding.jellyfin '-Dtest=ClientStateUpdaterTest,ClientHandlerTest#testUserNamePublishedForNormalSession+testUserNamePublishedForUnicodeSession+testEmptyUserNamePublishedAsEmptyString+testAbsentUserNamePublishedAsNullIncludingIdOnlySession+testUserNamePublishedWhenSessionHasNoMedia' test
+  ```
+
+  **17 tests passed.** The broader `ClientStateUpdaterTest,ClientHandlerTest` run had 27 tests,
+  with one failure only for the missing `user-id` declaration and type (T008); no errors. Spotless
+  passed.
+- T007-T009 validation after implementation:
+
+  ```sh
+  ./mvnw -pl bundles/org.openhab.binding.jellyfin '-Dtest=ClientStateUpdaterTest,ClientHandlerTest' test
+  ```
+
+  **30 tests passed**, including the T003 metadata assertion and independent UUID/name cases.
 - `./mvnw -pl bundles/org.openhab.binding.jellyfin package`: **BUILD SUCCESS**.
 - Static analysis in the full install attempts: zero errors, with existing warnings.
 - Full `clean install`, also after `-U spotless:apply clean install`, fails at Karaf verification:

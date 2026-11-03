@@ -250,6 +250,14 @@ class ClientHandlerTest {
         assertUserNamePublished("Jane Doe", null, false, new StringType("Jane Doe"));
     }
 
+    @Test
+    void testUserIdPublishedIndependentlyFromUserName() {
+        UUID userId = UUID.fromString("123E4567-E89B-12D3-A456-4266141740AB");
+
+        assertUserNamePublished("Jane Doe", null, true, new StringType("Jane Doe"));
+        assertUserNamePublished(null, userId, true, UnDefType.NULL);
+    }
+
     private static void assertUserNamePublished(@Nullable String userName, @Nullable UUID userId, boolean withMedia,
             State expectedState) {
         ThingUID thingUID = new ThingUID("jellyfin:client:jellyfin:device");
@@ -279,6 +287,8 @@ class ClientHandlerTest {
         handler.onSessionUpdate(session);
 
         verify(callback).stateUpdated(new ChannelUID(thingUID, "user-name"), expectedState);
+        State expectedUserIdState = userId == null ? UnDefType.NULL : new StringType(userId.toString());
+        verify(callback).stateUpdated(new ChannelUID(thingUID, "user-id"), expectedUserIdState);
     }
 
     private static void assertClientChannel(Document clientThingType, Document channelTypes, String channelId,

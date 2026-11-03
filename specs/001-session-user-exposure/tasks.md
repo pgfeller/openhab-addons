@@ -2,7 +2,7 @@
 
 **Input**: [spec.md](spec.md), [plan.md](plan.md), and supporting design artifacts.
 
-**Current state**: T001-T003 complete; T004-T018 open. Resume at T004.
+**Current state**: T001-T009 complete; T010-T018 open. Resume at T010.
 See [handoff.md](handoff.md) for the current branch, evidence, runtime setup, and privacy rules.
 
 **Reconciled**: 2026-10-30. This backlog replaces the unexecuted scaffolding list with
@@ -13,10 +13,11 @@ unverified or blocked tasks remain open.
 ## Existing Baseline
 
 The module, Java 21 configuration, generated DTO, SLF4J, and session subscription already exist.
-The handler contains partial identity publication and Java channel helpers exist. These are
-source-inspection findings, not test results. Client XML lacks identity channel references and
-the pure state updater lacks identity mappings. Do not recreate the module, DTO, factory, or
-logging configuration. The SDD setup repair does not claim implementation completion.
+The handler publishes both identity channels through the pure state updater. Client Thing XML
+declares both as read-only String channels, reusing the shared `user-name-channel` type and the
+client-specific `user-id-channel` type. T007-T009 and their focused tests are complete. Do not
+recreate the module, DTO, factory, or logging configuration.
+The SDD setup repair does not claim implementation completion.
 
 ## Phase 1: Setup - Restore Test Compilation
 
@@ -34,7 +35,7 @@ Three separate post-format discovery runs also passed (8 tests each). See
 [bug assessment](../../.specify/bugs/jellyfin-public-user-cleanup/assessment.md),
 [fix report](../../.specify/bugs/jellyfin-public-user-cleanup/fix.md), and
 [verification](../../.specify/bugs/jellyfin-public-user-cleanup/test.md).
-T004-T018 remain open; the feature remains implementing.
+T010-T018 remain open; the feature remains implementing.
 
 Local-build preparation was authorized on 2026-10-30. Missing author tags in the two
 session-channel helper classes were restored. The full 319-test module suite passes, and
@@ -61,9 +62,9 @@ assertions alone do not verify channel publication. Do not hand-edit generated D
 
 **Independent test**: Exact name or `UnDefType.NULL`, including when only an identifier exists.
 
-- [ ] T004 [US1] Add name-state tests to `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/util/client/ClientStateUpdaterTest.java` and `stateUpdated` callback assertions to `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerTest.java`; cover normal, Unicode, empty, absent-name, and no-media sessions with an ONLINE client and bridge; observe failures (FR-001, FR-004). This task does not verify Thing status callbacks, status-detail mapping, or unresolved-bridge initialization; T010 owns those tests and T011 owns the status migration (FR-006, FR-007, SC-005).
-- [ ] T005 [US1] Add `user-name` to `bundles/org.openhab.binding.jellyfin/src/main/resources/OH-INF/thing/types/client-thing-type.xml` using compatible existing `user-name-channel` metadata in `bundles/org.openhab.binding.jellyfin/src/main/resources/OH-INF/thing/types/user-channel-types.xml`; preserve user-Thing compatibility (FR-001).
-- [ ] T006 [US1] Implement name calculation in `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/util/client/ClientStateUpdater.java` and reconcile publication in `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/handler/ClientHandler.java`; "Missing identity fields clear independently" and "Preserve supplied display names, including Unicode and an empty String"; rerun T003/T004 (FR-001, FR-004).
+- [x] T004 [US1] Add name-state tests to `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/util/client/ClientStateUpdaterTest.java` and `stateUpdated` callback assertions to `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerTest.java`; cover normal, Unicode, empty, absent-name, and no-media sessions with an ONLINE client and bridge; observe failures (FR-001, FR-004). This task does not verify Thing status callbacks, status-detail mapping, or unresolved-bridge initialization; T010 owns those tests and T011 owns the status migration (FR-006, FR-007, SC-005).
+- [x] T005 [US1] Add `user-name` to `bundles/org.openhab.binding.jellyfin/src/main/resources/OH-INF/thing/types/client-thing-type.xml` using compatible existing `user-name-channel` metadata in `bundles/org.openhab.binding.jellyfin/src/main/resources/OH-INF/thing/types/user-channel-types.xml`; preserve user-Thing compatibility (FR-001).
+- [x] T006 [US1] Implement name calculation in `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/util/client/ClientStateUpdater.java` and reconcile publication in `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/handler/ClientHandler.java`; "Missing identity fields clear independently" and "Preserve supplied display names, including Unicode and an empty String"; rerun T003/T004 (FR-001, FR-004).
 
 ## Phase 4: User Story 2 - Read the Session User Identifier (P2)
 
@@ -71,9 +72,9 @@ assertions alone do not verify channel publication. Do not hand-edit generated D
 
 **Independent test**: ID equals `UUID.toString()`; absent ID is NULL even with a name.
 
-- [ ] T007 [US2] Add typed UUID-present/absent state and callback tests to `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/util/client/ClientStateUpdaterTest.java` and `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerTest.java`; cover both partial-identity combinations and observe failures (FR-002, FR-004).
-- [ ] T008 [US2] Declare `user-id` in `bundles/org.openhab.binding.jellyfin/src/main/resources/OH-INF/thing/types/client-thing-type.xml` and add a matching read-only String `user-id-channel` type in `bundles/org.openhab.binding.jellyfin/src/main/resources/OH-INF/thing/types/client-channel-types.xml` (FR-002).
-- [ ] T009 [US2] Implement ID calculation in `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/util/client/ClientStateUpdater.java` and reconcile `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/handler/ClientHandler.java`; "UserId is a nullable UUID, not an arbitrary identifier String"; use `UUID.toString()` or NULL independently and rerun T003/T007 (FR-002, FR-004).
+- [x] T007 [US2] Add typed UUID-present/absent state and callback tests to `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/util/client/ClientStateUpdaterTest.java` and `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerTest.java`; cover both partial-identity combinations and observe failures (FR-002, FR-004).
+- [x] T008 [US2] Declare `user-id` in `bundles/org.openhab.binding.jellyfin/src/main/resources/OH-INF/thing/types/client-thing-type.xml` and add a matching read-only String `user-id-channel` type in `bundles/org.openhab.binding.jellyfin/src/main/resources/OH-INF/thing/types/client-channel-types.xml` (FR-002).
+- [x] T009 [US2] Implement ID calculation in `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/util/client/ClientStateUpdater.java` and reconcile `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/handler/ClientHandler.java`; "UserId is a nullable UUID, not an arbitrary identifier String"; use `UUID.toString()` or NULL independently and rerun T003/T007 (FR-002, FR-004).
 
 ## Phase 5: User Story 3 - Avoid Stale or Writable Identity (P3)
 

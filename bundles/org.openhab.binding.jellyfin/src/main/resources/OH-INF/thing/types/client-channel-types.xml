@@ -13,6 +13,16 @@
 			<tag>MediaControl</tag>
 		</tags>
 	</channel-type>
+	<channel-type id="user-id-channel">
+		<item-type>String</item-type>
+		<label>User ID</label>
+		<description>UUID of the Jellyfin user account.</description>
+		<tags>
+			<tag>Status</tag>
+			<tag>Info</tag>
+		</tags>
+		<state readOnly="true"/>
+	</channel-type>
 	<channel-type id="playing-item-id-channel">
 		<item-type>String</item-type>
 		<label>Playing Item ID</label>

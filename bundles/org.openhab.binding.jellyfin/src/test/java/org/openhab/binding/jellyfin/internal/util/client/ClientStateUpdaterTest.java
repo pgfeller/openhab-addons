@@ -49,8 +49,8 @@ class ClientStateUpdaterTest {
     void calculateChannelStatesReturnsNullStatesWhenSessionMissing() {
         Map<String, State> states = ClientStateUpdater.calculateChannelStates(null);
 
-        // 18 channels: 10 read-only status + 1 media-control + 1 media-stop + 6 extended controls
-        assertEquals(18, states.size());
+        // 20 channels: 2 user identity + 10 read-only status + 1 media-control + 1 media-stop + 6 extended controls
+        assertEquals(20, states.size());
         states.forEach((id, state) -> assertEquals(UnDefType.NULL, state, "Expected NULL for channel " + id));
     }
 
@@ -82,6 +82,28 @@ class ClientStateUpdaterTest {
         Map<String, State> states = ClientStateUpdater.calculateChannelStates(session);
 
         assertEquals(new StringType(""), states.get("user-name"));
+    }
+
+    @Test
+    void calculateChannelStatesMapsCanonicalUserIdIndependentlyOfName() {
+        SessionInfoDto session = new SessionInfoDto();
+        session.setUserId(UUID.fromString("123E4567-E89B-12D3-A456-4266141740AB"));
+
+        Map<String, State> states = ClientStateUpdater.calculateChannelStates(session);
+
+        assertEquals(UnDefType.NULL, states.get("user-name"));
+        assertEquals(new StringType("123e4567-e89b-12d3-a456-4266141740ab"), states.get("user-id"));
+    }
+
+    @Test
+    void calculateChannelStatesClearsAbsentUserIdWhenNameIsPresent() {
+        SessionInfoDto session = new SessionInfoDto();
+        session.setUserName("Jane Doe");
+
+        Map<String, State> states = ClientStateUpdater.calculateChannelStates(session);
+
+        assertEquals(new StringType("Jane Doe"), states.get("user-name"));
+        assertEquals(UnDefType.NULL, states.get("user-id"));
     }
 
     @Test

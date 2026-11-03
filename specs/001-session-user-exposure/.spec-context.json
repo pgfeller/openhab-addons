@@ -50,6 +50,54 @@
       "kind": "complete",
       "by": "ai",
       "at": "2026-11-03T04:13:08.821Z"
+    },
+    {
+      "step": "implement",
+      "substep": null,
+      "task": "T005",
+      "kind": "complete",
+      "by": "ai",
+      "at": "2026-11-03T18:59:47.784Z"
+    },
+    {
+      "step": "implement",
+      "substep": null,
+      "task": "T006",
+      "kind": "complete",
+      "by": "extension",
+      "at": "2026-11-03T19:15:16.732Z"
+    },
+    {
+      "step": "implement",
+      "substep": null,
+      "task": "T004",
+      "kind": "complete",
+      "by": "ai",
+      "at": "2026-11-03T19:22:44.475Z"
+    },
+    {
+      "step": "implement",
+      "substep": null,
+      "task": "T007",
+      "kind": "complete",
+      "by": "ai",
+      "at": "2026-11-03T19:37:12.250Z"
+    },
+    {
+      "step": "implement",
+      "substep": null,
+      "task": "T008",
+      "kind": "complete",
+      "by": "ai",
+      "at": "2026-11-03T19:38:03.757Z"
+    },
+    {
+      "step": "implement",
+      "substep": null,
+      "task": "T009",
+      "kind": "complete",
+      "by": "ai",
+      "at": "2026-11-03T19:41:59.444Z"
     }
   ],
   "telemetryInstanceId": "d69622fa-eb7a-4059-8783-f76bff4d6747",
@@ -421,6 +469,100 @@
       "warnings": [
         "Expected red test-first result; T004 remains open."
       ]
+    },
+    {
+      "what": "T005 XML contract",
+      "command": "python3 -c 'import xml.etree.ElementTree as E; from pathlib import Path; p=Path(\"bundles/org.openhab.binding.jellyfin/src/main/resources/OH-INF/thing/types\"); c=E.parse(p/\"client-thing-type.xml\").getroot(); u=E.parse(p/\"user-thing-type.xml\").getroot(); t=E.parse(p/\"user-channel-types.xml\").getroot(); assert sum(x.get(\"id\")==\"user-name\" and x.get(\"typeId\")==\"user-name-channel\" for x in c.findall(\".//channel\"))==1; assert sum(x.get(\"id\")==\"user-name\" and x.get(\"typeId\")==\"user-name-channel\" for x in u.findall(\".//channel\"))==1; s=next(x for x in t.findall(\".//channel-type\") if x.get(\"id\")==\"user-name-channel\"); assert s.findtext(\"item-type\")==\"String\"; assert s.find(\"state\").get(\"readOnly\")==\"true\"'",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 0.1,
+      "result": "no output"
+    },
+    {
+      "what": "T003 combined channel metadata test, user-id still belongs to T008",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=ClientHandlerTest#testClientIdentityChannelsAreReadOnlyStringChannels test",
+      "source": "derived",
+      "exitCode": 1,
+      "durationSeconds": 68.3,
+      "result": "[ERROR]  · [ERROR] For more information about the errors and possible solutions, please read the following articles: · [ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException",
+      "warnings": [
+        "exited 1"
+      ]
+    },
+    {
+      "what": "Spotless Jellyfin module",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin spotless:apply",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 16.4,
+      "result": "[INFO] Total time:  10.573 s · [INFO] Finished at: 2026-11-03T20:21:49+01:00 · [INFO] ------------------------------------------------------------------------"
+    },
+    {
+      "what": "T004 focused identity tests",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin '-Dtest=ClientStateUpdaterTest,ClientHandlerTest#testUserNamePublishedForNormalSession+testUserNamePublishedForUnicodeSession+testEmptyUserNamePublishedAsEmptyString+testAbsentUserNamePublishedAsNullIncludingIdOnlySession+testUserNamePublishedWhenSessionHasNoMedia' test",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 48.6,
+      "result": "[INFO] Total time:  42.473 s · [INFO] Finished at: 2026-11-03T20:22:38+01:00 · [INFO] ------------------------------------------------------------------------"
+    },
+    {
+      "what": "Full focused test classes, T008 metadata still pending",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=ClientStateUpdaterTest,ClientHandlerTest test",
+      "source": "derived",
+      "exitCode": 1,
+      "durationSeconds": 33.2,
+      "result": "[ERROR]  · [ERROR] For more information about the errors and possible solutions, please read the following articles: · [ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException",
+      "warnings": [
+        "exited 1"
+      ]
+    },
+    {
+      "what": "Markdown lint for updated feature docs",
+      "command": "npx markdownlint-cli2 --config .github/markdownlint.yaml specs/001-session-user-exposure/tasks.md specs/001-session-user-exposure/handoff.md",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 1.9,
+      "result": "Finding: specs/001-session-user-exposure/tasks.md specs/001-session-user-exposure/handoff.md · Linting: 2 files · Summary: 0 issues in 0 files"
+    },
+    {
+      "what": "Whitespace validation",
+      "command": "git diff --check",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 0.0,
+      "result": "no output"
+    },
+    {
+      "what": "Jellyfin Spotless formatter",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin spotless:apply",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 19.0,
+      "result": "[INFO] Total time:  15.314 s · [INFO] Finished at: 2026-11-03T21:03:39+01:00 · [INFO] ------------------------------------------------------------------------"
+    },
+    {
+      "what": "US2 focused tests",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin '-Dtest=ClientStateUpdaterTest,ClientHandlerTest' test",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 45.8,
+      "result": "[INFO] Total time:  42.495 s · [INFO] Finished at: 2026-11-03T21:04:25+01:00 · [INFO] ------------------------------------------------------------------------"
+    },
+    {
+      "what": "Patch whitespace check",
+      "command": "git diff --check",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 0.1,
+      "result": "no output"
+    },
+    {
+      "what": "Final bookkeeping whitespace check",
+      "command": "git diff --check",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 0.0,
+      "result": "no output"
     }
   ],
   "concerns": [
@@ -449,6 +591,10 @@
     {
       "note": "A compatible 5.3-or-later image is verified locally, but no 5.3 test container has been created and no migrated-bundle runtime acceptance has run. The old 5.2.3 container is stopped. T004 and the feature remain open.",
       "step": "implement"
+    },
+    {
+      "note": "The broad ClientStateUpdaterTest and ClientHandlerTest run retains one T003 metadata test failure for the missing user-id declaration and type, which remain T008 scope; T004 name-state tests pass.",
+      "step": "implement"
     }
   ],
   "context": [
@@ -460,7 +606,7 @@
     "Read specs/001-session-user-exposure/handoff.md first in a future session. The actual branch is pgfeller/issue21850; the local feature selector can be re-established with SPECIFY_FEATURE_DIRECTORY=specs/001-session-user-exposure and the prerequisite script. Use quickstart.md for watched-addons deployment, secure interactive console access, browser testing, and rollback.",
     "Fresh-workstation interactive acceptance requires openHAB 5.3 or later: pull and inspect mutable openhab/openhab:snapshot-debian, verify its actual version and Java 21, and retain 5.2.3 results as historical evidence only."
   ],
-  "currentTask": "T004",
+  "currentTask": "T009",
   "task_summaries": {
     "T001": {
       "status": "DONE",
@@ -484,10 +630,58 @@
       "files": [
         "bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerTest.java"
       ]
+    },
+    "T005": {
+      "status": "DONE",
+      "did": "Declared the client user-name channel using the existing shared read-only String type and verified client/user Thing compatibility.",
+      "files": [
+        "bundles/org.openhab.binding.jellyfin/src/main/resources/OH-INF/thing/types/client-thing-type.xml"
+      ]
+    },
+    "T004": {
+      "status": "DONE",
+      "did": "Added name mapping and publication cases passed for normal, Unicode, empty, absent/ID-only, null-session, and no-media inputs.",
+      "files": [
+        "bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/util/client/ClientStateUpdaterTest.java",
+        "bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerTest.java"
+      ]
+    },
+    "T006": {
+      "status": "DONE",
+      "did": "Implemented pure user-name state mapping and reused calculated-state publication; targeted T004 tests pass.",
+      "files": [
+        "bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/util/client/ClientStateUpdater.java",
+        "bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/handler/ClientHandler.java",
+        "bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/util/client/ClientStateUpdaterTest.java"
+      ]
+    },
+    "T007": {
+      "status": "DONE",
+      "did": "Added UUID state and callback coverage for canonical present IDs and independent name-only or ID-only identity; confirmed expected pre-implementation failures.",
+      "files": [
+        "bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/util/client/ClientStateUpdaterTest.java",
+        "bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerTest.java"
+      ]
+    },
+    "T008": {
+      "status": "DONE",
+      "did": "Declared the client user-id channel and matching read-only String channel type; the focused XML metadata assertion passes.",
+      "files": [
+        "bundles/org.openhab.binding.jellyfin/src/main/resources/OH-INF/thing/types/client-thing-type.xml",
+        "bundles/org.openhab.binding.jellyfin/src/main/resources/OH-INF/thing/types/client-channel-types.xml"
+      ]
+    },
+    "T009": {
+      "status": "DONE",
+      "did": "Added nullable UUID identity state using UUID.toString(), kept ID independent from name, and routed handler publication through calculated states; the two owned test classes pass.",
+      "files": [
+        "bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/util/client/ClientStateUpdater.java",
+        "bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/handler/ClientHandler.java"
+      ]
     }
   },
   "handoff": "specs/001-session-user-exposure/handoff.md",
-  "nextAction": "Implement T005 then T006; keep T004 open until its name-state tests pass. Rerun T003 after both T005 and T008; then continue T007-T013 in dependency order.",
+  "nextAction": "Continue implementation at T010; T001-T009 complete",
   "step_summaries": {
     "converge": {
       "summary": "Current-state handoff consolidated on 2026-10-30. T001/T002 complete; T003-T018 remain open. No source changes and no newly uncovered implementation work beyond the existing backlog.",
@@ -499,30 +693,46 @@
       ]
     },
     "implement": {
-      "summary": "T003 is complete; T004 remains open. Focused test-first validation recorded six expected failures pending T005/T006/T008, while new handler publication cases pass.",
-      "key_finding": "Implement T005 channel metadata, then T006 name calculation/publication; rerun T004 after T006. The T003 XML assertion needs both T005 and T008.",
+      "summary": "T001-T009 complete. User Story 2 now exposes nullable UUID independently of display name; T010 is next.",
+      "key_finding": "ClientStateUpdater calculates and publishes both identity fields from the selected snapshot; UUID is rendered canonically, and either missing field clears independently.",
       "risks": [
-        "Do not mark T004 complete or feature implemented from the current red test-first run.",
-        "Use an inspected openHAB 5.3-or-later Docker runtime on every workstation; the snapshot-debian tag is mutable and 5.2.3 is historical only."
+        "T010-T018 remain open for lifecycle/status transitions, read-only command behavior, runtime acceptance, and final verification.",
+        "The historical full-install Karaf verification may still be blocked by the supplied core snapshot ASM mismatch; recheck on a later build."
       ]
     }
   },
   "coverage": {
     "FR-001": {
       "tests": [
-        "ClientHandlerTest#testClientIdentityChannelsAreReadOnlyStringChannels"
+        "ClientStateUpdaterTest#calculateChannelStatesMapsSessionUserName",
+        "calculateChannelStatesPreservesUnicodeUserName",
+        "calculateChannelStatesPreservesEmptyUserName",
+        "calculateChannelStatesClearsAbsentUserNameIncludingIdOnlySession",
+        "calculateChannelStatesMapsUserNameWhenSessionHasNoMedia; ClientHandlerTest#testUserNamePublishedForNormalSession",
+        "testUserNamePublishedForUnicodeSession",
+        "testEmptyUserNamePublishedAsEmptyString",
+        "testAbsentUserNamePublishedAsNullIncludingIdOnlySession",
+        "testUserNamePublishedWhenSessionHasNoMedia"
       ]
     },
     "FR-002": {
       "tests": [
-        "ClientHandlerTest#testClientIdentityChannelsAreReadOnlyStringChannels"
+        "ClientStateUpdaterTest::calculateChannelStatesMapsCanonicalUserIdIndependentlyOfName",
+        "ClientStateUpdaterTest::calculateChannelStatesClearsAbsentUserIdWhenNameIsPresent",
+        "ClientHandlerTest::testUserIdPublishedIndependentlyFromUserName"
       ]
     },
     "FR-005": {
       "tests": [
         "ClientHandlerTest#testClientIdentityChannelsAreReadOnlyStringChannels"
       ]
+    },
+    "FR-004": {
+      "tests": [
+        "ClientStateUpdaterTest::calculateChannelStatesClearsAbsentUserIdWhenNameIsPresent",
+        "ClientHandlerTest::testUserIdPublishedIndependentlyFromUserName"
+      ]
     }
   },
-  "last_action": "Recorded prior pushed commit 106e47d19ec2f3cc194ce2d9598e5630723713dd and clean post-push state; updated handoff/context with test-first result and fresh-workstation 5.3+ requirement."
+  "last_action": "T007-T009 reviewed and materialized; Spotless, focused tests (30/30), and git diff --check pass."
 }

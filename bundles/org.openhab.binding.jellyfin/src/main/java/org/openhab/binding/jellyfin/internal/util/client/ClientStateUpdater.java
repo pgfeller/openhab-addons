@@ -15,9 +15,12 @@ package org.openhab.binding.jellyfin.internal.util.client;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.jellyfin.channel.UserIdChannel;
+import org.openhab.binding.jellyfin.channel.UserNameChannel;
 import org.openhab.binding.jellyfin.internal.Constants;
 import org.openhab.binding.jellyfin.internal.gen.current.model.BaseItemDto;
 import org.openhab.binding.jellyfin.internal.gen.current.model.BaseItemKind;
@@ -53,6 +56,12 @@ public final class ClientStateUpdater {
 
         BaseItemDto playingItem = session.getNowPlayingItem();
         PlayerStateInfo playState = session.getPlayState();
+
+        String userName = session.getUserName();
+        states.put(UserNameChannel.CHANNEL_ID, userName != null ? new StringType(userName) : UnDefType.NULL);
+
+        UUID userId = session.getUserId();
+        states.put(UserIdChannel.CHANNEL_ID, userId != null ? new StringType(userId.toString()) : UnDefType.NULL);
 
         Long runTimeTicks = playingItem != null ? playingItem.getRunTimeTicks() : null;
         Long positionTicks = playState != null ? playState.getPositionTicks() : null;
@@ -161,6 +170,8 @@ public final class ClientStateUpdater {
     }
 
     private static void addNullStates(Map<String, State> states) {
+        states.put(UserNameChannel.CHANNEL_ID, UnDefType.NULL);
+        states.put(UserIdChannel.CHANNEL_ID, UnDefType.NULL);
         states.put(Constants.MEDIA_CONTROL_CHANNEL, UnDefType.NULL);
         states.put(Constants.PLAYING_ITEM_PERCENTAGE_CHANNEL, UnDefType.NULL);
         states.put(Constants.PLAYING_ITEM_SECOND_CHANNEL, UnDefType.NULL);
