@@ -263,6 +263,35 @@
     "valid_from": "2026-11-03T05:16:29.366991113Z"
   },
   {
+    "content": "Incident: During user-coordinated openHAB UI acceptance, a temporary Jellyfin client Thing exposed the user-name and user-id String channels, but its handler stayed UNINITIALIZED with HANDLER_INITIALIZING_ERROR because the runtime could not resolve ClientHandler.updateStatus(ThingStatusDetail, String). Linked temporary Items displayed NULL, which is not valid feature acceptance evidence while the handler is uninitialized. The temporary Items and Thing were removed without restarting the test container or recording identity values.\nImpact: Live linked-Item identity acceptance remains blocked; T017 and overall feature completion must stay open.\nRoot cause: The runtime's available openHAB core API does not provide the status-update method signature expected by the local binding build. The exact runtime/core version mismatch was not established.\nResolution: Cleaned up the temporary test objects and left the container unchanged. Retry only after confirming a compatible openHAB core/runtime, then repeat linked-Item acceptance with the user.\nService: openHAB Docker runtime\nSeverity: medium",
+    "context": "openhab-addons",
+    "created_at": "2026-11-08T20:34:34.708758546+01:00",
+    "embedding_model": "ollama:http://shodan.ehrendingen:11434:bge-m3:latest:1024",
+    "id": "69d169b0-98e2-451a-b41f-420e43e90ddc",
+    "importance": 0.8,
+    "metadata": {
+      "entity": "incident",
+      "last_verified_at": "2026-11-08T19:34:34Z",
+      "service": "openHAB Docker runtime",
+      "severity": "medium"
+    },
+    "sediment_layer": "surface",
+    "tags": [
+      "jellyfin",
+      "interactive-testing",
+      "openhab-5.3",
+      "status-api",
+      "user-coordination",
+      "session-user-exposure",
+      "incident",
+      "service:openHAB Docker runtime",
+      "severity:medium"
+    ],
+    "title": "Jellyfin linked-Item acceptance blocked by missing status API",
+    "type": "episodic",
+    "updated_at": "2026-11-08T20:34:34.708758546+01:00"
+  },
+  {
     "content": "Read-only and bounded interactive browser smoke test on installed candidate in openHAB5.2.3 container. User had configured live server bridge: ONLINE before/after. Initial Inbox9 clients; added only temporary discovered Chrome client labeled Smoke Test - Chrome with same discovered device identity and bridge; observed OFFLINE device-not-connected then ONLINE without sending commands. Existing media channels render; filtering user showed no identity channels, consistent with open tasks. Deleted temporary Thing, verified final Things list one ONLINE bridge. Normal manual scan displayed9 client and2 public-user results with11unique UIDs, removed client returned same identity. Explicitly stopped own scan; 20+75second waits did not finish, but discovery service constructors use600seconds; natural timeout not tested, not a proven hang. No Items/links, playback commands, remote users, credentials, bridge configuration, dependencies or runtime version changed. No newer runtime indicated for observed paths. Full feature acceptance, linked state updates, playback, user switching, timeout clearing, live malformed/empty responses remain unverified. Updated separate .specify/bugs/jellyfin-public-user-cleanup/container-smoke.md; Markdown lint/diff checks pass; report uncommitted; task markers/source unchanged. Do not retain account labels, host addresses or credentials in memory.",
     "context": "openhab-addons Jellyfin interactive container smoke test",
     "created_at": "2026-11-08T05:18:28.565368965+01:00",
