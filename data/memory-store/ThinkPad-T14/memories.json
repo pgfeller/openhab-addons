@@ -306,6 +306,24 @@
     "updated_at": "2026-11-08T08:14:23.80002048+01:00"
   },
   {
+    "content": "On this host, use the Docker Compose stack at /home/pgfeller/Documents/GitHub/docker/Laptop/Patrik/development for interactive openHAB binding testing. Coordinate any manual configuration or token setup with the user; do not invent credentials or perform token-dependent steps alone.",
+    "context": "pgfeller/openhab-addons",
+    "created_at": "2026-11-08T15:32:53.448906095+01:00",
+    "embedding_model": "ollama:http://shodan.ehrendingen:11434:bge-m3:latest:1024",
+    "id": "8c9a68b9-31e9-4ee3-84aa-6021bebf7ef3",
+    "importance": 0.8,
+    "sediment_layer": "surface",
+    "tags": [
+      "openhab",
+      "testing",
+      "docker-compose",
+      "host-specific"
+    ],
+    "title": "Local Compose acceptance setup",
+    "type": "procedural",
+    "updated_at": "2026-11-08T15:32:53.448906095+01:00"
+  },
+  {
     "content": "- Memory recall: 041188f3-2de8-44c9-b6d4-3b8f200de509 Companion living scripts use repo-root-relative paths and JSON on Windows PowerShell\n- Memory recall: fd2c6595-3507-4b34-bd2b-6691327abd87 Planner repair failures erased preceding graph rejection evidence\n- Memory recall: Planner repair failures erased preceding graph rejection evidence\n- Memory recall: Companion living scripts use repo-root-relative paths and JSON on Windows PowerShell\n- Incident investigation: memory-store import failed to import memory doc-2026-09-22-mermaid-diagrams due invalid memory type documentation expected episodic semantic procedural working\n- Incident: During the ThinkPad-T14 Linux end-of-session sync, the pinned memory-store import accepted 29 of 30 durable records from SHS1CX7N44C and rejected doc-2026-09-22-mermaid-diagrams: invalid memory type documentation (exp...",
     "context": "agent-orchestrator",
     "created_at": "2026-11-08T05:18:44.669905806+01:00",
@@ -335,6 +353,35 @@
     "title": "Session close / agent-orchestrator / agent-memory-mcp",
     "type": "episodic",
     "updated_at": "2026-11-08T05:20:35.216620513+01:00"
+  },
+  {
+    "content": "- Memory recall: openHAB Jellyfin binding local Docker Compose interactive testing on this host; previous deployment and build compatibility blockers\n- Stored memory: Local Compose acceptance setup",
+    "context": "pgfeller/openhab-addons",
+    "created_at": "2026-11-08T15:42:54.07650116+01:00",
+    "embedding_model": "ollama:http://shodan.ehrendingen:11434:bge-m3:latest:1024",
+    "id": "beda672b-2299-4979-b494-6a65e5d632d9",
+    "importance": 0.2,
+    "metadata": {
+      "last_verified_at": "2026-11-08T14:32:53Z",
+      "record_kind": "session_summary",
+      "session_boundary": "idle_timeout",
+      "session_mode": "coding",
+      "session_origin": "background_auto"
+    },
+    "sediment_layer": "surface",
+    "tags": [
+      "session-summary",
+      "session-close",
+      "mode:coding",
+      "auto-session",
+      "openhab",
+      "testing",
+      "docker-compose",
+      "host-specific"
+    ],
+    "title": "Session close / pgfeller/openhab-addons",
+    "type": "episodic",
+    "updated_at": "2026-11-08T15:42:54.07650116+01:00"
   },
   {
     "content": "- Project bank review: overview\n- Memory recall: openHAB addons repository conventions, build/test commands, past fixes, decisions, stale memory\n- Project bank review: overview\n- Decision: Do not modify the canonical AGENTS.md agent instructions to add repository-specific custom guidance. Store custom instructions in .github/copilot-instructions.md and the memory MCP instead.",
