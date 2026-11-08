@@ -195,12 +195,12 @@
     "updated_at": "2026-11-08T05:20:35.138423946+01:00"
   },
   {
-    "content": "Procedure: Use a 5.3-or-later runtime only. The previous openhab-development-server container used openhab/openhab:5.2.3-debian and exited with code 137 on 2026-11-03; do not reuse it for migrated code. The replacement image last verified locally on 2026-11-03 is openhab/openhab:snapshot-debian, image label version 5.3.0-snapshot, Java 21.0.11, registry digest openhab/openhab@sha256:0b6782ed409150c3ec89c4f3656b4fbf1dedd08db98bb4038cc0f22408ca99ef. On another workstation run `docker pull openhab/openhab:snapshot-debian`, inspect `org.opencontainers.image.version` and `org.opencontainers.image.revision`, and run `docker run --rm --entrypoint java openhab/openhab:snapshot-debian -version`. The snapshot tag is mutable; use the recorded digest only to reproduce the exact image observed on 2026-11-03, and use a current image labeled 5.3 or later for acceptance. Create or verify a dedicated test container with machine-appropriate isolated configuration mounts; do not assume the previous name, host paths, bridge setup, or bundle IDs are portable. Build the binding JAR, copy only the main JAR into the watched `/openhab/addons` directory, verify its SHA-256 inside the container, then use an authenticated interactive openHAB console to inspect the actual bundle and Things. Protect credentials and account identities; do not put tokens in chat or artifacts. Verify identity channels with linked Items only after metadata and implementation tasks are complete.\nTrigger: Run an interactive Jellyfin binding acceptance test after adopting BaseThingHandler.updateStatus(ThingStatusDetail, ...) or otherwise testing code that requires openHAB 5.3+.\nVerification: On 2026-11-03, local `docker image inspect openhab/openhab:snapshot-debian` reported version 5.3.0-snapshot, digest sha256:0b6782ed409150c3ec89c4f3656b4fbf1dedd08db98bb4038cc0f22408ca99ef; `docker run --rm --entrypoint java openhab/openhab:snapshot-debian -version` reported Java 21.0.11. This verified the image only, not a running 5.3 container or feature acceptance. The historical 5.2.3 runtime passed baseline smoke checks before the status API migration and is not compatible acceptance evidence.\nRollback: For a newly added candidate, remove only that JAR from the watched add-ons directory. For an update, restore the backed-up JAR. Never delete persistent configuration or userdata. Do not force OSGi resolution or weaken imports if the bundle is incompatible.\nService: openHAB Docker runtime",
+    "content": "Procedure: Use a 5.3-or-later runtime only. The previous openhab-development-server container used openhab/openhab:5.2.3-debian and exited with code 137 on 2026-11-03; do not reuse it for migrated code. The replacement image last verified locally on 2026-11-03 is openhab/openhab:snapshot-debian, image label version 5.3.0-snapshot, Java 21.0.11, registry digest openhab/openhab@sha256:0b6782ed409150c3ec89c4f3656b4fbf1dedd08db98bb4038cc0f22408ca99ef. On another workstation run `docker pull openhab/openhab:snapshot-debian`, inspect `org.opencontainers.image.version` and `org.opencontainers.image.revision`, and run `docker run --rm --entrypoint java openhab/openhab:snapshot-debian -version`. The snapshot tag is mutable; use the recorded digest only to reproduce the exact image observed on 2026-11-03, and use a current image labeled 5.3 or later for acceptance. Create or verify a dedicated test container with machine-appropriate isolated configuration mounts; do not assume the previous name, host paths, bridge setup, or bundle IDs are portable. The user reports that a local Docker Compose development stack is available on the current host for interactive testing; treat this as host-local, verify availability before use, and do not assume it exists on other machines. Build the binding JAR, copy only the main JAR into the watched `/openhab/addons` directory, verify its SHA-256 inside the container, then use an authenticated interactive openHAB console to inspect the actual bundle and Things. Protect credentials and account identities; do not put tokens in chat or artifacts. If manual configuration steps or token configuration are required, coordinate and perform the interactive testing together with the user; do not configure these independently. Verify identity channels with linked Items only after metadata and implementation tasks are complete.\nTrigger: Run an interactive Jellyfin binding acceptance test after adopting BaseThingHandler.updateStatus(ThingStatusDetail, ...) or otherwise testing code that requires openHAB 5.3+.\nVerification: On 2026-11-03, local `docker image inspect openhab/openhab:snapshot-debian` reported version 5.3.0-snapshot, digest sha256:0b6782ed409150c3ec89c4f3656b4fbf1dedd08db98bb4038cc0f22408ca99ef; `docker run --rm --entrypoint java openhab/openhab:snapshot-debian -version` reported Java 21.0.11. This verified the image only, not a running 5.3 container or feature acceptance. The historical 5.2.3 runtime passed baseline smoke checks before the status API migration and is not compatible acceptance evidence. The current-host Docker Compose stack availability and user-coordination condition were reported by the user on 2026-11-08, and were not independently inspected.\nRollback: For a newly added candidate, remove only that JAR from the watched add-ons directory. For an update, restore the backed-up JAR. Never delete persistent configuration or userdata. Do not force OSGi resolution or weaken imports if the bundle is incompatible.",
     "context": "openhab-addons",
     "created_at": "2026-11-08T05:18:28.568237345+01:00",
     "embedding_model": "ollama:http://shodan.ehrendingen:11434:bge-m3:latest:1024",
     "id": "67ebcbaf-654f-4e84-9165-1ff82f55a00e",
-    "importance": 0.86,
+    "importance": 0.9,
     "metadata": {
       "entity": "runbook",
       "last_verified_at": "2026-11-03T05:16:13Z",
@@ -213,15 +213,17 @@
       "jellyfin",
       "interactive-testing",
       "docker",
+      "docker-compose",
       "openhab-5.3",
       "status-api",
       "snapshot",
       "runbook",
-      "service:openHAB Docker runtime"
+      "service:openHAB Docker runtime",
+      "user-coordination"
     ],
     "title": "Run Jellyfin interactive tests on openHAB 5.3",
     "type": "procedural",
-    "updated_at": "2026-11-08T05:20:34.679910874+01:00",
+    "updated_at": "2026-11-08T10:01:25.440257243+01:00",
     "valid_from": "2026-11-03T05:16:29.366991113Z"
   },
   {
