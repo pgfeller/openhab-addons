@@ -444,6 +444,40 @@
     "updated_at": "2026-11-08T05:20:33.832427002+01:00"
   },
   {
+    "content": "- Memory recall: openHAB Jellyfin runtime client handler updateStatus ThingStatusDetail String build ASM Karaf module feature acceptance\n- Runbook search: Jellyfin linked-Item acceptance on openHAB 5.3, client handler updateStatus missing method HANDLER_INITIALIZING_ERROR, cleanup temporary Items and Thing\n- Incident: During user-coordinated openHAB UI acceptance, a temporary Jellyfin client Thing exposed the user-name and user-id String channels, but its handler stayed UNINITIALIZED with HANDLER_INITIALIZING_ERROR because the runt...",
+    "context": "openhab-addons",
+    "created_at": "2026-11-08T20:44:35.481876015+01:00",
+    "embedding_model": "ollama:http://shodan.ehrendingen:11434:bge-m3:latest:1024",
+    "id": "cac54f7a-dee8-4c40-9140-c3544b9fc90c",
+    "importance": 0.2,
+    "metadata": {
+      "last_verified_at": "2026-11-08T19:34:34Z",
+      "record_kind": "session_summary",
+      "service": "openHAB Docker runtime",
+      "session_boundary": "idle_timeout",
+      "session_mode": "incident",
+      "session_origin": "background_auto"
+    },
+    "sediment_layer": "surface",
+    "tags": [
+      "session-summary",
+      "session-close",
+      "mode:incident",
+      "auto-session",
+      "mode:coding",
+      "jellyfin",
+      "interactive-testing",
+      "openhab-5.3",
+      "status-api",
+      "user-coordination",
+      "session-user-exposure",
+      "service:openHAB Docker runtime"
+    ],
+    "title": "Session close / openhab-addons / openHAB Docker runtime",
+    "type": "episodic",
+    "updated_at": "2026-11-08T20:44:35.481876015+01:00"
+  },
+  {
     "content": "Procedure: Verified 2026-10-30. Revalidate target each session: container openhab-development-server (historical ID prefix ad76edf43416), image openhab/openhab:5.2.3-debian, Java21, shared UI http://localhost:8080. Bind mounts ~/Temp/openhab/{addons,conf,userdata} map to /openhab equivalents. Inspect only selected Docker fields, not environment/credential dumps. Build scoped tests and ./mvnw -pl bundles/org.openhab.binding.jellyfin package; main target/org.openhab.binding.jellyfin-5.3.0-SNAPSHOT.jar is deployable, sources JAR is not. Record package versus verify/install separately; 319 tests passed, but external 5.3 snapshot ASM>=9.10 vs9.9.1 mismatch blocked Karaf verification despite -U. Do not bypass or relabel that gate. Establish installed-bundle baseline, checksum, backup and rollback. User prefers docker cp <jar> <container>:/openhab/addons/<jar-name>; let file watcher install/update. Do not additionally bundle:install or create duplicate versions. Verify copied SHA256. Console: docker exec -it <container> /openhab/runtime/bin/client -u openhab; user enters password directly in terminal, never via chat/tools/memory. Noninteractive authentication failed; TTY succeeded. Reuse authenticated terminal and logout after checks. Commands: bundle:list -s -t 0, bundle:diag <id>, bundle:services <id>, scr:list <id> (positional), openhab:things list. Narrow tables truncate symbolic names, so grep jellyfin may miss an installed bundle; discover numeric ID from full inventory, never hardcode historical269. Reuse shared browser tab with loaded deferred tools. Avoid bridge Configuration/Code snapshots or full Thing JSON because tokens are exposed; do not extract credentials/localStorage. Confirm bridge ONLINE, Inbox discoveries, temporary client availability, and channel metadata. Wait for actual rendered roles, not Framework7 skeletons; .page-current was absent on discovery page. Test-scoped temporary Things preserve discovered ID/bridge and must be removed after; do not alter original bridge/config or send playback/notification commands without permission. Bridge-associated discovery uses600-second constructor timeout; shorter waits while Stop Scanning is visible do not prove a hang. Stop own scan explicitly. Check file log /openhab/userdata/logs/openhab.log with actual timezone/timestamp coverage; stdout alone missed logs. Redact output; no new lines is limited evidence. Store sanitized report under .specify/bugs/jellyfin-public-user-cleanup/container-smoke.md and read it before editing. Keep startup/discovery evidence separate from complete feature acceptance and task completion.\nTrigger: A local binding JAR needs startup compatibility and browser-based smoke testing before full feature acceptance.\nVerification: Observed on5.2.3: candidate bundle Active; no unresolved diagnostics; API factory/handler factory/server discovery Active; client/public-user discovery Satisfied. User-configured bridge ONLINE; temporary client OFFLINE->ONLINE without test commands; removed afterwards. Normal discovery displayed9clients and2public users,11unique UIDs (variable observations, not required counts). Planned identity client channels absent in partial feature. No new runtime needed for observed paths. Full playback, linked Item state updates, identity transitions/clearing, malformed-response live verification and natural scan timeout not proven by this smoke test.\nRollback: If candidate was newly installed, remove only its JAR from /openhab/addons and confirm watched-bundle removal. If updating an existing bundle, restore backed-up original JAR instead. Never delete persistent conf/userdata. Remove only test-created Things/Items/links, stop only test-started scan, and preserve user setup. Candidate was intentionally left installed after passing smoke checks.\nService: openHAB Docker runtime",
     "context": "openhab-addons; user-authorized development container",
     "created_at": "2026-11-08T05:18:28.565761507+01:00",
