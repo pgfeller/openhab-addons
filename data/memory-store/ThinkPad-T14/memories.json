@@ -3,6 +3,7 @@
     "content": "Verified Jellyfin binding/API findings (2026-10-05): The bundled Jellyfin OpenAPI 10.11.6 spec already defines GET /UserImage with query parameters userId (UUID), tag, and format, and an image/* binary response. The checked-in generated ImageApi.getUserImage(UUID, String, ImageFormat) method returns a downloaded File, so regeneration is not needed to call this endpoint. Jellyfin's latest stable OpenAPI (12.1.0 at verification time, served from https://repo.jellyfin.org/releases/openapi/jellyfin-openapi-stable.json) contains the same operation and parameters. Upstream's path-based GET /Users/{userId}/Images/{imageType} is a legacy route explicitly marked Obsolete and ApiExplorerSettings(IgnoreApi = true), so don't use it for generated-client integration. The live Jellyfin 12.1.0 server returned 200 image/jpeg for GET /UserImage?userId=...&tag=...&format=Jpg both anonymously and with X-Emby-Token. GET /UserImage does not define maxWidth/maxHeight; don't send them. No account identifiers, profile data, or API credentials are retained here.",
     "context": "openhab-addons Jellyfin binding, issue #21850",
     "created_at": "2026-11-08T05:18:20.543656225+01:00",
+    "embedding_model": "ollama:http://shodan.ehrendingen:11434:bge-m3:latest:1024",
     "id": "1608b3bb-0115-4386-99a0-3a9517022517",
     "importance": 0.8,
     "sediment_layer": "surface",
@@ -15,12 +16,13 @@
     ],
     "title": "Jellyfin OpenAPI User Image Route",
     "type": "semantic",
-    "updated_at": "2026-11-08T05:18:20.543656225+01:00"
+    "updated_at": "2026-11-08T05:20:34.838489773+01:00"
   },
   {
     "content": "- Runbook search: interactive testing openHAB Docker builds Jellyfin addons browser console\n- Runbook: Verified 2026-10-30. Revalidate target each session: container openhab-development-server (historical ID prefix ad76edf43416), image openhab/openhab:5.2.3-debian, Java21, shared UI http://localhost:8080. Bind mounts ~...\n- Runbook search: Interactively smoke-test an openHAB binding build in Docker\n- Memory recall: Interactively smoke-test an openHAB binding build in Docker",
     "context": "openhab-addons",
     "created_at": "2026-11-08T05:18:28.566143047+01:00",
+    "embedding_model": "ollama:http://shodan.ehrendingen:11434:bge-m3:latest:1024",
     "id": "2dc51d8a-ab4c-4ba8-abec-c7d39cc044e0",
     "importance": 0.2,
     "metadata": {
@@ -55,13 +57,14 @@
     ],
     "title": "Session close / openhab-addons / openHAB Docker runtime",
     "type": "episodic",
-    "updated_at": "2026-11-08T05:18:28.566143047+01:00",
+    "updated_at": "2026-11-08T05:20:35.586411219+01:00",
     "valid_until": "2026-11-03T05:16:29.366991113Z"
   },
   {
     "content": "Incident: During the ThinkPad-T14 Linux end-of-session sync, the pinned memory-store import accepted 29 of 30 durable records from SHS1CX7N44C and rejected doc-2026-09-22-mermaid-diagrams: invalid memory type documentation (expected episodic, semantic, procedural, or working).\nImpact: One durable record was not imported; other 29 records were imported add-only. The two changed-record conflicts are separately deferred because local versions were unavailable through Memory MCP lookup.\nRoot cause: The exported record uses type documentation, which the installed upstream agent-memory-mcp importer does not accept as an import type.\nResolution: No export or database was edited manually. Leave this record deferred until the upstream type mapping is clarified; preserve the source export and use the pinned memory-store CLI for subsequent sync.\nService: agent-memory-mcp\nSeverity: limitation",
     "context": "agent-orchestrator",
     "created_at": "2026-11-08T05:18:40.660579009+01:00",
+    "embedding_model": "ollama:http://shodan.ehrendingen:11434:bge-m3:latest:1024",
     "id": "2fcb10a6-e7f2-4117-91cb-113dca728b4f",
     "importance": 0.65,
     "metadata": {
@@ -82,12 +85,13 @@
     ],
     "title": "Memory import skipped unsupported documentation record",
     "type": "episodic",
-    "updated_at": "2026-11-08T05:18:40.660579009+01:00"
+    "updated_at": "2026-11-08T05:20:35.471657178+01:00"
   },
   {
     "content": "- Memory recall: openHAB add-ons active feature implementation current spec next step\n- Project context: openhab-addons\n- Memory recall: Jellyfin public user exposure implementation T004 T003 task actual production code and tests",
     "context": "openhab-addons",
     "created_at": "2026-11-08T05:18:28.570653539+01:00",
+    "embedding_model": "ollama:http://shodan.ehrendingen:11434:bge-m3:latest:1024",
     "id": "343a741d-d290-4f0a-bed9-42083dbfd74c",
     "importance": 0.2,
     "metadata": {
@@ -109,12 +113,13 @@
     ],
     "title": "Session close / openhab-addons",
     "type": "episodic",
-    "updated_at": "2026-11-08T05:18:28.570653539+01:00"
+    "updated_at": "2026-11-08T05:20:34.721941503+01:00"
   },
   {
     "content": "User requested committing cleanup repairs and preparing local build for first manual test. Committed cleanup and fixture repairs with signoff as 97960f5eea; restored verified contributor Patrik Gfeller author tags in two channel helper classes and committed build guidance/evidence as 95f3c66b7d. Working tree clean. Full module clean install and -U spotless:apply clean install each passed 319 tests with zero failures/errors/skips and zero SAT errors, but Karaf runtime verification fails because core semantics 5.3 snapshot requires org.objectweb.asm >=9.10 while resolved feature set supplies 9.9.1. Snapshot refresh did not fix external inconsistency; no version override or skip flags used. Package command ./mvnw -pl bundles/org.openhab.binding.jellyfin package succeeds with all319 tests in34classes. Main JAR target/org.openhab.binding.jellyfin-5.3.0-SNAPSHOT.jar about5.1MB available for initial cleanup/regression smoke test; not full verified install or session-user acceptance. Client XML identity references still missing, T003-T018 open, feature implementing. User target openHAB5.2.3 compatibility remains unverified; quickstart documents existing-bundle update on disposable runtime and rollback precautions.",
     "context": "openhab-addons Jellyfin local build preparation",
     "created_at": "2026-11-08T05:18:28.565075617+01:00",
+    "embedding_model": "ollama:http://shodan.ehrendingen:11434:bge-m3:latest:1024",
     "id": "375508ae-aa39-4686-aa15-994c23921803",
     "importance": 0.2,
     "metadata": {
@@ -134,12 +139,13 @@
     ],
     "title": "Session close / openhab-addons Jellyfin local build preparation",
     "type": "episodic",
-    "updated_at": "2026-11-08T05:18:28.565075617+01:00"
+    "updated_at": "2026-11-08T05:20:34.996951929+01:00"
   },
   {
     "content": "Verified SDD setup repair on 2026-10-30 for specs/001-session-user-exposure. Spec-kit resolves features using .specify/feature.json feature_directory; SPECIFY_FEATURE alone does not override the persisted directory in the current bash scripts. Correct pointer is specs/001-session-user-exposure, not specs. check-prerequisites.sh --json --require-spec --require-tasks --include-tasks passes after restoring plan.md. Companion write-context.py hooks refuse lifecycle regression from implementing to earlier steps; use supported additive context/decision/concern and --verify-run capture rather than rewriting history. Requirements checklist is specification quality only, not implementation completion. Actual module baseline has nullable UUID SessionInfoDto.getUserId(), nullable String UserName, binding-local nullable onSessionUpdate callback, missing client identity XML references, and a partial ONLINE-gated handler update block. Repaired setup includes explicit plan, model, contract, quickstart and 18 open tasks; 9 Markdown files lint clean. Application/test source changes and compilation fixes were explicitly deferred by user.",
     "context": "openhab-addons spec-kit SDD setup",
     "created_at": "2026-11-08T05:18:28.56475347+01:00",
+    "embedding_model": "ollama:http://shodan.ehrendingen:11434:bge-m3:latest:1024",
     "id": "3c4f3523-737d-4436-b80a-0e149f99f66b",
     "importance": 0.2,
     "metadata": {
@@ -159,12 +165,13 @@
     ],
     "title": "Session close / openhab-addons spec-kit SDD setup",
     "type": "episodic",
-    "updated_at": "2026-11-08T05:18:28.56475347+01:00"
+    "updated_at": "2026-11-08T05:20:35.973242122+01:00"
   },
   {
     "content": "User requested consolidating spec-kit for future continuation, then commit and push. Completed docs/metadata-only reconciliation; no application source edits. Added specs/001-session-user-exposure/handoff.md with nextT003, actual branch pgfeller/issue21850, fresh-checkout feature selector bootstrap, implementation gaps, verified319test/package baseline, external5.3core ASM>=9.10vs9.9.1 Karaf install blocker, secure container/browser runbook, runtime smoke evidence, cleanup and privacy constraints, and upstream progress comment https://github.com/openhab/openhab-addons/issues/21850#issuecomment-6521984589. Corrected duplicate/stale spec status and obsolete broken-fixture/no-deployment claims in plan/research/quickstart/tasks. Preserved original requirements, T001-T018 IDs, original user history, and prior verification failures; onlyT001/T002 complete. Companion supported writer fixes actual branch, handoff path,nextAction, adds observed smoke/public-comment evidence, and records converge finish; status implementing. Markdown lint, prerequisite checks, relative links/task/state/history assertions and diff checks pass. No Java tests rerun for docs-only changes. Signed-off commit024a3d5f64f46af58f426d03d682715207450000 pushed normally to contributor origin pgfeller/issue21850; remote hash verified and worktreeclean. No forcepush, newbranch, secrets, private account names, or runtime changes.",
     "context": "openhab-addons Session User Exposure SDD handoff consolidation",
     "created_at": "2026-11-08T05:18:28.567388964+01:00",
+    "embedding_model": "ollama:http://shodan.ehrendingen:11434:bge-m3:latest:1024",
     "id": "5794adb5-80cd-44c0-aca5-cc2c85cd12c9",
     "importance": 0.2,
     "metadata": {
@@ -184,12 +191,13 @@
     ],
     "title": "Session close / openhab-addons Session User Exposure SDD handoff consolidation",
     "type": "episodic",
-    "updated_at": "2026-11-08T05:18:28.567388964+01:00"
+    "updated_at": "2026-11-08T05:20:35.138423946+01:00"
   },
   {
     "content": "Procedure: Use a 5.3-or-later runtime only. The previous openhab-development-server container used openhab/openhab:5.2.3-debian and exited with code 137 on 2026-11-03; do not reuse it for migrated code. The replacement image last verified locally on 2026-11-03 is openhab/openhab:snapshot-debian, image label version 5.3.0-snapshot, Java 21.0.11, registry digest openhab/openhab@sha256:0b6782ed409150c3ec89c4f3656b4fbf1dedd08db98bb4038cc0f22408ca99ef. On another workstation run `docker pull openhab/openhab:snapshot-debian`, inspect `org.opencontainers.image.version` and `org.opencontainers.image.revision`, and run `docker run --rm --entrypoint java openhab/openhab:snapshot-debian -version`. The snapshot tag is mutable; use the recorded digest only to reproduce the exact image observed on 2026-11-03, and use a current image labeled 5.3 or later for acceptance. Create or verify a dedicated test container with machine-appropriate isolated configuration mounts; do not assume the previous name, host paths, bridge setup, or bundle IDs are portable. Build the binding JAR, copy only the main JAR into the watched `/openhab/addons` directory, verify its SHA-256 inside the container, then use an authenticated interactive openHAB console to inspect the actual bundle and Things. Protect credentials and account identities; do not put tokens in chat or artifacts. Verify identity channels with linked Items only after metadata and implementation tasks are complete.\nTrigger: Run an interactive Jellyfin binding acceptance test after adopting BaseThingHandler.updateStatus(ThingStatusDetail, ...) or otherwise testing code that requires openHAB 5.3+.\nVerification: On 2026-11-03, local `docker image inspect openhab/openhab:snapshot-debian` reported version 5.3.0-snapshot, digest sha256:0b6782ed409150c3ec89c4f3656b4fbf1dedd08db98bb4038cc0f22408ca99ef; `docker run --rm --entrypoint java openhab/openhab:snapshot-debian -version` reported Java 21.0.11. This verified the image only, not a running 5.3 container or feature acceptance. The historical 5.2.3 runtime passed baseline smoke checks before the status API migration and is not compatible acceptance evidence.\nRollback: For a newly added candidate, remove only that JAR from the watched add-ons directory. For an update, restore the backed-up JAR. Never delete persistent configuration or userdata. Do not force OSGi resolution or weaken imports if the bundle is incompatible.\nService: openHAB Docker runtime",
     "context": "openhab-addons",
     "created_at": "2026-11-08T05:18:28.568237345+01:00",
+    "embedding_model": "ollama:http://shodan.ehrendingen:11434:bge-m3:latest:1024",
     "id": "67ebcbaf-654f-4e84-9165-1ff82f55a00e",
     "importance": 0.86,
     "metadata": {
@@ -212,13 +220,14 @@
     ],
     "title": "Run Jellyfin interactive tests on openHAB 5.3",
     "type": "procedural",
-    "updated_at": "2026-11-08T05:18:28.568237345+01:00",
+    "updated_at": "2026-11-08T05:20:34.679910874+01:00",
     "valid_from": "2026-11-03T05:16:29.366991113Z"
   },
   {
     "content": "Read-only and bounded interactive browser smoke test on installed candidate in openHAB5.2.3 container. User had configured live server bridge: ONLINE before/after. Initial Inbox9 clients; added only temporary discovered Chrome client labeled Smoke Test - Chrome with same discovered device identity and bridge; observed OFFLINE device-not-connected then ONLINE without sending commands. Existing media channels render; filtering user showed no identity channels, consistent with open tasks. Deleted temporary Thing, verified final Things list one ONLINE bridge. Normal manual scan displayed9 client and2 public-user results with11unique UIDs, removed client returned same identity. Explicitly stopped own scan; 20+75second waits did not finish, but discovery service constructors use600seconds; natural timeout not tested, not a proven hang. No Items/links, playback commands, remote users, credentials, bridge configuration, dependencies or runtime version changed. No newer runtime indicated for observed paths. Full feature acceptance, linked state updates, playback, user switching, timeout clearing, live malformed/empty responses remain unverified. Updated separate .specify/bugs/jellyfin-public-user-cleanup/container-smoke.md; Markdown lint/diff checks pass; report uncommitted; task markers/source unchanged. Do not retain account labels, host addresses or credentials in memory.",
     "context": "openhab-addons Jellyfin interactive container smoke test",
     "created_at": "2026-11-08T05:18:28.565368965+01:00",
+    "embedding_model": "ollama:http://shodan.ehrendingen:11434:bge-m3:latest:1024",
     "id": "70e6e2ea-401c-4905-bbb8-7dd6c8ffd951",
     "importance": 0.2,
     "metadata": {
@@ -238,12 +247,30 @@
     ],
     "title": "Session close / openhab-addons Jellyfin interactive container smoke test",
     "type": "episodic",
-    "updated_at": "2026-11-08T05:18:28.565368965+01:00"
+    "updated_at": "2026-11-08T05:20:36.417533091+01:00"
+  },
+  {
+    "content": "For Jellyfin client identity channels, keep the public channel IDs `user-name` and `user-id` distinct from their XML type IDs `user-name-channel` and `user-id-channel`. Treat the Thing XML declarations as authoritative and keep the channel wrapper `CHANNEL_TYPE_UID` values plus parsed-XML consistency tests aligned with those type IDs. Verified in `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/channel/UserNameChannel.java`, `UserIdChannel.java`, and `ClientHandlerTest.java`.",
+    "context": "openhab-addons",
+    "created_at": "2026-11-08T08:14:23.80002048+01:00",
+    "embedding_model": "ollama:http://shodan.ehrendingen:11434:bge-m3:latest:1024",
+    "id": "7bbbebae-fd27-4077-b809-64b94971a768",
+    "importance": 0.8,
+    "sediment_layer": "surface",
+    "tags": [
+      "jellyfin",
+      "channel-metadata",
+      "session-user-exposure"
+    ],
+    "title": "Jellyfin identity channel type IDs",
+    "type": "procedural",
+    "updated_at": "2026-11-08T08:14:23.80002048+01:00"
   },
   {
     "content": "- Memory recall: 041188f3-2de8-44c9-b6d4-3b8f200de509 Companion living scripts use repo-root-relative paths and JSON on Windows PowerShell\n- Memory recall: fd2c6595-3507-4b34-bd2b-6691327abd87 Planner repair failures erased preceding graph rejection evidence\n- Memory recall: Planner repair failures erased preceding graph rejection evidence\n- Memory recall: Companion living scripts use repo-root-relative paths and JSON on Windows PowerShell\n- Incident investigation: memory-store import failed to import memory doc-2026-09-22-mermaid-diagrams due invalid memory type documentation expected episodic semantic procedural working\n- Incident: During the ThinkPad-T14 Linux end-of-session sync, the pinned memory-store import accepted 29 of 30 durable records from SHS1CX7N44C and rejected doc-2026-09-22-mermaid-diagrams: invalid memory type documentation (exp...",
     "context": "agent-orchestrator",
     "created_at": "2026-11-08T05:18:44.669905806+01:00",
+    "embedding_model": "ollama:http://shodan.ehrendingen:11434:bge-m3:latest:1024",
     "id": "b6ef219a-613a-4510-a60b-061b8d5feda7",
     "importance": 0.2,
     "metadata": {
@@ -268,12 +295,13 @@
     ],
     "title": "Session close / agent-orchestrator / agent-memory-mcp",
     "type": "episodic",
-    "updated_at": "2026-11-08T05:18:44.669905806+01:00"
+    "updated_at": "2026-11-08T05:20:35.216620513+01:00"
   },
   {
     "content": "- Project bank review: overview\n- Memory recall: openHAB addons repository conventions, build/test commands, past fixes, decisions, stale memory\n- Project bank review: overview\n- Decision: Do not modify the canonical AGENTS.md agent instructions to add repository-specific custom guidance. Store custom instructions in .github/copilot-instructions.md and the memory MCP instead.",
     "context": "openhab-addons",
     "created_at": "2026-11-08T05:18:28.563637359+01:00",
+    "embedding_model": "ollama:http://shodan.ehrendingen:11434:bge-m3:latest:1024",
     "id": "bf96337c-51bc-4f4e-8a95-e4546ab4ee18",
     "importance": 0.2,
     "metadata": {
@@ -298,12 +326,13 @@
     ],
     "title": "Session close / openhab-addons / repository-instructions",
     "type": "episodic",
-    "updated_at": "2026-11-08T05:18:28.563637359+01:00"
+    "updated_at": "2026-11-08T05:20:33.832427002+01:00"
   },
   {
     "content": "Procedure: Verified 2026-10-30. Revalidate target each session: container openhab-development-server (historical ID prefix ad76edf43416), image openhab/openhab:5.2.3-debian, Java21, shared UI http://localhost:8080. Bind mounts ~/Temp/openhab/{addons,conf,userdata} map to /openhab equivalents. Inspect only selected Docker fields, not environment/credential dumps. Build scoped tests and ./mvnw -pl bundles/org.openhab.binding.jellyfin package; main target/org.openhab.binding.jellyfin-5.3.0-SNAPSHOT.jar is deployable, sources JAR is not. Record package versus verify/install separately; 319 tests passed, but external 5.3 snapshot ASM>=9.10 vs9.9.1 mismatch blocked Karaf verification despite -U. Do not bypass or relabel that gate. Establish installed-bundle baseline, checksum, backup and rollback. User prefers docker cp <jar> <container>:/openhab/addons/<jar-name>; let file watcher install/update. Do not additionally bundle:install or create duplicate versions. Verify copied SHA256. Console: docker exec -it <container> /openhab/runtime/bin/client -u openhab; user enters password directly in terminal, never via chat/tools/memory. Noninteractive authentication failed; TTY succeeded. Reuse authenticated terminal and logout after checks. Commands: bundle:list -s -t 0, bundle:diag <id>, bundle:services <id>, scr:list <id> (positional), openhab:things list. Narrow tables truncate symbolic names, so grep jellyfin may miss an installed bundle; discover numeric ID from full inventory, never hardcode historical269. Reuse shared browser tab with loaded deferred tools. Avoid bridge Configuration/Code snapshots or full Thing JSON because tokens are exposed; do not extract credentials/localStorage. Confirm bridge ONLINE, Inbox discoveries, temporary client availability, and channel metadata. Wait for actual rendered roles, not Framework7 skeletons; .page-current was absent on discovery page. Test-scoped temporary Things preserve discovered ID/bridge and must be removed after; do not alter original bridge/config or send playback/notification commands without permission. Bridge-associated discovery uses600-second constructor timeout; shorter waits while Stop Scanning is visible do not prove a hang. Stop own scan explicitly. Check file log /openhab/userdata/logs/openhab.log with actual timezone/timestamp coverage; stdout alone missed logs. Redact output; no new lines is limited evidence. Store sanitized report under .specify/bugs/jellyfin-public-user-cleanup/container-smoke.md and read it before editing. Keep startup/discovery evidence separate from complete feature acceptance and task completion.\nTrigger: A local binding JAR needs startup compatibility and browser-based smoke testing before full feature acceptance.\nVerification: Observed on5.2.3: candidate bundle Active; no unresolved diagnostics; API factory/handler factory/server discovery Active; client/public-user discovery Satisfied. User-configured bridge ONLINE; temporary client OFFLINE->ONLINE without test commands; removed afterwards. Normal discovery displayed9clients and2public users,11unique UIDs (variable observations, not required counts). Planned identity client channels absent in partial feature. No new runtime needed for observed paths. Full playback, linked Item state updates, identity transitions/clearing, malformed-response live verification and natural scan timeout not proven by this smoke test.\nRollback: If candidate was newly installed, remove only its JAR from /openhab/addons and confirm watched-bundle removal. If updating an existing bundle, restore backed-up original JAR instead. Never delete persistent conf/userdata. Remove only test-created Things/Items/links, stop only test-started scan, and preserve user setup. Candidate was intentionally left installed after passing smoke checks.\nService: openHAB Docker runtime",
     "context": "openhab-addons; user-authorized development container",
     "created_at": "2026-11-08T05:18:28.565761507+01:00",
+    "embedding_model": "ollama:http://shodan.ehrendingen:11434:bge-m3:latest:1024",
     "id": "d08f1a0c-b76c-479d-bf85-48e9c9840b7a",
     "importance": 0.95,
     "metadata": {
@@ -325,12 +354,13 @@
     ],
     "title": "Interactively smoke-test an openHAB binding build in Docker",
     "type": "procedural",
-    "updated_at": "2026-11-08T05:18:28.565761507+01:00"
+    "updated_at": "2026-11-08T05:20:36.313317579+01:00"
   },
   {
     "content": "- Memory recall: 001-session-user-exposure T004 status Thing status callbacks bridge uninitialized Jellyfin client identity channel openHAB 5.3 migration\n- Project bank review: runbooks\n- Memory recall: openHAB Docker local interactive Jellyfin tests runtime image 5.2.3 5.3.0 status API compatibility container setup\n- Memory recall: interactive testing openHAB Docker builds Jellyfin addons browser console deployment rollback checksum secure console 5.2.3 image snapshot-debian\n- Project bank review: review_queue\n- Runbook: Use a 5.3-or-later runtime only. The previous openhab-development-server container used openhab/openhab:5.2.3-debian and exited with code 137 on 2026-11-03; do not reuse it for migrated code. The replacement image las...\n- Marked outdated: 2dc51d8a-ab4c-4ba8-abec-c7d39cc044e0\n- Runbook search: openhab 5.3 snapshot-debian Jellyfin interactive status API Docker Java 21 local test image",
     "context": "openhab-addons",
     "created_at": "2026-11-08T05:18:28.5685328+01:00",
+    "embedding_model": "ollama:http://shodan.ehrendingen:11434:bge-m3:latest:1024",
     "id": "d1ae3833-d7e9-4e41-a9d5-36f8eb807214",
     "importance": 0.2,
     "metadata": {
@@ -358,12 +388,13 @@
     ],
     "title": "Session close / openhab-addons / openHAB Docker runtime",
     "type": "episodic",
-    "updated_at": "2026-11-08T05:18:28.5685328+01:00"
+    "updated_at": "2026-11-08T05:20:34.24425989+01:00"
   },
   {
     "content": "Decision: Do not modify the canonical AGENTS.md agent instructions to add repository-specific custom guidance. Store custom instructions in .github/copilot-instructions.md and the memory MCP instead.\nRationale: This keeps upstream/canonical agent guidance unchanged while maintaining project-specific instructions in the designated Copilot customization file and durable project memory.\nConsequences: When project-specific guidance changes, update .github/copilot-instructions.md and reconcile the corresponding memory MCP knowledge; do not edit AGENTS.md for that purpose.\nService: repository-instructions\nStatus: accepted",
     "context": "openhab-addons",
     "created_at": "2026-11-08T05:18:28.563288639+01:00",
+    "embedding_model": "ollama:http://shodan.ehrendingen:11434:bge-m3:latest:1024",
     "id": "d841edc0-4d19-4d02-8533-cd4bc081e7bd",
     "importance": 0.9,
     "metadata": {
@@ -385,12 +416,13 @@
     ],
     "title": "Keep custom guidance out of canonical agent instructions",
     "type": "semantic",
-    "updated_at": "2026-11-08T05:18:28.563288639+01:00"
+    "updated_at": "2026-11-08T05:20:35.812955029+01:00"
   },
   {
     "content": "For the Jellyfin public-user discovery feature in openhab-addons, the user requests exactly one new feature-specific author line in the class header of every changed Java class. For each new Java class, its author line must include the literal pattern `Initial contribution - <feature>`. Append author tags chronologically and retain existing attribution; use the real contributor name already established in the repository (Patrik Gfeller for this feature). This feature-specific acceptance rule supplements, and does not replace, the repository's general AGENTS.md author-attribution guidance.",
     "context": "openhab-addons Jellyfin binding, issue #21850 public-user discovery",
     "created_at": "2026-11-08T05:18:28.562692687+01:00",
+    "embedding_model": "ollama:http://shodan.ehrendingen:11434:bge-m3:latest:1024",
     "id": "dab97eaa-8260-4c42-a70c-3acfb1006934",
     "importance": 0.8,
     "sediment_layer": "surface",
@@ -402,12 +434,13 @@
     ],
     "title": "Jellyfin feature author tags",
     "type": "procedural",
-    "updated_at": "2026-11-08T05:18:28.562692687+01:00"
+    "updated_at": "2026-11-08T05:20:34.069502933+01:00"
   },
   {
     "content": "For Jellyfin session user-name exposure, ClientStateUpdater is the identity-state calculation owner and ClientHandler publishes the calculated linked states. Map session.getUserName() directly to StringType when non-null, not through addStringState (which treats blank strings as absent), so Unicode and the empty String are preserved; use UnDefType.NULL for absent names and null sessions. Reuse UserNameChannel.CHANNEL_ID. T006 leaves user-id publication and metadata unchanged (ID metadata is T008).",
     "context": "openhab-addons",
     "created_at": "2026-11-08T05:18:28.570916031+01:00",
+    "embedding_model": "ollama:http://shodan.ehrendingen:11434:bge-m3:latest:1024",
     "id": "de21ce73-5045-420e-b343-39b15d828f0e",
     "importance": 0.65,
     "sediment_layer": "surface",
@@ -418,12 +451,13 @@
     ],
     "title": "Jellyfin session name state mapping",
     "type": "semantic",
-    "updated_at": "2026-11-08T05:18:28.570916031+01:00"
+    "updated_at": "2026-11-08T05:20:33.949633143+01:00"
   },
   {
     "content": "- Stored memory: Jellyfin OpenAPI User Image Route",
     "context": "openhab-addons Jellyfin binding, issue #21850",
     "created_at": "2026-11-08T05:18:24.548159449+01:00",
+    "embedding_model": "ollama:http://shodan.ehrendingen:11434:bge-m3:latest:1024",
     "id": "eced1ed9-ba02-4872-8def-edc34077a517",
     "importance": 0.2,
     "metadata": {
@@ -447,6 +481,6 @@
     ],
     "title": "Session close / openhab-addons Jellyfin binding, issue #21850",
     "type": "episodic",
-    "updated_at": "2026-11-08T05:18:24.548159449+01:00"
+    "updated_at": "2026-11-08T05:20:35.254250653+01:00"
   }
 ]
