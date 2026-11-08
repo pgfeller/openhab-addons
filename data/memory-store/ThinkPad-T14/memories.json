@@ -95,7 +95,7 @@
     "id": "343a741d-d290-4f0a-bed9-42083dbfd74c",
     "importance": 0.2,
     "metadata": {
-      "last_verified_at": "2026-11-03T19:13:05Z",
+      "last_verified_at": "2026-11-08T07:14:23Z",
       "record_kind": "session_summary",
       "session_boundary": "idle_timeout",
       "session_mode": "coding",
@@ -109,11 +109,12 @@
       "auto-session",
       "jellyfin",
       "session-user-exposure",
-      "client-state"
+      "client-state",
+      "channel-metadata"
     ],
     "title": "Session close / openhab-addons",
     "type": "episodic",
-    "updated_at": "2026-11-08T05:20:34.721941503+01:00"
+    "updated_at": "2026-11-08T08:24:23.80558165+01:00"
   },
   {
     "content": "User requested committing cleanup repairs and preparing local build for first manual test. Committed cleanup and fixture repairs with signoff as 97960f5eea; restored verified contributor Patrik Gfeller author tags in two channel helper classes and committed build guidance/evidence as 95f3c66b7d. Working tree clean. Full module clean install and -U spotless:apply clean install each passed 319 tests with zero failures/errors/skips and zero SAT errors, but Karaf runtime verification fails because core semantics 5.3 snapshot requires org.objectweb.asm >=9.10 while resolved feature set supplies 9.9.1. Snapshot refresh did not fix external inconsistency; no version override or skip flags used. Package command ./mvnw -pl bundles/org.openhab.binding.jellyfin package succeeds with all319 tests in34classes. Main JAR target/org.openhab.binding.jellyfin-5.3.0-SNAPSHOT.jar about5.1MB available for initial cleanup/regression smoke test; not full verified install or session-user acceptance. Client XML identity references still missing, T003-T018 open, feature implementing. User target openHAB5.2.3 compatibility remains unverified; quickstart documents existing-bundle update on disposable runtime and rollback precautions.",
