@@ -1,15 +1,14 @@
 # Session User Exposure - Session Handoff
 
-**Updated**: 2026-11-03 | **Feature status**: implementing, not feature-complete.
+**Updated**: 2026-11-08 | **Feature status**: implementing, not feature-complete.
 
 ## Resume Here
 
 Read this file, [tasks.md](tasks.md), [plan.md](plan.md), and the applicable repository
-instructions. T001-T009 are complete; resume at T010. The client exposes both identity channels
-as read-only String channels, and `ClientStateUpdater` calculates the name and nullable UUID
-independently. The focused updater and handler tests pass, including the T003 metadata contract.
-Continue T010-T013 in dependency order. Smoke testing does not close T015-T018 or prove
-identity-channel acceptance.
+instructions. T001-T015 are complete; T016-T018 remain open. The client exposes both identity
+channels as read-only String channels, `ClientStateUpdater` calculates the name and nullable UUID
+independently, and `ClientHandler` handles their publication and bridge/session status transitions.
+The module tests pass, but the full install and linked-Item acceptance gates have not passed.
 
 The actual contributor branch is `pgfeller/issue21850`; `001-session-user-exposure` is the
 feature directory name, not the current Git branch. Push to the contributor fork `origin`
@@ -37,16 +36,16 @@ earlier blocker status. Do not mark the overall feature completed.
 - `ClientStateUpdater.calculateChannelStates(...)` maps name and UUID independently. Names retain
   empty-string semantics; IDs use `UUID.toString()` and become `NULL` when absent.
 - T004 and T007 cover identity calculation and `stateUpdated` publication with an ONLINE client
-  and bridge. They do not cover the 5.3 detail-derived status API or bridge-uninitialized
-  behavior. T010 owns those status callback and lifecycle tests; T011 owns the migration.
-- Handler state publication is ONLINE-gated. Test null-session, timeout, and bridge-offline
-  clearing through observable callbacks, not merely `getCurrentSession()` assertions.
+  and bridge. T010-T011 add observable lifecycle and detail-derived status coverage, including
+  bridge initialization and unavailable-bridge clearing.
+- The handler clears channel states when the session is unavailable, including after status
+  transitions. Keep tests focused on observable callbacks, not merely `getCurrentSession()`.
 - Follow the spec's independent field clearing and present-empty-name semantics. Playback
   inactivity alone is not logout. Read-only metadata and ignored commands need separate checks.
 
-See the requirement/task coverage table in [tasks.md](tasks.md). T010-T018 remain open; status
-transitions, command behavior, runtime acceptance, and the remaining feature-level checks are not
-yet verified.
+See the requirement/task coverage table in [tasks.md](tasks.md). T016 remains blocked on Karaf
+feature resolution, T017 remains blocked on runtime/core API compatibility, and T018 must remain
+open until both gates pass.
 
 ## Completed Baseline and Commits
 
@@ -70,7 +69,14 @@ Evidence: [assessment](../../.specify/bugs/jellyfin-public-user-cleanup/assessme
 
 - Focused handler/discovery baseline: 17/17 passed; discovery class: 8/8 across three
   independent repeated runs, without retry masking.
-- Full module suite: **319 tests across 34 classes**, zero failures, errors, or skips.
+- Focused T016 suites: **26 handler/discovery tests** and **54 identity/lifecycle/command tests**
+  passed; a separate 11-test status regression run also passed.
+- Full module clean install: **341 tests** passed with zero failures, errors, or skips. Karaf
+  feature verification failed because `org.openhab.core.semantics` requires ASM >=9.10.0 while
+  the supplied feature resources provide ASM 9.9.1. A retry with `-DwithResolver` failed on the
+  same dependency requirement; no override or verifier skip was used.
+- Spotless, feature prerequisite checks, and feature Markdown lint passed. See the exact commands
+  and results in [tasks.md](tasks.md).
 - Historical T004 test-first run, before T006:
 
   ```sh
@@ -97,25 +103,28 @@ Evidence: [assessment](../../.specify/bugs/jellyfin-public-user-cleanup/assessme
   **30 tests passed**, including the T003 metadata assertion and independent UUID/name cases.
 - `./mvnw -pl bundles/org.openhab.binding.jellyfin package`: **BUILD SUCCESS**.
 - Static analysis in the full install attempts: zero errors, with existing warnings.
-- Full `clean install`, also after `-U spotless:apply clean install`, fails at Karaf verification:
-  the supplied 5.3 core snapshot requires ASM >=9.10, but its feature resources provide 9.9.1.
-  This external runtime-set mismatch remains open. Do not bypass it or equate packaging with
-  successful install. Recheck on the next build; snapshot contents can change.
-- No application source changes occurred during the browser smoke tests or this consolidation.
+- A `-DwithResolver` retry also failed at Karaf feature verification on the same ASM requirement.
+  Do not bypass it or equate packaging and passing unit tests with a successful install.
 
 ## Interactive Test Environment
 
 - The previous `openhab-development-server` container (ID prefix `ad76edf43416`) used
   `openhab/openhab:5.2.3-debian`; it exited with code 137 three days before this handoff. Do not
   assume it is running or use it for the migrated bundle.
-- Every workstation used for migrated-bundle runtime acceptance must provide openHAB 5.3 or later.
-  The compatible image available locally on 2026-11-03 is `openhab/openhab:snapshot-debian`,
-  labeled `5.3.0-snapshot`, with Java 21.0.11. Its registry digest is
+- Every workstation used for migrated-bundle runtime acceptance must provide an openHAB core
+  exposing the required `updateStatus(ThingStatusDetail, String)` API. The image inspected locally
+  on 2026-11-03 was `openhab/openhab:snapshot-debian`, labeled `5.3.0-snapshot`, with Java 21.0.11.
+  Its registry digest is
   `openhab/openhab@sha256:0b6782ed409150c3ec89c4f3656b4fbf1dedd08db98bb4038cc0f22408ca99ef`.
   The tag is mutable. On a fresh workstation, pull and inspect the tag and verify the actual
   openHAB version and Java version before use; `snapshot-debian` is the required replacement image,
-  not `5.2.3-debian`. The image was available locally, but a 5.3-or-later test container has not
-  yet been created.
+  not `5.2.3-debian`. The UI acceptance attempt on 2026-11-08 nevertheless showed that the active
+  runtime could not resolve the method expected by the installed client handler. Confirm the
+  actual runtime and core bundle versions/API before retrying; the 5.3 label or active binding
+  bundle alone is not proof of compatibility.
+- On this host, the Docker Compose test setup is available at
+  `/home/pgfeller/Documents/GitHub/docker/Laptop/Patrik/development`. Coordinate any manual
+  runtime configuration or token setup with the user; never place tokens in artifacts or chat.
 - The old workstation-specific UI and mounts were `http://localhost:8080` and
   `~/Temp/openhab/{addons,conf,userdata}`. On another workstation, inspect container mounts and
   create isolated test configuration as needed; never assume these paths or IDs are portable.
@@ -126,10 +135,14 @@ Evidence: [assessment](../../.specify/bugs/jellyfin-public-user-cleanup/assessme
 - The previous deployed candidate was reported as bundle version `5.3.0.202610301015` with SHA-256
   `3c263ec9ae6f59a00d89b3cb56574295f48e2945fdcc12e9befa8c1bc6d66a6d`; rebuilds can change it.
   Verify the built JAR checksum before any deployment.
-- Playback controls, linked Item values, identity switching/clearing, and live malformed/empty
-  responses were not acceptance-tested. Do not infer completion from discovery or ONLINE status.
-- Core 5.2.3 lacks `BaseThingHandler.updateStatus(ThingStatusDetail, ...)`; use openHAB 5.3 or later
-  for all further runtime acceptance.
+- On 2026-11-08, the temporary client Thing exposed both String channels and temporary String
+  Items were linked to them. The client remained UNINITIALIZED with
+  `HANDLER_INITIALIZING_ERROR` because the runtime could not resolve
+  `ClientHandler.updateStatus(ThingStatusDetail, String)`. The Items displayed NULL, which is not
+  acceptance evidence while the handler is uninitialized. The temporary Items and Thing were
+  removed; the container was not restarted, and no credentials or identity values were recorded.
+- Playback controls, identity switching/clearing, and live malformed/empty responses remain
+  untested. Do not infer completion from discovery, an ACTIVE bundle, or ONLINE status.
 
 ## Commit Handoff
 

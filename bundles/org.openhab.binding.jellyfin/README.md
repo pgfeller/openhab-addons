@@ -121,8 +121,15 @@ When enabled, a dynamic `Image` channel is created automatically with the channe
 
 ## Channels
 
+The read-only `user-name` and `user-id` String channels expose the identity reported for the client's current session.
+They are independent of playback: the values are available when a session exists even if no media is playing.
+Each channel reports `NULL` when there is no session or its own value is absent; an empty user name remains an empty String.
+Sending a command does not change the session identity, and `REFRESH` republishes the current values.
+
 | channel                    | Type   | Description                                                                                                     |
 | -------------------------- | ------ | --------------------------------------------------------------------------------------------------------------- |
+| user-name                  | String | Current session user's display name (read-only; `NULL` when unavailable)                                        |
+| user-id                    | String | Current session user's UUID (read-only; `NULL` when unavailable)                                                |
 | send-notification          | String | Display message in client                                                                                       |
 | media-control              | Player | Control media playback: play, pause, next, previous, fast-forward, rewind (standard openHAB Player channel)     |
 | media-stop                 | Switch | Stop playback: send ON to stop (complements media-control which doesn't have native stop command)               |
@@ -261,6 +268,8 @@ To get the device ids manually, it is possible to use the Jellyfin web interface
 ```java
 String strJellyfinAndroidSendNotification      { channel="jellyfin:client:exampleServerId:<JELLYFIN_DEVICE_ID>:send-notification" }
 Player plJellyfinAndroidMediaControl           { channel="jellyfin:client:exampleServerId:<JELLYFIN_DEVICE_ID>:media-control" }
+String strJellyfinAndroidUserName              { channel="jellyfin:client:exampleServerId:<JELLYFIN_DEVICE_ID>:user-name" }
+String strJellyfinAndroidUserId                { channel="jellyfin:client:exampleServerId:<JELLYFIN_DEVICE_ID>:user-id" }
 String strJellyfinAndroidPlayingItemId         { channel="jellyfin:client:exampleServerId:<JELLYFIN_DEVICE_ID>:playing-item-id" }
 String strJellyfinAndroidPlayingItemName       { channel="jellyfin:client:exampleServerId:<JELLYFIN_DEVICE_ID>:playing-item-name" }
 String strJellyfinAndroidPlayingItemSeriesName { channel="jellyfin:client:exampleServerId:<JELLYFIN_DEVICE_ID>:playing-item-series-name" }

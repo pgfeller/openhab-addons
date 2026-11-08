@@ -13,13 +13,33 @@
 package org.openhab.binding.jellyfin.internal.handler;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.lang.reflect.Method;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 import org.openhab.binding.jellyfin.internal.events.SessionEventBus;
 import org.openhab.binding.jellyfin.internal.gen.current.model.BaseItemDto;
 import org.openhab.binding.jellyfin.internal.gen.current.model.PlayerStateInfo;
 import org.openhab.binding.jellyfin.internal.gen.current.model.SessionInfoDto;
+import org.openhab.core.library.types.StringType;
+import org.openhab.core.thing.Bridge;
+import org.openhab.core.thing.ChannelUID;
+import org.openhab.core.thing.Thing;
+import org.openhab.core.thing.ThingStatus;
+import org.openhab.core.thing.ThingUID;
+import org.openhab.core.thing.binding.ThingHandlerCallback;
+import org.openhab.core.thing.binding.builder.ThingStatusInfoBuilder;
+import org.openhab.core.types.State;
+import org.openhab.core.types.UnDefType;
 
 /**
  * Integration tests for ClientHandler event bus integration.
@@ -32,6 +52,8 @@ import org.openhab.binding.jellyfin.internal.gen.current.model.SessionInfoDto;
  */
 @NonNullByDefault
 class ClientHandlerEventIntegrationTest {
+
+    private static final long CALLBACK_TIMEOUT_MS = 2_000;
 
     @Test
     void testClientHandlerImplementsSessionEventListener() {
@@ -141,6 +163,72 @@ class ClientHandlerEventIntegrationTest {
     }
 
     @Test
+    void testIdentityTracksSessionAbsenceSwitchEndTimeoutAndReconnect() throws Exception {
+        HandlerFixture fixture = createHandlerFixture();
+        SessionEventBus eventBus = new SessionEventBus();
+        eventBus.subscribe("device-identity", fixture.handler());
+
+        SessionInfoDto userA = createIdentitySession("User A", "123e4567-e89b-12d3-a456-426614174000");
+        SessionInfoDto userB = createIdentitySession("User B", "223e4567-e89b-12d3-a456-426614174000");
+        SessionInfoDto reconnectedUser = createIdentitySession("Reconnected", "323e4567-e89b-12d3-a456-426614174000");
+        assertAll("Identity transitions",
+                () -> assertIdentityPublished(fixture, eventBus, null, UnDefType.NULL, UnDefType.NULL),
+                () -> assertIdentityPublished(fixture, eventBus, new SessionInfoDto(), UnDefType.NULL, UnDefType.NULL),
+                () -> assertIdentityPublished(fixture, eventBus, userA, new StringType("User A"),
+                        new StringType("123e4567-e89b-12d3-a456-426614174000")),
+                () -> assertIdentityPublished(fixture, eventBus, userB, new StringType("User B"),
+                        new StringType("223e4567-e89b-12d3-a456-426614174000")),
+                () -> assertIdentityPublished(fixture, eventBus, null, UnDefType.NULL, UnDefType.NULL),
+                () -> assertIdentityPublished(fixture, eventBus, reconnectedUser, new StringType("Reconnected"),
+                        new StringType("323e4567-e89b-12d3-a456-426614174000")));
+
+        eventBus.unsubscribe("device-identity", fixture.handler());
+    }
+
+    @Test
+    void testSessionTimeoutClearsIdentity() throws Exception {
+        HandlerFixture fixture = createHandlerFixture();
+        SessionEventBus eventBus = new SessionEventBus();
+        eventBus.subscribe("device-identity", fixture.handler());
+        assertIdentityPublished(fixture, eventBus,
+                createIdentitySession("User A", "123e4567-e89b-12d3-a456-426614174000"), new StringType("User A"),
+                new StringType("123e4567-e89b-12d3-a456-426614174000"));
+
+        clearInvocations(fixture.callback());
+        Method timeoutHandler = ClientHandler.class.getDeclaredMethod("onSessionTimeout");
+        timeoutHandler.setAccessible(true);
+        timeoutHandler.invoke(fixture.handler());
+        verifyIdentity(fixture, UnDefType.NULL, UnDefType.NULL);
+
+        eventBus.unsubscribe("device-identity", fixture.handler());
+    }
+
+    @Test
+    void testBridgeUninitializedAndOfflineClearIdentity() {
+        HandlerFixture fixture = createHandlerFixture();
+        SessionEventBus eventBus = new SessionEventBus();
+        eventBus.subscribe("device-identity", fixture.handler());
+
+        SessionInfoDto session = createIdentitySession("User A", "123e4567-e89b-12d3-a456-426614174000");
+        assertIdentityPublished(fixture, eventBus, session, new StringType("User A"),
+                new StringType("123e4567-e89b-12d3-a456-426614174000"));
+
+        assertAll("Bridge unavailable transitions", () -> {
+            clearInvocations(fixture.callback());
+            fixture.bridgeStatus().set(ThingStatus.UNINITIALIZED);
+            fixture.handler().bridgeStatusChanged(ThingStatusInfoBuilder.create(ThingStatus.UNINITIALIZED).build());
+            verifyIdentity(fixture, UnDefType.NULL, UnDefType.NULL);
+        }, () -> {
+            clearInvocations(fixture.callback());
+            fixture.bridgeStatus().set(ThingStatus.OFFLINE);
+            fixture.handler().bridgeStatusChanged(ThingStatusInfoBuilder.create(ThingStatus.OFFLINE).build());
+            verifyIdentity(fixture, UnDefType.NULL, UnDefType.NULL);
+        });
+
+        eventBus.unsubscribe("device-identity", fixture.handler());
+    }
+
+    @Test
     void testExceptionHandlingInListener() {
         String deviceId = "test-device-exception";
         SessionEventBus eventBus = new SessionEventBus();
@@ -161,6 +249,53 @@ class ClientHandlerEventIntegrationTest {
         assertEquals(1, eventBus.getListenerCount(deviceId), "Event bus should still have listener after exception");
 
         eventBus.unsubscribe(deviceId, handler);
+    }
+
+    private HandlerFixture createHandlerFixture() {
+        ThingUID thingUID = new ThingUID("jellyfin:client:server:device-identity");
+        ThingUID bridgeUID = new ThingUID("jellyfin:server:server");
+        Thing thing = mock(Thing.class);
+        when(thing.getUID()).thenReturn(thingUID);
+        when(thing.getBridgeUID()).thenReturn(bridgeUID);
+        when(thing.getStatus()).thenReturn(ThingStatus.ONLINE);
+
+        AtomicReference<ThingStatus> bridgeStatus = new AtomicReference<>(ThingStatus.ONLINE);
+        Bridge bridge = mock(Bridge.class);
+        when(bridge.getStatus()).thenAnswer(ignored -> bridgeStatus.get());
+
+        ThingHandlerCallback callback = mock(ThingHandlerCallback.class);
+        when(callback.getBridge(bridgeUID)).thenReturn(bridge);
+        when(callback.isChannelLinked(org.mockito.ArgumentMatchers.any())).thenReturn(true);
+
+        ClientHandler handler = new ClientHandler(thing);
+        handler.setCallback(callback);
+        return new HandlerFixture(thingUID, callback, handler, bridgeStatus);
+    }
+
+    private void assertIdentityPublished(HandlerFixture fixture, SessionEventBus eventBus,
+            @Nullable SessionInfoDto session,
+            State expectedName, State expectedId) {
+        clearInvocations(fixture.callback());
+        eventBus.publishSessionUpdate("device-identity", session);
+        verifyIdentity(fixture, expectedName, expectedId);
+    }
+
+    private void verifyIdentity(HandlerFixture fixture, State expectedName, State expectedId) {
+        verify(fixture.callback(), timeout(CALLBACK_TIMEOUT_MS))
+                .stateUpdated(new ChannelUID(fixture.thingUID(), "user-name"), expectedName);
+        verify(fixture.callback(), timeout(CALLBACK_TIMEOUT_MS))
+                .stateUpdated(new ChannelUID(fixture.thingUID(), "user-id"), expectedId);
+    }
+
+    private SessionInfoDto createIdentitySession(String name, String id) {
+        SessionInfoDto session = new SessionInfoDto();
+        session.setUserName(name);
+        session.setUserId(UUID.fromString(id));
+        return session;
+    }
+
+    private record HandlerFixture(ThingUID thingUID, ThingHandlerCallback callback, ClientHandler handler,
+            AtomicReference<ThingStatus> bridgeStatus) {
     }
 
     /**

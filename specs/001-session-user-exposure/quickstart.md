@@ -6,9 +6,10 @@ acceptance. Start with [handoff.md](handoff.md) and [tasks.md](tasks.md) when re
 ## Prerequisites
 
 - Java 21 and the repository Maven wrapper for automated validation.
-- A configured openHAB 5.3-or-later runtime and reachable Jellyfin server/client for interactive
- checks. Use `openhab/openhab:snapshot-debian`, not the historical `5.2.3-debian` image. The
- detail-derived status API used by this implementation is absent from openHAB 5.2.3.
+- A configured openHAB runtime whose actual core API provides
+  `updateStatus(ThingStatusDetail, String)`, and a reachable Jellyfin server/client. Do not rely
+  on the image or binding version label alone: the 2026-11-08 runtime attempt could not resolve
+  this method. The historical `5.2.3-debian` runtime does not provide it.
 - The snapshot image last verified locally on 2026-11-03 was labeled `5.3.0-snapshot`, ran
  Java 21.0.11, and had registry digest
  `openhab/openhab@sha256:0b6782ed409150c3ec89c4f3656b4fbf1dedd08db98bb4038cc0f22408ca99ef`.
@@ -28,12 +29,14 @@ acceptance. Start with [handoff.md](handoff.md) and [tasks.md](tasks.md) when re
 - A Jellyfin server bridge with existing authentication configured securely, and an existing
  client Thing with the correct `serialNumber` device ID. Do not expose tokens in reports.
 - A bundle built from the repaired implementation. The spec ID is not a runtime feature toggle.
+- On this host, the Docker Compose test setup is available at
+ `/home/pgfeller/Documents/GitHub/docker/Laptop/Patrik/development`. Coordinate manual runtime
+ configuration or token setup with the user; never place tokens in chat or committed artifacts.
 
-## First Local Smoke Build - 2026-10-30
+## Historical Local Smoke Build - 2026-10-30
 
-The compilation/discovery repairs are committed as `97960f5eea`. The missing author
-attribution in the two session-channel helper classes has also been restored. Local packaging
-succeeds with all 319 module tests passing, with no failures, errors, or skipped tests:
+The compilation/discovery repairs were committed as `97960f5eea`. At that time, local packaging
+succeeded with all 319 module tests passing, with no failures, errors, or skipped tests:
 
 ```sh
 ./mvnw -pl bundles/org.openhab.binding.jellyfin package
@@ -49,21 +52,21 @@ zero static-analysis errors, but failed subsequent Karaf feature verification. T
 resolved feature set supplies ASM 9.9.1. Refreshing snapshots did not resolve the mismatch.
 No verifier skip flags, dependency overrides, or runtime changes were applied.
 
-This artifact supports an initial discovery/regression smoke test only. The client Thing XML
-still lacks the planned `user-name` and `user-id` declarations; T004-T018 are not complete.
-It passed the baseline runtime smoke checks below on openHAB 5.2.3 before the status API migration.
-Do not install a migrated candidate there. A 5.3-or-later runtime is mandatory for acceptance.
+That artifact predated the identity-channel declarations and status API migration. It supports
+only the historical discovery/regression smoke test below; it is not the current implementation
+or identity-channel acceptance evidence. The latest validation ran 341 tests successfully but
+still failed Karaf feature verification on the ASM requirement. See [tasks.md](tasks.md).
 
 ## Interactive Deployment and Console
 
-Reinspect the target before each deployment. Use an openHAB 5.3-or-later development runtime for
-the migrated candidate. Do not deploy it to the historical 5.2.3 environment because the new
-`BaseThingHandler.updateStatus(ThingStatusDetail, ...)` method is absent there. The previous
-`openhab-development-server` container (ID prefix `ad76edf43416`) used `5.2.3-debian` and is
-currently stopped. A compatible container has not yet been created from the snapshot image. Do not
-assume container names, ports, bind mounts, or configuration exist on another workstation. The
-previous host mounts `~/Temp/openhab/{addons,conf,userdata}` and UI `http://localhost:8080` are
-specific to this workstation; inspect and back up any existing persistent data before reuse.
+Reinspect the target before each deployment. The runtime must provide the exact core method used
+by the migrated handler; a nominal 5.3-or-later label is not sufficient. Do not deploy to the
+historical `5.2.3-debian` environment, which lacks the method. The previous
+`openhab-development-server` container (ID prefix `ad76edf43416`) used `5.2.3-debian` and was
+reported stopped. On 2026-11-08, the user reported a Jellyfin bundle active at version
+`5.3.0.202611080927`, but the client handler still failed to resolve the required core method.
+Verify runtime/core compatibility before retrying. Do not assume container names, ports, mounts,
+or configuration exist on another workstation.
 
 Build the main JAR and copy it to the watched add-ons folder, which is the user's preferred
 installation/update method:
@@ -99,11 +102,15 @@ If requirements cannot be resolved on the selected 5.3-or-later runtime, restore
 bundle and use a compatible test runtime; do not force resolution or weaken imports. Roll back a new add-on by removing only
 its JAR; restore the backed-up JAR for an update. Never delete persistent configuration/userdata.
 
-The installed candidate passed startup/service checks. The user then configured a live ONLINE
-bridge; a temporary client reached ONLINE and was removed; discovery produced eleven unique
-results (nine clients, two public users). The candidate and bridge remain installed. Read the
-[runtime report](../../.specify/bugs/jellyfin-public-user-cleanup/container-smoke.md) for exact evidence.
-Playback and malformed/empty-response retention were not tested against the live server.
+Historical pre-migration smoke evidence: the installed candidate passed startup/service checks;
+a temporary client reached ONLINE and was removed; discovery produced eleven unique results.
+This did not test identity channels. On 2026-11-08, a temporary client Thing exposed both String
+channels and temporary String Items were linked, but the client stayed UNINITIALIZED with
+`HANDLER_INITIALIZING_ERROR` because the runtime could not resolve
+`ClientHandler.updateStatus(ThingStatusDetail, String)`. The Items displayed NULL, so this is a
+blocked test, not a pass. The temporary Items and Thing were removed without restarting the
+container; no credentials or identity values were recorded. Playback and malformed/empty-response
+retention were not tested against the live server. See [tasks.md](tasks.md) for the gate status.
 
 ## Browser Safety and Cleanup
 

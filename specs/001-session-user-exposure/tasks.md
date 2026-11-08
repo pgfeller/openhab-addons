@@ -2,7 +2,9 @@
 
 **Input**: [spec.md](spec.md), [plan.md](plan.md), and supporting design artifacts.
 
-**Current state**: T001-T009 complete; T010-T018 open. Resume at T010.
+**Current state (2026-11-08)**: T001-T015 complete; T016-T018 remain open. T016 is blocked
+by Karaf feature resolution; T017 is blocked by a runtime status-API mismatch. Resume with
+those blockers, not by repeating completed implementation tasks.
 See [handoff.md](handoff.md) for the current branch, evidence, runtime setup, and privacy rules.
 
 **Reconciled**: 2026-10-30. This backlog replaces the unexecuted scaffolding list with
@@ -24,29 +26,24 @@ The SDD setup repair does not claim implementation completion.
 - [x] T001 Fix non-null fixture initialization in `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/discovery/PublicUserDiscoveryServiceTest.java` without suppressing null analysis; preserve discovery behavior.
 - [x] T002 Fix typed Thing/ThingUID and UUID fixtures in `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerTest.java`; run both reported classes using `specs/001-session-user-exposure/quickstart.md` and record results.
 
-Discovery behavior is outside feature scope; its test compilation blocks the shared module build.
+Discovery behavior is outside feature scope; its test compilation blocked the shared module build.
 
 Supporting blocker repair was explicitly authorized on 2026-10-30: incomplete public-user
 responses must not authorize stale Inbox cleanup. This is not session-user feature work.
-The existing fixture repairs were preserved. Both reported classes now compile and pass:
+Historical supporting repair evidence (2026-10-30): both reported classes compiled and passed:
 `./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=ClientHandlerTest,PublicUserDiscoveryServiceTest test`
 ran 17 tests (9 handler, 8 discovery), with no failures, errors, or skipped tests.
 Three separate post-format discovery runs also passed (8 tests each). See
 [bug assessment](../../.specify/bugs/jellyfin-public-user-cleanup/assessment.md),
 [fix report](../../.specify/bugs/jellyfin-public-user-cleanup/fix.md), and
 [verification](../../.specify/bugs/jellyfin-public-user-cleanup/test.md).
-T010-T018 remain open; the feature remains implementing.
+The discovery repair is supporting work, not completion evidence for this feature.
 
-Local-build preparation was authorized on 2026-10-30. Missing author tags in the two
-session-channel helper classes were restored. The full 319-test module suite passes, and
-`package` succeeds. Static analysis reports zero errors. Full `install` is still blocked
-by the supplied runtime snapshot's ASM 9.10 requirement versus its ASM 9.9.1 feature set,
-including after a snapshot refresh. See [the smoke-build guide](quickstart.md#first-local-smoke-build---2026-10-30).
-Runtime deployment and baseline smoke checks have since passed on openHAB 5.2.3: the bridge
-remained ONLINE, a temporary discovered client reached ONLINE and was removed, and discovery
-displayed nine clients plus two public users with eleven distinct UIDs. No playback commands or
-identity-channel acceptance checks were performed. T015-T018 remain open. The complete evidence
-is in [the runtime smoke report](../../.specify/bugs/jellyfin-public-user-cleanup/container-smoke.md).
+Historical local-build and openHAB 5.2.3 smoke evidence is retained in
+[the smoke-build guide](quickstart.md#historical-local-smoke-build-2026-10-30) and
+[the runtime smoke report](../../.specify/bugs/jellyfin-public-user-cleanup/container-smoke.md).
+That pre-migration run passed 319 tests and discovery smoke checks, but did not exercise the
+identity channels and is not acceptance evidence for the current implementation.
 
 ## Phase 2: Foundational - Metadata Contract Checks
 
@@ -83,18 +80,48 @@ assertions alone do not verify channel publication. Do not hand-edit generated D
 **Independent test**: Both states clear on recognized unavailability, recover on the next
 valid session, and remain unaffected by ordinary channel commands.
 
-- [ ] T010 [US3] Extend `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerEventIntegrationTest.java` and `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerStatusCheckTest.java` with published-state and status-callback assertions for initial absence, anonymous session, switch, null-session end, timeout, bridge uninitialized/offline, and reconnect; assert resulting status details and that an unresolved bridge during initial setup does not publish a false error status, use bounded asynchronous checks, and observe failures (FR-003, FR-004, FR-007, SC-005).
-- [ ] T011 [US3] Repair identity invalidation/publication in `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/handler/ClientHandler.java` and null mappings in `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/util/client/ClientStateUpdater.java`; migrate detailed states to `updateStatus(ThingStatusDetail, description)` without the deprecated status-plus-detail overload, preserve UNINITIALIZED for an unresolved/uninitialized bridge, use `BRIDGE_OFFLINE` only when offline, and clear after recognized unavailable-bridge/session transitions while preserving selection/timeout behavior; then rerun T010 (FR-003, FR-004, FR-006, FR-007).
-- [ ] T012 [US3] Extend initialized-handler tests in `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerTest.java` and routing tests in `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/util/command/ClientCommandRouterTest.java` to verify ordinary identity commands cause no identity state change or remote identity-changing request and refresh republishes available identity without mutation; run metadata checks too (FR-005).
-- [ ] T013 [US3] Make only changes demonstrated necessary by T012 in `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/handler/ClientHandler.java` or `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/util/command/ClientCommandRouter.java`; if existing command behavior passes, record that evidence instead of adding redundant guards (FR-005).
+- [x] T010 [US3] Extend `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerEventIntegrationTest.java` and `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerStatusCheckTest.java` with published-state and status-callback assertions for initial absence, anonymous session, switch, null-session end, timeout, bridge uninitialized/offline, and reconnect; assert resulting status details and that an unresolved bridge during initial setup does not publish a false error status, use bounded asynchronous checks, and observe failures (FR-003, FR-004, FR-007, SC-005).
+- [x] T011 [US3] Repair identity invalidation/publication in `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/handler/ClientHandler.java` and null mappings in `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/util/client/ClientStateUpdater.java`; migrate detailed states to `updateStatus(ThingStatusDetail, description)` without the deprecated status-plus-detail overload, preserve UNINITIALIZED for an unresolved/uninitialized bridge, use `BRIDGE_OFFLINE` only when offline, and clear after recognized unavailable-bridge/session transitions while preserving selection/timeout behavior; then rerun T010 (FR-003, FR-004, FR-006, FR-007).
+- [x] T012 [US3] Extend initialized-handler tests in `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerTest.java` and routing tests in `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/util/command/ClientCommandRouterTest.java` to verify ordinary identity commands cause no identity state change or remote identity-changing request and refresh republishes available identity without mutation; run metadata checks too (FR-005).
+- [x] T013 [US3] Make only changes demonstrated necessary by T012 in `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/handler/ClientHandler.java` or `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/util/command/ClientCommandRouter.java`; if existing command behavior passes, record that evidence instead of adding redundant guards (FR-005).
 
 ## Final Phase: Polish and Verification
 
-- [ ] T014 [P] Document both channels, String Item links, and independent NULL behavior in `bundles/org.openhab.binding.jellyfin/README.md` (FR-001 through FR-005).
-- [ ] T015 Reconcile channel constants/type IDs and relevant Javadoc in `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/Constants.java`, `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/channel/UserNameChannel.java`, and `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/channel/UserIdChannel.java` with XML; reuse existing conventions rather than parallel unused abstractions.
+- [x] T014 [P] Document both channels, String Item links, and independent NULL behavior in `bundles/org.openhab.binding.jellyfin/README.md` (FR-001 through FR-005).
+- [x] T015 Reconcile channel constants/type IDs and relevant Javadoc in `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/Constants.java`, `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/channel/UserNameChannel.java`, and `bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/channel/UserIdChannel.java` with XML; reuse existing conventions rather than parallel unused abstractions.
 - [ ] T016 Run focused tests, Spotless, full module `clean install` against the repository's 5.3+ core baseline, and Markdown lint documented in `specs/001-session-user-exposure/quickstart.md`; inspect the diff for unrelated generated changes and record actual results in `specs/001-session-user-exposure/.spec-context.json` (FR-001 through FR-007, SC-001 through SC-005).
+  - **Focused tests**: handler/discovery suite passed 26 tests; identity/lifecycle/command suite passed 54 tests (80 total, no failures, errors, or skips). The separate 11-test status regression run also passed.
+  - **Spotless**: `./mvnw -pl bundles/org.openhab.binding.jellyfin spotless:apply` passed.
+  - **Full module clean install**: `./mvnw -pl bundles/org.openhab.binding.jellyfin clean install` ran all 341 tests with no failures, errors, or skips, then failed Karaf feature verification because core semantics requires ASM >=9.10.0 while the supplied feature resources provide ASM 9.9.1. No override or verification skip was used.
+  - **Markdown lint**: passed for all 9 feature Markdown files with 0 issues.
+  - **Other checks**: feature prerequisites passed and `git diff --check` was clean.
+  - **Status**: BLOCKED. The latest full module build ran 341 tests without failures, errors,
+    or skips, but Karaf feature verification could not resolve `org.openhab.core.semantics`
+    because its ASM requirement is `>=9.10.0` and the supplied feature resources provide
+    ASM 9.9.1. Retrying with `-DwithResolver` failed at the same requirement. No resolver
+    override or verification skip was used. Keep open until the unmodified clean install passes.
 - [ ] T017 Perform and record interactive linked-Item acceptance from `specs/001-session-user-exposure/quickstart.md` on openHAB 5.3 or later. Do not deploy the migrated bundle to 5.2.3, which lacks the required status API; retain that runtime's results as pre-migration baseline evidence only (SC-001 through SC-005).
+  - **Status**: BLOCKED. On 2026-11-08, the user reported the Jellyfin bundle ACTIVE at version `5.3.0.202611080927`, with its services and SCR components ACTIVE. A temporary client Thing was added and both `user-name` and `user-id` appeared as String channels. Temporary String Items were created and linked to the channels, but the client Thing stayed UNINITIALIZED with `HANDLER_INITIALIZING_ERROR` because the runtime could not resolve `ClientHandler.updateStatus(ThingStatusDetail, String)`. The Items displayed NULL, which is not valid identity acceptance evidence while the handler is uninitialized. The temporary Items and Thing were removed. No token, account, or identity values were recorded; no container restart was performed. Retry only on a runtime with a compatible openHAB core API.
 - [ ] T018 Reconcile completed markers in `specs/001-session-user-exposure/tasks.md` and journal evidence in `specs/001-session-user-exposure/.spec-context.json` using Companion hooks; run cross-artifact analysis and mark complete only when all acceptance/build gates actually pass.
+  - **Status**: OPEN. T016's clean-install gate remains blocked and T017's linked-Item acceptance is blocked by the runtime API mismatch, so no further task markers can be completed and the feature remains incomplete.
+  - **Cross-artifact state (2026-11-08)**: FR-001 through FR-007 and SC-001 through SC-005
+    remain mapped in the coverage table. Source, metadata, tests, and README implement the
+    identity channels and status handling. A linked-Item attempt was made on the user-reported
+    active 5.3 bundle, but the client handler did not initialize because the runtime could not
+    resolve `ClientHandler.updateStatus(ThingStatusDetail, String)`. The visible NULL Item states
+    are not acceptance evidence. Verify the actual runtime/core compatibility before retrying.
+    Do not mark the behavior accepted based solely on a bundle or SCR component being ACTIVE.
+  - **Evidence reconciliation**:
+
+    | Gate | Verified outcome | Status |
+    |------|------------------|--------|
+    | Focused tests | 26 handler/discovery and 54 identity/lifecycle/command tests passed | PASS |
+    | Spotless | Wrapper formatter completed successfully | PASS |
+    | Full module clean install | 341 tests passed; Karaf verification failed on ASM 9.9.1 vs >=9.10.0 requirement | BLOCKED |
+    | Feature Markdown lint | 9 files, 0 issues | PASS |
+    | Linked-Item acceptance | Channels appeared and temporary Items linked, but the client handler failed initialization with a missing core API method; test objects were removed | BLOCKED |
+
+  - Companion context retains the verified run history; the after-implement hook must leave status as implementing while T016-T018 remain unchecked.
 
 ## Dependencies and Execution Strategy
 

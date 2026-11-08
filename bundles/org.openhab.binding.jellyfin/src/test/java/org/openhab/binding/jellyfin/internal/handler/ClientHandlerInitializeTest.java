@@ -20,17 +20,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.openhab.binding.jellyfin.internal.config.ImageChannelConfig;
 import org.openhab.core.config.core.Configuration;
 import org.openhab.core.thing.Thing;
-import org.openhab.core.thing.ThingStatus;
-import org.openhab.core.thing.ThingStatusDetail;
-import org.openhab.core.thing.ThingStatusInfo;
 import org.openhab.core.thing.binding.ThingHandlerCallback;
 
 /**
@@ -39,7 +37,8 @@ import org.openhab.core.thing.binding.ThingHandlerCallback;
  * Verifies that {@code initialize()} uses the {@code serialNumber} configuration
  * parameter as the event-bus subscription key — NOT the ThingUID segment — so
  * that the handler receives updates even when the Jellyfin app reports a device
- * ID that contains characters invalid in a ThingUID.
+ * ID that contains characters invalid in a ThingUID. An unresolved bridge leaves
+ * the handler UNINITIALIZED without publishing an error status.
  *
  * @author Patrik Gfeller - Initial contribution
  */
@@ -70,14 +69,7 @@ class ClientHandlerInitializeTest {
 
         handler.initialize();
 
-        // The first CONFIGURATION_ERROR must be "No bridge…", NOT "Missing serialNumber…",
-        // which proves the serialNumber gate was passed successfully.
-        ArgumentCaptor<ThingStatusInfo> statusCaptor = ArgumentCaptor.forClass(ThingStatusInfo.class);
-        verify(callback).statusUpdated(eq(thing), statusCaptor.capture());
-        ThingStatusInfo status = statusCaptor.getValue();
-        assertEquals(ThingStatus.OFFLINE, status.getStatus());
-        assertEquals(ThingStatusDetail.CONFIGURATION_ERROR, status.getStatusDetail());
-        assertEquals("@text/error.configuration.no-bridge", status.getDescription());
+        verify(callback, never()).statusUpdated(eq(thing), any());
 
         // The internal deviceId field must equal the serialNumber, not the ThingUID segment.
         Field deviceIdField = ClientHandler.class.getDeclaredField("deviceId");

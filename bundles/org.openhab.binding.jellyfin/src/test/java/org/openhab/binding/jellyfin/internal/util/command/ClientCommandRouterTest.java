@@ -259,6 +259,14 @@ class ClientCommandRouterTest {
         verifyNoInteractions(serverHandler);
     }
 
+    @Test
+    void testUserIdentityCommandsDoNotCauseServerRequests() {
+        route("user-name", new StringType("Different User"));
+        route("user-id", new StringType(UUID.randomUUID().toString()));
+
+        verifyNoInteractions(serverHandler);
+    }
+
     // -------------------------------------------------------------------------
     // Helper methods
     // -------------------------------------------------------------------------

@@ -1,8 +1,8 @@
 # Research - Session User Exposure
 
-**Reviewed**: 2026-11-03. Design findings come from source inspection. The repaired baseline
-now has passing automated/package and runtime smoke evidence; feature acceptance is still open.
-See [handoff.md](handoff.md) for the current state and source evidence.
+**Reviewed**: 2026-11-08. Design decisions are grounded in source inspection. The implementation
+and test coverage are in place, but the full install and linked-Item runtime acceptance remain
+blocked. See [tasks.md](tasks.md) and [handoff.md](handoff.md) for current evidence.
 Paths below are relative to `bundles/org.openhab.binding.jellyfin/`.
 
 ## 1. Reuse the Existing API Model
@@ -51,9 +51,9 @@ Number channels cannot represent UUID identity. Java null and empty strings do n
 
 ## 4. Test Clearing Through Lifecycle Paths
 
-**Evidence**: `ClientHandler.updateStateFromSession(...)` currently returns for non-ONLINE Things.
-Session end and timeout can change Thing status before publication. The existing handler has
-an identity-publishing block, but `ClientStateUpdater` has no identity mapping yet.
+**Evidence at design time (2026-10-30)**: `ClientHandler.updateStateFromSession(...)` returned
+for non-ONLINE Things. Session end and timeout could change Thing status before publication.
+The handler had an identity-publishing block, but `ClientStateUpdater` had no identity mapping.
 
 **Decision**: Test initial absence, session end, timeout, bridge offline, user switch, and recovery
 using observable state callbacks. Make the smallest identity-scoped change needed to clear stale
@@ -84,14 +84,17 @@ Invented console commands and a spec-specific runtime feature toggle cannot veri
 
 ## Outstanding Verification, Not Design Ambiguity
 
-- The baseline module suite passes all 319 tests, and `package` succeeds. Full install remains
- blocked by the supplied core snapshot's ASM dependency mismatch, not test compilation or author tags.
-- The candidate was deployed to the requested openHAB 5.2.3 / Java 21 container. Startup,
- live bridge connectivity, client availability, and public-user discovery smoke checks passed.
-- Identity-channel metadata, state mapping, transitions, and linked-Item acceptance remain open.
- Existing passing tests and ONLINE status do not prove this unfinished feature works.
-- The runtime and user-configured bridge remain available. Temporary client setup was removed,
- and no playback commands or remote identity changes were made.
+- The current full module run passed all 341 tests, but Karaf feature verification failed because
+  core semantics requires ASM >=9.10.0 and the supplied feature resources provide ASM 9.9.1.
+  Retrying with `-DwithResolver` failed on the same requirement. See [tasks.md](tasks.md).
+- Source, metadata, automated lifecycle tests, and README now cover the identity channels and
+  status transitions. Their implementation is not equivalent to linked-Item runtime acceptance.
+- On 2026-11-08, the temporary client Thing exposed both String channels and temporary Items were
+  linked, but its handler did not initialize because the runtime could not resolve
+  `ClientHandler.updateStatus(ThingStatusDetail, String)`. The visible NULL values do not verify
+  the feature. The temporary test objects were removed without a container restart.
+- The previous openHAB 5.2.3 smoke checks remain historical, pre-migration evidence only. Do not
+  infer that the current runtime is compatible from an image label or active binding bundle.
 
 The design has no unresolved clarification markers. See [tasks.md](tasks.md) for executable work.
 

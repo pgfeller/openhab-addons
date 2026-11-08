@@ -21,6 +21,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.jellyfin.channel.UserIdChannel;
+import org.openhab.binding.jellyfin.channel.UserNameChannel;
 import org.openhab.binding.jellyfin.internal.Constants;
 import org.openhab.binding.jellyfin.internal.config.ImageChannelConfig;
 import org.openhab.binding.jellyfin.internal.events.SessionEventBus;
@@ -129,8 +131,7 @@ public class ClientHandler extends BaseThingHandler implements SessionEventListe
 
         String id = (String) thing.getConfiguration().get("serialNumber");
         if (id == null) {
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
-                    "@text/error.configuration.missing-serial-number");
+            updateStatus(ThingStatusDetail.CONFIGURATION_ERROR, "@text/error.configuration.missing-serial-number");
             return;
         }
         deviceId = id;
@@ -138,22 +139,20 @@ public class ClientHandler extends BaseThingHandler implements SessionEventListe
         // Validate bridge connection
         Bridge bridge = getBridge();
         if (bridge == null) {
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
-                    "@text/error.configuration.no-bridge");
             return;
         }
 
         // Verify bridge is a ServerHandler
         ServerHandler serverHandler = getServerHandler();
         if (serverHandler == null) {
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
-                    "@text/error.configuration.invalid-bridge");
+            updateStatus(ThingStatusDetail.CONFIGURATION_ERROR, "@text/error.configuration.invalid-bridge");
             return;
         }
 
         // Check bridge online status
-        if (bridge.getStatus() != ThingStatus.ONLINE) {
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE, "@text/error.bridge.not-online");
+        ThingStatus bridgeStatus = bridge.getStatus();
+        if (bridgeStatus != ThingStatus.ONLINE) {
+            updateBridgeUnavailableStatus(bridgeStatus, "@text/error.bridge.not-online");
             return;
         }
 
@@ -238,7 +237,7 @@ public class ClientHandler extends BaseThingHandler implements SessionEventListe
         if (bridgeStatusInfo.getStatus() == ThingStatus.ONLINE) {
             updateClientState();
         } else {
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE, "@text/error.bridge.offline");
+            updateBridgeUnavailableStatus(bridgeStatusInfo.getStatus(), "@text/error.bridge.unavailable");
             clearChannelStates();
         }
     }
@@ -336,22 +335,34 @@ public class ClientHandler extends BaseThingHandler implements SessionEventListe
      */
     private void updateClientState() {
         Bridge bridge = getBridge();
-        if (bridge == null || bridge.getStatus() != ThingStatus.ONLINE) {
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE,
-                    "@text/error.bridge.unavailable");
+        if (bridge == null) {
+            updateStatus(ThingStatusDetail.BRIDGE_UNINITIALIZED, "@text/error.bridge.unavailable");
+            clearChannelStates();
+            return;
+        }
+        ThingStatus bridgeStatus = bridge.getStatus();
+        if (bridgeStatus != ThingStatus.ONLINE) {
+            updateBridgeUnavailableStatus(bridgeStatus, "@text/error.bridge.unavailable");
+            clearChannelStates();
             return;
         }
 
         synchronized (sessionLock) {
             if (currentSession == null) {
-                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
-                        "@text/error.communication.device-not-connected");
+                updateStatus(ThingStatusDetail.COMMUNICATION_ERROR, "@text/error.communication.device-not-connected");
             } else if (timeoutMonitor.isTimedOut()) {
-                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
-                        "@text/error.communication.session-timeout");
+                updateStatus(ThingStatusDetail.COMMUNICATION_ERROR, "@text/error.communication.session-timeout");
             } else {
                 updateStatus(ThingStatus.ONLINE);
             }
+        }
+    }
+
+    private void updateBridgeUnavailableStatus(ThingStatus bridgeStatus, String description) {
+        switch (bridgeStatus) {
+            case OFFLINE -> updateStatus(ThingStatusDetail.BRIDGE_OFFLINE, description);
+            case UNINITIALIZED -> updateStatus(ThingStatusDetail.BRIDGE_UNINITIALIZED, description);
+            default -> updateStatus(ThingStatus.UNINITIALIZED);
         }
     }
 
@@ -380,9 +391,10 @@ public class ClientHandler extends BaseThingHandler implements SessionEventListe
      * @param session the session to derive states from, or {@code null} to clear all channels
      */
     public synchronized void updateStateFromSession(@Nullable SessionInfoDto session) {
-        // Skip state updates if thing is not ONLINE
-        if (getThing().getStatus() != ThingStatus.ONLINE) {
-            logger.trace("Skipping state update - thing is {} for device {}", getThing().getStatus(), deviceId);
+        // A missing session is authoritative even after the status was changed to OFFLINE.
+        ThingStatus thingStatus = getThing().getStatus();
+        if (session != null && thingStatus != ThingStatus.ONLINE) {
+            logger.trace("Skipping state update - thing is {} for device {}", thingStatus, deviceId);
             return;
         }
 
@@ -444,7 +456,8 @@ public class ClientHandler extends BaseThingHandler implements SessionEventListe
     }
 
     private void clearChannelStates() {
-        final String[] channels = { "playing-item-id", "playing-item-name", "playing-item-series-name",
+        final String[] channels = { UserNameChannel.CHANNEL_ID, UserIdChannel.CHANNEL_ID, "playing-item-id",
+                "playing-item-name", "playing-item-series-name",
                 "playing-item-season-name", "playing-item-season", "playing-item-episode", "playing-item-genres",
                 "playing-item-type", "playing-item-total-seconds", "media-control", "playing-item-percentage",
                 "playing-item-second" };

@@ -4,8 +4,10 @@
 
 **Input**: Existing partial implementation and reviewed feature specification.
 
-**Status**: Implementing; T001-T003 complete, T004-T018 open. Baseline runtime smoke checks
-passed; identity-channel acceptance and the full install gate remain open. See [handoff.md](handoff.md).
+**Status (2026-11-08)**: Implementing; T001-T015 complete, T016-T018 open. The 341-test
+module run passed, but Karaf feature verification remains blocked by the ASM dependency
+mismatch. Linked-Item acceptance was attempted but blocked by a runtime status-API mismatch.
+See [tasks.md](tasks.md) and [handoff.md](handoff.md) for current evidence.
 
 ## Summary
 
@@ -130,24 +132,22 @@ No unresolved design questions require new research agents.
 - Validate with [quickstart.md](quickstart.md), including linked Item states rather than only
   internal session storage assertions. Separate automated and interactive evidence.
 
-## Existing Implementation Baseline
+## Current Implementation State
 
-Source inspection on 2026-10-30 confirms a generated UUID-typed DTO, session subscription,
-and a handler identity-publishing block. Client Thing XML has no identity channel declarations.
-The pure state updater has no identity mappings. Handler publication is ONLINE-gated, so clearing
-must be tested across offline transitions. Existing handler tests mostly inspect stored session
-data rather than fully asserting identity publications. The reported compilation errors and
-supporting public-user cleanup blocker were repaired; all 319 module tests now pass. Packaging
-succeeds, but full install is blocked by the supplied core snapshot's ASM dependency mismatch.
-Discovery changes remain a separately authorized supporting repair, not session-user feature scope.
+The client Thing XML declares both read-only String identity channels. The state updater maps
+nullable names and UUIDs independently, and the handler publishes and clears those states on
+session and bridge lifecycle transitions. Handler tests cover the published states, status
+callbacks, command behavior, and bridge initialization/status mapping. The implementation uses
+the detail-derived status API and preserves UNINITIALIZED while bridge state is unresolved.
+T001-T015 are complete; see [tasks.md](tasks.md) for their scope and the remaining acceptance gates.
 
-The implementation gaps are source-inspection findings; passing baseline checks are recorded
-separately in [handoff.md](handoff.md). The current handler still uses deprecated status-plus-detail
-overloads and classifies a missing bridge as an error. T004 verifies identity mapping and published
-identity states with an ONLINE client and bridge; it does not verify Thing status callbacks or
-unresolved-bridge initialization. T010 owns status-detail and lifecycle callback tests, and T011
-owns the detail-derived API migration and status mapping. [tasks.md](tasks.md) tracks the remaining
-feature work.
+The implementation is not considered runtime-accepted: the 2026-11-08 linked-Item attempt left
+the client UNINITIALIZED with `HANDLER_INITIALIZING_ERROR` because the running core could not
+resolve `ClientHandler.updateStatus(ThingStatusDetail, String)`. The visible NULL Item states do
+not validate identity behavior. Separately, the full module build passed all 341 tests but Karaf
+verification failed because `org.openhab.core.semantics` requires ASM >=9.10.0 while the supplied
+feature resources provide ASM 9.9.1. Retrying with `-DwithResolver` did not resolve that mismatch.
+Keep T016-T018 open; do not bypass either gate.
 
 ## Complexity Tracking
 

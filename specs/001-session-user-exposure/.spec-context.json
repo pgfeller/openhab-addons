@@ -3,7 +3,7 @@
   "specName": "001-session-user-exposure",
   "branch": "pgfeller/issue21850",
   "selectedAt": "2026-10-18T12:30:51.634Z",
-  "currentStep": "implement",
+  "currentStep": "converge",
   "status": "implementing",
   "history": [
     {
@@ -98,6 +98,54 @@
       "kind": "complete",
       "by": "ai",
       "at": "2026-11-03T19:41:59.444Z"
+    },
+    {
+      "step": "implement",
+      "substep": null,
+      "task": "T010",
+      "kind": "complete",
+      "by": "extension",
+      "at": "2026-11-08T07:04:49.801Z"
+    },
+    {
+      "step": "implement",
+      "substep": null,
+      "task": "T011",
+      "kind": "complete",
+      "by": "extension",
+      "at": "2026-11-08T07:04:49.801Z"
+    },
+    {
+      "step": "implement",
+      "substep": null,
+      "task": "T012",
+      "kind": "complete",
+      "by": "extension",
+      "at": "2026-11-08T07:04:49.801Z"
+    },
+    {
+      "step": "implement",
+      "substep": null,
+      "task": "T013",
+      "kind": "complete",
+      "by": "extension",
+      "at": "2026-11-08T07:04:49.801Z"
+    },
+    {
+      "step": "implement",
+      "substep": null,
+      "task": "T014",
+      "kind": "complete",
+      "by": "extension",
+      "at": "2026-11-08T07:04:49.801Z"
+    },
+    {
+      "step": "implement",
+      "substep": null,
+      "task": "T015",
+      "kind": "complete",
+      "by": "extension",
+      "at": "2026-11-08T07:04:49.801Z"
     }
   ],
   "telemetryInstanceId": "d69622fa-eb7a-4059-8783-f76bff4d6747",
@@ -431,8 +479,8 @@
       "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin spotless:apply",
       "source": "derived",
       "exitCode": 0,
-      "durationSeconds": 8.8,
-      "result": "[INFO] Total time:  7.159 s · [INFO] Finished at: 2026-11-03T05:11:56+01:00 · [INFO] ------------------------------------------------------------------------"
+      "durationSeconds": 9.4,
+      "result": "[INFO] Total time:  7.446 s · [INFO] Finished at: 2026-11-08T09:17:51+01:00 · [INFO] ------------------------------------------------------------------------"
     },
     {
       "what": "T003 metadata contract checks before XML updates",
@@ -563,37 +611,160 @@
       "exitCode": 0,
       "durationSeconds": 0.0,
       "result": "no output"
+    },
+    {
+      "what": "T010-T012 focused Jellyfin regression tests",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=ClientHandlerTest,ClientCommandRouterTest,ClientHandlerEventIntegrationTest,ClientHandlerStatusCheckTest,ClientHandlerInitializeTest test",
+      "source": "derived",
+      "exitCode": 0,
+      "result": "61 tests passed; 0 failures, errors, or skipped."
+    },
+    {
+      "what": "T010-T015 Jellyfin Spotless",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin spotless:apply",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 7.474,
+      "result": "BUILD SUCCESS."
+    },
+    {
+      "what": "T016 full Jellyfin module clean install",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin clean install",
+      "source": "derived",
+      "exitCode": 1,
+      "durationSeconds": 239.0,
+      "result": "All 341 tests passed with 0 failures, errors, or skipped; packaging and static-analysis phases completed. Karaf feature verification failed because org.openhab.core.semantics requires org.objectweb.asm >=9.10.0 and the supplied feature resources could not resolve that package. No overrides or verification skips were used."
+    },
+    {
+      "what": "T016 README and feature Markdown lint",
+      "command": "npx --yes markdownlint-cli2 --config .github/markdownlint.yaml README.md \"specs/001-session-user-exposure/**/*.md\"",
+      "source": "derived",
+      "exitCode": 0,
+      "result": "Linted 10 files; 0 issues."
+    },
+    {
+      "what": "T016 feature prerequisite check",
+      "command": ".specify/scripts/bash/check-prerequisites.sh --json --require-spec --require-tasks --include-tasks",
+      "source": "derived",
+      "exitCode": 0,
+      "result": "Feature prerequisites passed; research.md, data-model.md, contracts/, quickstart.md, and tasks.md were available."
+    },
+    {
+      "what": "T017 local openHAB snapshot image inspection",
+      "command": "docker image inspect openhab/openhab:snapshot-debian --format 'version={{index .Config.Labels \"org.opencontainers.image.version\"}} revision={{index .Config.Labels \"org.opencontainers.image.revision\"}}' && docker run --rm --entrypoint java openhab/openhab:snapshot-debian -version",
+      "source": "derived",
+      "exitCode": 0,
+      "result": "Image is openHAB 5.3.0-snapshot, revision 9be7d320cba2fa744230d7967414823b1c22477a; Java 21.0.11. No configured 5.3 runtime or live Jellyfin acceptance target is available."
+    },
+    {
+      "what": "Focused handler and discovery tests",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=ClientHandlerTest,PublicUserDiscoveryServiceTest test",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 39.6,
+      "result": "[INFO] Total time:  36.484 s · [INFO] Finished at: 2026-11-08T09:17:14+01:00 · [INFO] ------------------------------------------------------------------------"
+    },
+    {
+      "what": "Focused identity and lifecycle tests",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=ClientStateUpdaterTest,ClientHandlerEventIntegrationTest,ClientHandlerStatusCheckTest,ClientCommandRouterTest test",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 27.3,
+      "result": "[INFO] Total time:  25.179 s · [INFO] Finished at: 2026-11-08T09:17:42+01:00 · [INFO] ------------------------------------------------------------------------"
+    },
+    {
+      "what": "Jellyfin clean install",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin clean install",
+      "source": "derived",
+      "exitCode": 1,
+      "durationSeconds": 187.1,
+      "result": "[ERROR]  · [ERROR] For more information about the errors and possible solutions, please read the following articles: · [ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException",
+      "warnings": [
+        "exited 1"
+      ]
+    },
+    {
+      "what": "Feature prerequisite check",
+      "command": ".specify/scripts/bash/check-prerequisites.sh --json --require-spec --require-tasks --include-tasks",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 0.0,
+      "result": "{\"FEATURE_DIR\":\"/home/pgfeller/Documents/GitHub/openhab-addons/specs/001-session-user-exposure\",\"AVAILABLE_DOCS\":[\"research.md\",\"data-model.md\",\"contracts/\",\"quickstart.md\",\"tasks.md\"]}"
+    },
+    {
+      "what": "Feature Markdown lint",
+      "command": "npx --yes markdownlint-cli2 --config .github/markdownlint.yaml \"specs/001-session-user-exposure/**/*.md\"",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 1.1,
+      "result": "Finding: specs/001-session-user-exposure/**/*.md · Linting: 9 files · Summary: 0 issues in 0 files"
+    },
+    {
+      "what": "Git diff whitespace check",
+      "command": "git --no-pager diff --check",
+      "source": "derived",
+      "exitCode": 0,
+      "durationSeconds": 0.0,
+      "result": "no output"
+    },
+    {
+      "what": "User-reported live Jellyfin bundle runtime metadata",
+      "result": "User reports bundle 269 ACTIVE at version 5.3.0.202611080927. bundle:diag 269 produced no diagnostic text; bundle:services listed the API client factory, discovery services, and thing handler factory. scr:list 269 showed all five bundle components ACTIVE. This verifies bundle activation only; linked-Item identity acceptance remains unrun."
+    },
+    {
+      "what": "User-coordinated openHAB linked-Item acceptance attempt",
+      "command": "Manual UI interaction",
+      "result": "Both temporary String Items were linked to the user-name and user-id channels and displayed NULL, but the client Thing was UNINITIALIZED with HANDLER_INITIALIZING_ERROR because ClientHandler.updateStatus(ThingStatusDetail, String) was missing at runtime. The NULL states do not demonstrate feature behavior. The temporary Items and Thing were removed; no container restart occurred."
+    },
+    {
+      "what": "T016 full Jellyfin clean install with resolver",
+      "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin clean install -DwithResolver",
+      "source": "derived",
+      "exitCode": 1,
+      "durationSeconds": 319.9,
+      "result": "[ERROR]  · [ERROR] For more information about the errors and possible solutions, please read the following articles: · [ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException",
+      "warnings": [
+        "exited 1"
+      ]
     }
   ],
   "concerns": [
     {
-      "note": "The reported Jellyfin test-compilation failure remains unresolved by design. Java tests, module build, and interactive runtime acceptance were not run during the SDD setup repair."
+      "note": "Historical setup concern superseded: fixture repairs and the T010-T015 feature implementation are complete. Current automated results are in verified[]; T016/T017 remain open for the Karaf ASM resolution failure and unavailable linked-Item runtime acceptance."
     },
     {
-      "note": "T002 remains blocked: testSuccessfulEmptyResponseRemovesPreviouslyDiscoveredInboxResult expects DiscoveryListener.thingRemoved, but the existing discovery service invokes removeOlderResults. Repairing discovery assertions or production behavior is outside the authorized compilation-fixture scope. Compilation succeeds; ClientHandlerTest passes 9/9 and PublicUserDiscoveryServiceTest passes 5/6 (15 total, 1 failure, 0 errors, 0 skipped)."
+      "note": "Historical T002 discovery-test concern was resolved and T002 is complete; it does not block the current session-user feature."
     },
     {
-      "note": "Latest post-format validation supersedes the earlier 15-total/1-failure summary: 15 tests, 2 failures, 0 errors, 0 skipped (ClientHandlerTest 9/9 passed; discovery 4/6 passed). In addition to the deterministic thingRemoved/removeOlderResults expectation mismatch, testDiscoversMultipleUsersWithBridgeScopedStableIdentity received discovery callbacks in reverse order. Both require discovery assertion/behavior work outside compilation-fixture scope; T002 remains open. T001 is complete solely for its successful non-null fixture compilation repair."
+      "note": "Historical T001/T002 discovery-test results are superseded by the completed fixture and cleanup repair records in the context history."
     },
     {
-      "note": "Bounded discovery test repair stopped before code edits: PublicUserDiscoveryService.publishUsers skips a null user ID but always returns true, so startScan calls removeOlderResults after List.of(new UserDto()). Core AbstractDiscoveryService delegates bulk cleanup to DiscoveryListener.removeOlderResults; PersistentInbox removes older results matching type, bridge and discoverer. Local 5.0.3 source contract cross-checked against the 5.3.0-SNAPSHOT bytecode. The malformed-response test only verifies thingRemoved never, masking destructive bulk cleanup. Production changes are unauthorized; T002 remains open and no T003+ work was started."
+      "note": "Historical bounded-discovery analysis was superseded by the authorized T002 cleanup fix; T002 is complete."
     },
     {
-      "note": "Current cleanup repair supersedes the earlier lack-of-authorization and T002 blockers: production cleanup is now explicitly authorized and regression-tested; T002 is complete. Final module install remains blocked by pre-existing missing author tags at UserIdChannel.java:21 and UserNameChannel.java:21, deliberately left unchanged. T003-T018 remain open; no runtime acceptance or overall feature completion."
+      "note": "Historical cleanup status is superseded. Current channel wrapper author tags remain intact; T010-T015 are complete, while T016-T018 remain open as summarized below."
     },
     {
-      "note": "Local package available, but full install remains blocked by inconsistent 5.3.0-SNAPSHOT runtime requirements: ASM >=9.10 versus 9.9.1 resources. Runtime compatibility with user-selected 5.2.3 and live acceptance are unverified. Client XML still lacks planned user-name/user-id channels; T003-T018 remain open."
+      "note": "Historical metadata status is superseded; client identity XML is now present. Current full-install and runtime acceptance gates are documented in the latest verified records."
     },
     {
-      "note": "T003 intentionally leaves the new contract test failing until T005/T008 declare the client channels and missing user-id type; no XML changes were in scope.",
+      "note": "Historical T003 metadata failure is resolved; both client identity channel declarations and matching types now exist.",
       "step": "implement"
     },
     {
-      "note": "A compatible 5.3-or-later image is verified locally, but no 5.3 test container has been created and no migrated-bundle runtime acceptance has run. The old 5.2.3 container is stopped. T004 and the feature remain open.",
+      "note": "T017 remains open: the local 5.3 image is verified, but no configured 5.3 test runtime or migrated-bundle linked-Item acceptance exists; the old 5.2.3 container is stopped.",
       "step": "implement"
     },
     {
-      "note": "The broad ClientStateUpdaterTest and ClientHandlerTest run retains one T003 metadata test failure for the missing user-id declaration and type, which remain T008 scope; T004 name-state tests pass.",
+      "note": "Historical T003 metadata test failure is resolved; focused metadata and handler tests now pass.",
+      "step": "implement"
+    },
+    {
+      "note": "T016 clean install fails after all 341 module tests pass during Karaf feature verification: the supplied core semantics bundle requires ASM >=9.10.0, while resolved feature resources provide ASM 9.9.1. Do not bypass; keep T016-T018 open.",
+      "step": "implement"
+    },
+    {
+      "note": "T017 acceptance is blocked by a runtime/core API mismatch: ClientHandler.updateStatus(ThingStatusDetail, String) is unavailable. The test objects were removed; rerun only with a compatible openHAB core/runtime. T016 remains blocked by the independent Karaf ASM feature-resolution failure, and T018 must remain open.",
       "step": "implement"
     }
   ],
@@ -604,9 +775,10 @@
     "2026-10-30 bounded public-user cleanup repair only. Bug jellyfin-public-user-cleanup: fix applied, verification partial due unrelated static-analysis gate. Existing user fixture/task changes and prior Companion history retained; no further agents, commits, pushes, branches, generated-model changes, metadata changes, or T003+ work.",
     "2026-10-30: user requested committing cleanup repairs and preparing a local build. Cleanup/fixture repair committed as 97960f5eea. Restored human author tags only in UserNameChannel and UserIdChannel, added smoke-build guidance; did not change feature metadata or runtime dependencies.",
     "Read specs/001-session-user-exposure/handoff.md first in a future session. The actual branch is pgfeller/issue21850; the local feature selector can be re-established with SPECIFY_FEATURE_DIRECTORY=specs/001-session-user-exposure and the prerequisite script. Use quickstart.md for watched-addons deployment, secure interactive console access, browser testing, and rollback.",
-    "Fresh-workstation interactive acceptance requires openHAB 5.3 or later: pull and inspect mutable openhab/openhab:snapshot-debian, verify its actual version and Java 21, and retain 5.2.3 results as historical evidence only."
+    "Fresh-workstation interactive acceptance requires openHAB 5.3 or later: pull and inspect mutable openhab/openhab:snapshot-debian, verify its actual version and Java 21, and retain 5.2.3 results as historical evidence only.",
+    "2026-11-08: T010-T015 implementation, tests, README, and type-ID reconciliation are complete. Focused tests passed 61/61, Spotless passed, Markdown lint passed 10 files, and prerequisite checks passed. Full module clean install ran 341/341 tests but failed at Karaf ASM feature resolution. Local openHAB 5.3 snapshot/Java 21 image is present; no configured 5.3 runtime or linked-Item acceptance target is available. Keep T016-T018 and feature status incomplete."
   ],
-  "currentTask": "T009",
+  "currentTask": "T016",
   "task_summaries": {
     "T001": {
       "status": "DONE",
@@ -678,27 +850,74 @@
         "bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/util/client/ClientStateUpdater.java",
         "bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/handler/ClientHandler.java"
       ]
+    },
+    "T010": {
+      "status": "DONE",
+      "did": "Added and passed lifecycle/status callback coverage for initial absence, anonymous session, identity switch, session end, timeout, bridge transitions, unresolved bridge initialization, and recovery.",
+      "files": [
+        "bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerEventIntegrationTest.java",
+        "bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerStatusCheckTest.java"
+      ]
+    },
+    "T011": {
+      "status": "DONE",
+      "did": "Corrected detail-derived status transitions and identity clearing/publication on recognized session and bridge transitions; focused lifecycle tests pass.",
+      "files": [
+        "bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/handler/ClientHandler.java",
+        "bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerInitializeTest.java"
+      ]
+    },
+    "T012": {
+      "status": "DONE",
+      "did": "Added initialized-handler checks proving identity commands do not change the session or publish identity and REFRESH republishes both values; router checks prove no server request.",
+      "files": [
+        "bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerTest.java",
+        "bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/util/command/ClientCommandRouterTest.java"
+      ]
+    },
+    "T013": {
+      "status": "DONE",
+      "did": "No production command guard was needed: T012 tests confirmed the existing router ignores identity commands without remote requests or session mutation."
+    },
+    "T014": {
+      "status": "DONE",
+      "did": "Documented read-only String identity channels, independent NULL behavior, empty-name preservation, REFRESH behavior, and String Item links.",
+      "files": [
+        "bundles/org.openhab.binding.jellyfin/README.md"
+      ]
+    },
+    "T015": {
+      "status": "DONE",
+      "did": "Aligned identity channel type UIDs with XML type IDs and updated channel Javadocs and the stale supported-handler comment; XML/type consistency tests pass.",
+      "files": [
+        "bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/channel/UserNameChannel.java",
+        "bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/channel/UserIdChannel.java",
+        "bundles/org.openhab.binding.jellyfin/src/main/java/org/openhab/binding/jellyfin/internal/Constants.java"
+      ]
     }
   },
   "handoff": "specs/001-session-user-exposure/handoff.md",
-  "nextAction": "Continue implementation at T010; T001-T009 complete",
+  "nextAction": "Resolve the ASM core/features mismatch and confirm runtime/core status API compatibility, then rerun the documented linked-Item acceptance with the user. Keep T016-T018 open until both gates pass.",
   "step_summaries": {
     "converge": {
-      "summary": "Current-state handoff consolidated on 2026-10-30. T001/T002 complete; T003-T018 remain open. No source changes and no newly uncovered implementation work beyond the existing backlog.",
-      "key_finding": "Client channel declarations and pure identity-state mappings remain absent; ONLINE-gated publication needs clearing/transition tests. Resume at T003.",
+      "summary": "Reconciled the session-user Speckit artifacts with the current T001-T015 implementation and 2026-11-08 verification. T016 remains blocked by Karaf ASM feature resolution; T017 remains blocked by the runtime status-API mismatch; T018 remains open. No additional implementation gap requires a duplicate task beyond the existing T016-T017 gates.",
+      "key_finding": "The current code and automated test coverage implement the documented channels and lifecycle behavior. The full install and linked-Item runtime acceptance are not passing, so the feature remains implementing.",
       "risks": [
-        "Full install blocked by supplied core snapshot ASM>=9.10 versus9.9.1 feature resources.",
-        "319 passing baseline tests and live smoke success do not prove identity-channel acceptance.",
-        "Protect credentials and household account identities when inspecting browser configuration or publishing evidence."
+        "Do not mark T016-T018 complete until Karaf feature verification passes and linked-Item acceptance runs on a runtime that resolves ClientHandler.updateStatus(ThingStatusDetail, String).",
+        "Earlier 5.2.3 smoke results and the 2026-11-08 NULL Item states are not identity acceptance evidence."
       ]
     },
     "implement": {
-      "summary": "T001-T009 complete. User Story 2 now exposes nullable UUID independently of display name; T010 is next.",
-      "key_finding": "ClientStateUpdater calculates and publishes both identity fields from the selected snapshot; UUID is rendered canonically, and either missing field clears independently.",
+      "summary": "Attempted linked-Item acceptance; temporary test objects were cleaned up, but a missing openHAB status API method prevented valid identity-state testing. The resolver-enabled clean install also remains blocked at Karaf ASM feature resolution. T016-T018 remain open.",
+      "key_finding": "The runtime could not resolve ClientHandler.updateStatus(ThingStatusDetail, String), leaving the client Thing uninitialized and linked Items at NULL. The resolver-enabled clean install still cannot resolve the core semantics dependency requiring ASM >=9.10.0. Neither gate passed.",
       "risks": [
-        "T010-T018 remain open for lifecycle/status transitions, read-only command behavior, runtime acceptance, and final verification.",
-        "The historical full-install Karaf verification may still be blocked by the supplied core snapshot ASM mismatch; recheck on a later build."
+        "T016 remains open until the module clean install passes Karaf ASM feature verification.",
+        "T017 remains open until a compatible core/runtime is confirmed and linked-Item acceptance is repeated.",
+        "T018 and overall feature completion must remain open until all build and interactive acceptance gates pass."
       ]
+    },
+    "specify": {
+      "summary": "Attempted linked-Item acceptance; temporary test objects were cleaned up, but a missing openHAB status API method prevented valid identity-state testing. T016-T018 remain open."
     }
   },
   "coverage": {
@@ -734,5 +953,5 @@
       ]
     }
   },
-  "last_action": "T007-T009 reviewed and materialized; Spotless, focused tests (30/30), and git diff --check pass."
+  "last_action": "Consolidated spec, plan, research, quickstart, handoff, tasks, and Companion status; Markdown lint, prerequisites, and whitespace checks passed. T016-T018 remain open."
 }

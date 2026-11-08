@@ -2,11 +2,11 @@
 
 **Feature**: `001-session-user-exposure`
 
-**Created**: 2026-10-18 | **Reviewed**: 2026-10-30
+**Created**: 2026-10-18 | **Reviewed**: 2026-11-08
 
 **Issue**: openHAB Add-ons #21850 | **Binding**: Jellyfin
 
-**Status**: Implementing; baseline smoke-tested, feature acceptance pending
+**Status**: Implementing; T001-T015 complete, build and linked-Item acceptance blocked
 
 **Continuation**: [Current implementation state and handoff](handoff.md).
 

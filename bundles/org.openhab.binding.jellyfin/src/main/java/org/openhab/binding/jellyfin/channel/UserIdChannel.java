@@ -12,28 +12,30 @@
  */
 package org.openhab.binding.jellyfin.channel;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.binding.jellyfin.internal.Constants;
+import org.openhab.core.thing.type.ChannelTypeUID;
+
 /**
  * Channel metadata for the user-id channel.
  * <p>
- * Exposes the currently authenticated Jellyfin user's UUID as a read-only String channel.
- * The channel state is NULL when no session is active.
+ * Exposes the current client's session user's UUID as a read-only String channel. It reports NULL when the session
+ * or user ID is unavailable.
  *
  * @author Patrik Gfeller - Initial contribution - Session user exposure
  */
+@NonNullByDefault
 public class UserIdChannel {
 
     /**
-     * The channel type UID for the user-id channel.
-     * Format: bindingId + ":" + channelId
+     * The channel ID for the user-id channel.
      */
-    public static final java.lang.String CHANNEL_ID = "user-id";
+    public static final String CHANNEL_ID = "user-id";
 
     /**
-     * The channel type UID for the user-id channel.
-     * Used by openHAB to identify this channel type.
+     * The channel type UID declared by the client Thing type metadata.
      */
-    public static final org.openhab.core.thing.type.ChannelTypeUID CHANNEL_TYPE_UID =
-            new org.openhab.core.thing.type.ChannelTypeUID(org.openhab.binding.jellyfin.internal.Constants.BINDING_ID, "user-id");
+    public static final ChannelTypeUID CHANNEL_TYPE_UID = new ChannelTypeUID(Constants.BINDING_ID, "user-id-channel");
 
     /**
      * Private constructor to prevent instantiation.

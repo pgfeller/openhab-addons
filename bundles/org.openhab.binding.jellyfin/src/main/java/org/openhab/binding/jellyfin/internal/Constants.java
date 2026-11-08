@@ -54,7 +54,7 @@ public class Constants {
     public static final ThingTypeUID THING_TYPE_SERVER = new ThingTypeUID(BINDING_ID, "server");
     public static final ThingTypeUID THING_TYPE_JELLYFIN_CLIENT = new ThingTypeUID(BINDING_ID, "client");
     public static final ThingTypeUID THING_TYPE_JELLYFIN_USER = new ThingTypeUID(BINDING_ID, "user");
-    // Only the server handler is implemented; client and user handlers are not yet available.
+    // The public-user Thing type is reserved for metadata/discovery and does not have a handler yet.
     public static final Set<ThingTypeUID> SUPPORTED_THING_TYPES =
             Set.of(THING_TYPE_SERVER, THING_TYPE_JELLYFIN_CLIENT, THING_TYPE_JELLYFIN_USER);
     public static final Set<ThingTypeUID> DISCOVERABLE_CLIENT_THING_TYPES = Set.of(THING_TYPE_JELLYFIN_CLIENT);

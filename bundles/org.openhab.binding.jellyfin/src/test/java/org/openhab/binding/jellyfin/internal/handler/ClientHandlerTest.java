@@ -15,6 +15,7 @@ package org.openhab.binding.jellyfin.internal.handler;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.lang.reflect.Field;
 import java.io.InputStream;
 import java.util.Objects;
 import java.util.UUID;
@@ -25,8 +26,12 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.jupiter.api.Test;
+import org.openhab.binding.jellyfin.channel.UserIdChannel;
+import org.openhab.binding.jellyfin.channel.UserNameChannel;
+import org.openhab.binding.jellyfin.internal.Constants;
 import org.openhab.binding.jellyfin.internal.gen.current.model.BaseItemDto;
 import org.openhab.binding.jellyfin.internal.gen.current.model.SessionInfoDto;
+import org.openhab.binding.jellyfin.internal.util.command.ClientCommandRouter;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.thing.Bridge;
 import org.openhab.core.thing.ChannelUID;
@@ -34,6 +39,8 @@ import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingStatus;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.ThingHandlerCallback;
+import org.openhab.core.thing.type.ChannelTypeUID;
+import org.openhab.core.types.RefreshType;
 import org.openhab.core.types.State;
 import org.openhab.core.types.UnDefType;
 import org.w3c.dom.Document;
@@ -59,8 +66,10 @@ class ClientHandlerTest {
         Document userChannelTypes = parseXmlResource("/OH-INF/thing/types/user-channel-types.xml");
 
         assertAll(
-                () -> assertClientChannel(clientThingType, userChannelTypes, "user-name", "user-name-channel"),
-                () -> assertClientChannel(clientThingType, clientChannelTypes, "user-id", "user-id-channel"));
+                () -> assertClientChannel(clientThingType, userChannelTypes, "user-name", "user-name-channel",
+                        UserNameChannel.CHANNEL_TYPE_UID),
+                () -> assertClientChannel(clientThingType, clientChannelTypes, "user-id", "user-id-channel",
+                        UserIdChannel.CHANNEL_TYPE_UID));
     }
 
     @Test
@@ -258,6 +267,80 @@ class ClientHandlerTest {
         assertUserNamePublished(null, userId, true, UnDefType.NULL);
     }
 
+    @Test
+    void testIdentityCommandsDoNotChangeSessionOrPublishIdentity() throws Exception {
+        HandlerFixture fixture = createHandlerFixture();
+        SessionInfoDto session = new SessionInfoDto();
+        session.setUserName("Current User");
+        session.setUserId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        fixture.handler().onSessionUpdate(session);
+
+        ClientCommandRouter router = mock(ClientCommandRouter.class);
+        Field routerField = ClientHandler.class.getDeclaredField("commandRouter");
+        routerField.setAccessible(true);
+        routerField.set(fixture.handler(), router);
+
+        clearInvocations(fixture.callback());
+        ChannelUID nameChannel = new ChannelUID(fixture.thingUID(), "user-name");
+        ChannelUID idChannel = new ChannelUID(fixture.thingUID(), "user-id");
+        StringType nameCommand = new StringType("Different User");
+        StringType idCommand = new StringType("223e4567-e89b-12d3-a456-426614174000");
+        fixture.handler().handleCommand(nameChannel, nameCommand);
+        fixture.handler().handleCommand(idChannel, idCommand);
+
+        verify(router).route(nameChannel, nameCommand);
+        verify(router).route(idChannel, idCommand);
+        verify(fixture.callback(), never()).stateUpdated(any(), any());
+        assertSame(session, fixture.handler().getCurrentSession());
+    }
+
+    @Test
+    void testRefreshRepublishesIdentityWithoutMutatingSession() throws Exception {
+        HandlerFixture fixture = createHandlerFixture();
+        SessionInfoDto session = new SessionInfoDto();
+        session.setUserName("Current User");
+        UUID userId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        session.setUserId(userId);
+        fixture.handler().onSessionUpdate(session);
+
+        ClientCommandRouter router = mock(ClientCommandRouter.class);
+        Field routerField = ClientHandler.class.getDeclaredField("commandRouter");
+        routerField.setAccessible(true);
+        routerField.set(fixture.handler(), router);
+
+        clearInvocations(fixture.callback());
+        fixture.handler().handleCommand(new ChannelUID(fixture.thingUID(), "user-name"), RefreshType.REFRESH);
+
+        verify(fixture.callback()).stateUpdated(new ChannelUID(fixture.thingUID(), "user-name"),
+                new StringType("Current User"));
+        verify(fixture.callback()).stateUpdated(new ChannelUID(fixture.thingUID(), "user-id"),
+                new StringType(userId.toString()));
+        verifyNoInteractions(router);
+        assertSame(session, fixture.handler().getCurrentSession());
+    }
+
+    private static HandlerFixture createHandlerFixture() {
+        ThingUID thingUID = new ThingUID("jellyfin:client:server:device");
+        ThingUID bridgeUID = new ThingUID("jellyfin:server:server");
+        Thing thing = mock(Thing.class);
+        when(thing.getUID()).thenReturn(thingUID);
+        when(thing.getBridgeUID()).thenReturn(bridgeUID);
+        when(thing.getStatus()).thenReturn(ThingStatus.ONLINE);
+
+        Bridge bridge = mock(Bridge.class);
+        when(bridge.getStatus()).thenReturn(ThingStatus.ONLINE);
+        ThingHandlerCallback callback = mock(ThingHandlerCallback.class);
+        when(callback.getBridge(bridgeUID)).thenReturn(bridge);
+        when(callback.isChannelLinked(any())).thenReturn(true);
+
+        ClientHandler handler = new ClientHandler(thing);
+        handler.setCallback(callback);
+        return new HandlerFixture(thingUID, callback, handler);
+    }
+
+    private record HandlerFixture(ThingUID thingUID, ThingHandlerCallback callback, ClientHandler handler) {
+    }
+
     private static void assertUserNamePublished(@Nullable String userName, @Nullable UUID userId, boolean withMedia,
             State expectedState) {
         ThingUID thingUID = new ThingUID("jellyfin:client:jellyfin:device");
@@ -292,9 +375,10 @@ class ClientHandlerTest {
     }
 
     private static void assertClientChannel(Document clientThingType, Document channelTypes, String channelId,
-            String channelTypeId) {
+            String channelTypeId, ChannelTypeUID channelTypeUID) {
         Element channel = findElementById(clientThingType, "channel", channelId);
         assertAll(channelId,
+                () -> assertEquals(new ChannelTypeUID(Constants.BINDING_ID, channelTypeId), channelTypeUID),
                 () -> {
                     assertNotNull(channel, "Client thing type must declare the " + channelId + " channel");
                     if (channel != null) {

@@ -13,22 +13,33 @@
 package org.openhab.binding.jellyfin.internal.handler;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.openhab.binding.jellyfin.internal.gen.current.model.BaseItemDto;
 import org.openhab.binding.jellyfin.internal.gen.current.model.PlayerStateInfo;
 import org.openhab.binding.jellyfin.internal.gen.current.model.SessionInfoDto;
 import org.openhab.binding.jellyfin.internal.util.command.ClientCommandRouter;
 import org.openhab.binding.jellyfin.internal.util.extrapolation.PlaybackExtrapolator;
+import org.openhab.core.config.core.Configuration;
 import org.openhab.core.library.types.StringType;
+import org.openhab.core.thing.Bridge;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingStatus;
+import org.openhab.core.thing.ThingStatusDetail;
+import org.openhab.core.thing.ThingStatusInfo;
 import org.openhab.core.thing.ThingUID;
+import org.openhab.core.thing.binding.ThingHandlerCallback;
+import org.openhab.core.thing.binding.builder.ThingStatusInfoBuilder;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.RefreshType;
 
@@ -43,6 +54,8 @@ import org.openhab.core.types.RefreshType;
  * @author Patrik Gfeller - Initial contribution
  */
 class ClientHandlerStatusCheckTest {
+
+    private static final long CALLBACK_TIMEOUT_MS = 2_000;
 
     private Thing mockThing = null;
     private ClientHandler handler = null;
@@ -202,6 +215,115 @@ class ClientHandlerStatusCheckTest {
 
         verify(router).route(channelUID, command);
         verify(extrapolator).stop();
+    }
+
+    @Test
+    void testSessionAndBridgeStatusCallbacksReportLifecycleDetails() throws Exception {
+        StatusFixture fixture = createStatusFixture();
+
+        SessionInfoDto userSession = new SessionInfoDto();
+        userSession.setUserName("Current User");
+        assertAll("Session and bridge status transitions",
+                () -> assertStatusAfter(fixture, ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
+                        () -> fixture.handler().onSessionUpdate(null)),
+                () -> assertStatusAfter(fixture, ThingStatus.ONLINE, ThingStatusDetail.NONE,
+                        () -> fixture.handler().onSessionUpdate(new SessionInfoDto())),
+                () -> assertStatusAfter(fixture, ThingStatus.ONLINE, ThingStatusDetail.NONE,
+                        () -> fixture.handler().onSessionUpdate(userSession)),
+                () -> assertStatusAfter(fixture, ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
+                        () -> fixture.handler().onSessionUpdate(null)),
+                () -> {
+                    fixture.handler().onSessionUpdate(userSession);
+                    assertStatusAfter(fixture, ThingStatus.UNINITIALIZED, ThingStatusDetail.BRIDGE_UNINITIALIZED, () -> {
+                        fixture.bridgeStatus().set(ThingStatus.UNINITIALIZED);
+                        fixture.handler().bridgeStatusChanged(
+                                ThingStatusInfoBuilder.create(ThingStatus.UNINITIALIZED).build());
+                    });
+                },
+                () -> assertStatusAfter(fixture, ThingStatus.UNINITIALIZED, ThingStatusDetail.NONE, () -> {
+                    fixture.bridgeStatus().set(ThingStatus.INITIALIZING);
+                    fixture.handler().bridgeStatusChanged(ThingStatusInfoBuilder.create(ThingStatus.INITIALIZING).build());
+                }),
+                () -> assertStatusAfter(fixture, ThingStatus.UNINITIALIZED, ThingStatusDetail.NONE, () -> {
+                    fixture.bridgeStatus().set(ThingStatus.UNKNOWN);
+                    fixture.handler().bridgeStatusChanged(ThingStatusInfoBuilder.create(ThingStatus.UNKNOWN).build());
+                }),
+                () -> assertStatusAfter(fixture, ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE, () -> {
+                    fixture.bridgeStatus().set(ThingStatus.OFFLINE);
+                    fixture.handler().bridgeStatusChanged(ThingStatusInfoBuilder.create(ThingStatus.OFFLINE).build());
+                }),
+                () -> assertStatusAfter(fixture, ThingStatus.ONLINE, ThingStatusDetail.NONE, () -> {
+                    fixture.bridgeStatus().set(ThingStatus.ONLINE);
+                    fixture.handler().bridgeStatusChanged(ThingStatusInfoBuilder.create(ThingStatus.ONLINE).build());
+                }),
+                () -> assertStatusAfter(fixture, ThingStatus.ONLINE, ThingStatusDetail.NONE,
+                        () -> fixture.handler().onSessionUpdate(userSession)),
+                () -> {
+                    clearInvocations(fixture.callback());
+                    invokeSessionTimeout(fixture.handler());
+                    assertLastStatus(fixture, ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
+                });
+    }
+
+    @Test
+    void testUnresolvedBridgeDoesNotPublishInitialErrorStatus() {
+        Thing thing = mock(Thing.class);
+        Configuration configuration = new Configuration();
+        configuration.put("serialNumber", "device-123");
+        when(thing.getConfiguration()).thenReturn(configuration);
+
+        ThingHandlerCallback callback = mock(ThingHandlerCallback.class);
+        ClientHandler uninitializedHandler = new ClientHandler(thing);
+        uninitializedHandler.setCallback(callback);
+        uninitializedHandler.initialize();
+
+        verify(callback, never()).statusUpdated(eq(thing), any(ThingStatusInfo.class));
+    }
+
+    private StatusFixture createStatusFixture() {
+        ThingUID thingUID = new ThingUID("jellyfin:client:server:status-device");
+        ThingUID bridgeUID = new ThingUID("jellyfin:server:server");
+        Thing thing = mock(Thing.class);
+        when(thing.getUID()).thenReturn(thingUID);
+        when(thing.getBridgeUID()).thenReturn(bridgeUID);
+        when(thing.getStatus()).thenReturn(ThingStatus.ONLINE);
+
+        AtomicReference<ThingStatus> bridgeStatus = new AtomicReference<>(ThingStatus.ONLINE);
+        Bridge bridge = mock(Bridge.class);
+        when(bridge.getStatus()).thenAnswer(ignored -> bridgeStatus.get());
+
+        ThingHandlerCallback callback = mock(ThingHandlerCallback.class);
+        when(callback.getBridge(bridgeUID)).thenReturn(bridge);
+        when(callback.isChannelLinked(any())).thenReturn(true);
+
+        ClientHandler statusHandler = new ClientHandler(thing);
+        statusHandler.setCallback(callback);
+        return new StatusFixture(thing, bridge, callback, statusHandler, bridgeStatus);
+    }
+
+    private void assertStatusAfter(StatusFixture fixture, ThingStatus expectedStatus, ThingStatusDetail expectedDetail,
+            Runnable action) {
+        clearInvocations(fixture.callback());
+        action.run();
+        assertLastStatus(fixture, expectedStatus, expectedDetail);
+    }
+
+    private void assertLastStatus(StatusFixture fixture, ThingStatus expectedStatus, ThingStatusDetail expectedDetail) {
+        ArgumentCaptor<ThingStatusInfo> statusCaptor = ArgumentCaptor.forClass(ThingStatusInfo.class);
+        verify(fixture.callback(), timeout(CALLBACK_TIMEOUT_MS))
+                .statusUpdated(eq(fixture.thing()), statusCaptor.capture());
+        assertEquals(expectedStatus, statusCaptor.getValue().getStatus());
+        assertEquals(expectedDetail, statusCaptor.getValue().getStatusDetail());
+    }
+
+    private void invokeSessionTimeout(ClientHandler statusHandler) throws ReflectiveOperationException {
+        Method timeoutHandler = ClientHandler.class.getDeclaredMethod("onSessionTimeout");
+        timeoutHandler.setAccessible(true);
+        timeoutHandler.invoke(statusHandler);
+    }
+
+    private record StatusFixture(Thing thing, Bridge bridge, ThingHandlerCallback callback, ClientHandler handler,
+            AtomicReference<ThingStatus> bridgeStatus) {
     }
 
     /**
