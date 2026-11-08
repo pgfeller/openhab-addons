@@ -1,5 +1,30 @@
 [
   {
+    "content": "- Project context: interactive test setup, Compose stack and runtime compatibility\n- Memory recall: Jellyfin interactive tests Docker Compose openHAB runtime compatibility user configuration tokens",
+    "context": "openhab-addons Jellyfin session user exposure",
+    "created_at": "2026-11-08T10:39:26.010496248+01:00",
+    "embedding_model": "ollama:http://shodan.ehrendingen:11434:bge-m3:latest:1024",
+    "id": "0958411c-8a35-4f5e-b78d-671786fc5215",
+    "importance": 0.2,
+    "metadata": {
+      "last_verified_at": "2026-11-08T09:29:24Z",
+      "record_kind": "session_summary",
+      "session_boundary": "idle_timeout",
+      "session_mode": "coding",
+      "session_origin": "background_auto"
+    },
+    "sediment_layer": "surface",
+    "tags": [
+      "session-summary",
+      "session-close",
+      "mode:coding",
+      "auto-session"
+    ],
+    "title": "Session close / openhab-addons Jellyfin session user exposure",
+    "type": "episodic",
+    "updated_at": "2026-11-08T10:39:26.010496248+01:00"
+  },
+  {
     "content": "Verified Jellyfin binding/API findings (2026-10-05): The bundled Jellyfin OpenAPI 10.11.6 spec already defines GET /UserImage with query parameters userId (UUID), tag, and format, and an image/* binary response. The checked-in generated ImageApi.getUserImage(UUID, String, ImageFormat) method returns a downloaded File, so regeneration is not needed to call this endpoint. Jellyfin's latest stable OpenAPI (12.1.0 at verification time, served from https://repo.jellyfin.org/releases/openapi/jellyfin-openapi-stable.json) contains the same operation and parameters. Upstream's path-based GET /Users/{userId}/Images/{imageType} is a legacy route explicitly marked Obsolete and ApiExplorerSettings(IgnoreApi = true), so don't use it for generated-client integration. The live Jellyfin 12.1.0 server returned 200 image/jpeg for GET /UserImage?userId=...&tag=...&format=Jpg both anonymously and with X-Emby-Token. GET /UserImage does not define maxWidth/maxHeight; don't send them. No account identifiers, profile data, or API credentials are retained here.",
     "context": "openhab-addons Jellyfin binding, issue #21850",
     "created_at": "2026-11-08T05:18:20.543656225+01:00",
@@ -95,8 +120,10 @@
     "id": "343a741d-d290-4f0a-bed9-42083dbfd74c",
     "importance": 0.2,
     "metadata": {
-      "last_verified_at": "2026-11-08T07:14:23Z",
+      "entity": "runbook",
+      "last_verified_at": "2026-11-08T09:05:13Z",
       "record_kind": "session_summary",
+      "service": "openHAB Docker runtime",
       "session_boundary": "idle_timeout",
       "session_mode": "coding",
       "session_origin": "background_auto"
@@ -110,11 +137,20 @@
       "jellyfin",
       "session-user-exposure",
       "client-state",
-      "channel-metadata"
+      "channel-metadata",
+      "interactive-testing",
+      "docker",
+      "docker-compose",
+      "openhab-5.3",
+      "status-api",
+      "snapshot",
+      "runbook",
+      "service:openHAB Docker runtime",
+      "user-coordination"
     ],
     "title": "Session close / openhab-addons",
     "type": "episodic",
-    "updated_at": "2026-11-08T08:24:23.80558165+01:00"
+    "updated_at": "2026-11-08T10:15:13.653105996+01:00"
   },
   {
     "content": "User requested committing cleanup repairs and preparing local build for first manual test. Committed cleanup and fixture repairs with signoff as 97960f5eea; restored verified contributor Patrik Gfeller author tags in two channel helper classes and committed build guidance/evidence as 95f3c66b7d. Working tree clean. Full module clean install and -U spotless:apply clean install each passed 319 tests with zero failures/errors/skips and zero SAT errors, but Karaf runtime verification fails because core semantics 5.3 snapshot requires org.objectweb.asm >=9.10 while resolved feature set supplies 9.9.1. Snapshot refresh did not fix external inconsistency; no version override or skip flags used. Package command ./mvnw -pl bundles/org.openhab.binding.jellyfin package succeeds with all319 tests in34classes. Main JAR target/org.openhab.binding.jellyfin-5.3.0-SNAPSHOT.jar about5.1MB available for initial cleanup/regression smoke test; not full verified install or session-user acceptance. Client XML identity references still missing, T003-T018 open, feature implementing. User target openHAB5.2.3 compatibility remains unverified; quickstart documents existing-bundle update on disposable runtime and rollback precautions.",
