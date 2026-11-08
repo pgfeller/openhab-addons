@@ -31,3 +31,12 @@ pom.xml.versionsBackup
 .vim
 shell.nix
 tags
+
+# memory-sync: rebuildable index and SQLite side files stay local
+data/rag-index/
+data/memory-store/*/*.db-wal
+data/memory-store/*/*.db-shm
+data/memory-store/*.db
+data/memory-store/*.db-wal
+data/memory-store/*.db-shm
+logs/mcp-diagnostics.log
