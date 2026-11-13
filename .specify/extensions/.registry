@@ -1,10 +1,24 @@
 {
   "schema_version": "1.0",
   "extensions": {
-    "companion": {
-      "version": "0.25.0",
+    "bug": {
+      "version": "1.0.1",
       "source": "local",
-      "manifest_hash": "sha256:6c71d56fbf5912e3d0c056b56e0d30ff571fc9b370add089147f3e65ee622b09",
+      "manifest_hash": "sha256:0f8ca9b828f8855be72a17cdef1f355fba81d7173b16f349d500d2ab367384fb",
+      "enabled": true,
+      "priority": 10,
+      "registered_commands": {},
+      "registered_skills": [
+        "speckit-bug-assess",
+        "speckit-bug-fix",
+        "speckit-bug-test"
+      ],
+      "installed_at": "2026-10-24T19:16:20.494493+00:00"
+    },
+    "companion": {
+      "version": "0.27.0",
+      "source": "local",
+      "manifest_hash": "sha256:1659a88136635fccc4ac2e84a1fffba1005cb378a50631e5a00dad05c0122e88",
       "enabled": true,
       "priority": 10,
       "registered_commands": {},
@@ -26,29 +40,10 @@
         "speckit-companion-mark-complete",
         "speckit-companion-auto",
         "speckit-companion-doctor",
-        "speckit-companion-living-adopt",
-        "speckit-companion-living-move",
-        "speckit-companion-living-drift",
-        "speckit-companion-living-show",
-        "speckit-companion-living-validate",
-        "speckit-companion-living-coverage",
-        "speckit-companion-living-sync"
+        "speckit-companion-on-prompt",
+        "speckit-companion-on-stop"
       ],
-      "installed_at": "2026-10-24T19:16:12.976043+00:00"
-    },
-    "bug": {
-      "version": "1.0.1",
-      "source": "local",
-      "manifest_hash": "sha256:0f8ca9b828f8855be72a17cdef1f355fba81d7173b16f349d500d2ab367384fb",
-      "enabled": true,
-      "priority": 10,
-      "registered_commands": {},
-      "registered_skills": [
-        "speckit-bug-assess",
-        "speckit-bug-fix",
-        "speckit-bug-test"
-      ],
-      "installed_at": "2026-10-24T19:16:20.494493+00:00"
+      "installed_at": "2026-11-13T17:47:25.241559+00:00"
     }
   }
 }

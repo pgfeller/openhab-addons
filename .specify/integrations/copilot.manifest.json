@@ -12,6 +12,12 @@
     ".github/skills/speckit-checklist/SKILL.md": "43009036898a3242742336fd3582c2c5909d12fd9a7d6894eb8608b43ccd27ad",
     ".github/skills/speckit-specify/SKILL.md": "342dd2173103ce701b2bae2f489b462da19fc7369d920c93df10754be2216be8",
     ".github/skills/speckit-tasks/SKILL.md": "4dfb5cb2fd544f7ad5f1ddb9ff44bf230082fc312090db7e36102fe400dfab77",
-    ".github/skills/speckit-taskstoissues/SKILL.md": "917480a4a83b532aaf557db3cecdcea615852ad8265f864fecf137a5f3904cd8"
+    ".github/skills/speckit-taskstoissues/SKILL.md": "917480a4a83b532aaf557db3cecdcea615852ad8265f864fecf137a5f3904cd8",
+    ".specify/events.py": "e78e7edb7dd8c5d3a86d61386eb4313ed5b1f8eb6891e496a04b2a53ff7ea984",
+    ".github/hooks/speckit.json": "6d226c15117b67d86dd4b5464aec5a3d149e54e16bdb652ef58b10afae7830f3"
+  },
+  "ownership_modes": {
+    ".specify/events.py": "shared",
+    ".github/hooks/speckit.json": "partial"
   }
 }
