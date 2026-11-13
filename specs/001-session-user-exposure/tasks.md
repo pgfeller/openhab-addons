@@ -102,8 +102,9 @@ valid session, and remain unaffected by ordinary channel commands.
     override or verification skip was used. Keep open until the unmodified clean install passes.
 - [ ] T017 Perform and record interactive linked-Item acceptance from `specs/001-session-user-exposure/quickstart.md` on openHAB 5.3 or later. Do not deploy the migrated bundle to 5.2.3, which lacks the required status API; retain that runtime's results as pre-migration baseline evidence only (SC-001 through SC-005).
   - **Status**: BLOCKED. On 2026-11-08, the user reported the Jellyfin bundle ACTIVE at version `5.3.0.202611080927`, with its services and SCR components ACTIVE. A temporary client Thing was added and both `user-name` and `user-id` appeared as String channels. Temporary String Items were created and linked to the channels, but the client Thing stayed UNINITIALIZED with `HANDLER_INITIALIZING_ERROR` because the runtime could not resolve `ClientHandler.updateStatus(ThingStatusDetail, String)`. The Items displayed NULL, which is not valid identity acceptance evidence while the handler is uninitialized. The temporary Items and Thing were removed. No token, account, or identity values were recorded; no container restart was performed. Retry only on a runtime with a compatible openHAB core API.
-- [ ] T018 Reconcile completed markers in `specs/001-session-user-exposure/tasks.md` and journal evidence in `specs/001-session-user-exposure/.spec-context.json` using Companion hooks; run cross-artifact analysis and mark complete only when all acceptance/build gates actually pass.
+- [ ] T018 Reconcile completed markers in `specs/001-session-user-exposure/tasks.md` and journal evidence in `specs/001-session-user-exposure/.spec-context.json` using Companion hooks; record disposition of the cross-artifact analysis findings and mark complete only when all acceptance/build gates actually pass.
   - **Status**: OPEN. T016's clean-install gate remains blocked and T017's linked-Item acceptance is blocked by the runtime API mismatch, so no further task markers can be completed and the feature remains incomplete.
+  - **Constitution workflow note (2026-11-13)**: Cross-artifact analysis was performed after T001-T015 were completed, so it does not retroactively satisfy the constitution's pre-implementation gate. Resolve the reported findings before further implementation or closure, preserve the existing completion history, and run cross-artifact analysis before implementation in future feature workflows.
   - **Cross-artifact state (2026-11-08)**: FR-001 through FR-007 and SC-001 through SC-005
     remain mapped in the coverage table. Source, metadata, tests, and README implement the
     identity channels and status handling. A linked-Item attempt was made on the user-reported
@@ -114,14 +115,16 @@ valid session, and remain unaffected by ordinary channel commands.
   - **Evidence reconciliation**:
 
     | Gate | Verified outcome | Status |
-    |------|------------------|--------|
+    | ------ | ------------------ | -------- |
     | Focused tests | 26 handler/discovery and 54 identity/lifecycle/command tests passed | PASS |
     | Spotless | Wrapper formatter completed successfully | PASS |
     | Full module clean install | 341 tests passed; Karaf verification failed on ASM 9.9.1 vs >=9.10.0 requirement | BLOCKED |
     | Feature Markdown lint | 9 files, 0 issues | PASS |
     | Linked-Item acceptance | Channels appeared and temporary Items linked, but the client handler failed initialization with a missing core API method; test objects were removed | BLOCKED |
 
-  - Companion context retains the verified run history; the after-implement hook must leave status as implementing while T016-T018 remain unchecked.
+  - Companion context retains the verified run history; the after-implement hook must leave status as implementing while T016-T020 remain unchecked.
+- [ ] T019 [US3] Extend `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerStatusCheckTest.java` with status-mapping tests for invalid configuration and invalid bridge type; assert both produce `CONFIGURATION_ERROR` and record the results (FR-007, SC-005).
+- [ ] T020 [US3] Extend `bundles/org.openhab.binding.jellyfin/src/test/java/org/openhab/binding/jellyfin/internal/handler/ClientHandlerStatusCheckTest.java` with focused tests verifying status-only states use the status-only API, detail-bearing states use the detail-derived API, and `ThingStatusDetail.NONE` is not passed to the detail-derived API (FR-006, SC-005).
 
 ## Dependencies and Execution Strategy
 
@@ -129,7 +132,7 @@ valid session, and remain unaffected by ordinary channel commands.
 1. US1: T004 tests, then T005/T006 implementation and focused validation.
 1. US2: T007 tests, then T008/T009 implementation and focused validation.
 1. US3: T010 tests, T011 status and identity repair, T012 command checks, then T013 only if needed.
-1. T014/T015 follow settled metadata; T016 precedes interactive acceptance T017 and closure T018.
+1. T014/T015 follow settled metadata; complete T019/T020 before T016, then T016 precedes interactive acceptance T017 and closure T018.
 
 US1 is the smallest useful slice, but all stories are required for feature completion.
 Story order avoids simultaneous edits to shared files. T014 can run in parallel with T015
@@ -145,10 +148,10 @@ complete until its stated checks have run.
 | FR-003 | T010-T011, T016-T017 | Initial absence, anonymous/end/timeout/offline clearing |
 | FR-004 | T004, T006-T007, T009-T011, T016-T017 | Partial identity, no media, switch, recovery |
 | FR-005 | T003, T012-T013, T016-T017 | Read-only XML, ignored commands, non-mutating refresh |
-| FR-006 | T010-T011, T016 | Detail-derived API use; status-only updates where appropriate |
-| FR-007 | T010-T011, T016-T017 | Bridge lifecycle, session, and configuration status mapping |
+| FR-006 | T010-T011, T016, T020 | Detail-derived API use; status-only updates and NONE handling |
+| FR-007 | T010-T011, T016-T017, T019 | Bridge lifecycle, session, invalid configuration and bridge type status mapping |
 | SC-001 | T004-T009, T016-T017 | Supplied values match |
 | SC-002 | T004, T007, T010-T011, T016-T017 | No stale values after processed transition |
 | SC-003 | T010-T011, T016-T017 | Current identity on next processed update |
 | SC-004 | T003, T012-T013, T016-T017 | No identity-changing commands |
-| SC-005 | T010-T011, T016-T017 | Correct status details and no false missing-bridge error |
+| SC-005 | T010-T011, T016-T017, T019-T020 | Correct status details, invalid configuration/type mapping, and no false missing-bridge error |

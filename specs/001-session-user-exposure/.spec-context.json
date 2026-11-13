@@ -3,8 +3,8 @@
   "specName": "001-session-user-exposure",
   "branch": "pgfeller/issue21850",
   "selectedAt": "2026-10-18T12:30:51.634Z",
-  "currentStep": "converge",
-  "status": "implementing",
+  "currentStep": "analyze",
+  "status": "tasking",
   "history": [
     {
       "step": "implement",
@@ -146,6 +146,13 @@
       "kind": "complete",
       "by": "extension",
       "at": "2026-11-08T07:04:49.801Z"
+    },
+    {
+      "step": "analyze",
+      "substep": null,
+      "kind": "start",
+      "by": "extension",
+      "at": "2026-11-13T17:54:17.843Z"
     }
   ],
   "telemetryInstanceId": "d69622fa-eb7a-4059-8783-f76bff4d6747",
@@ -191,7 +198,7 @@
       "command": ".specify/scripts/bash/check-prerequisites.sh --json --require-spec --require-tasks --include-tasks",
       "source": "derived",
       "exitCode": 0,
-      "durationSeconds": 0.0,
+      "durationSeconds": 0,
       "result": "{\"FEATURE_DIR\":\"/home/pgfeller/Documents/GitHub/openhab-addons/specs/001-session-user-exposure\",\"AVAILABLE_DOCS\":[\"research.md\",\"data-model.md\",\"contracts/\",\"quickstart.md\",\"tasks.md\"]}"
     },
     {
@@ -199,7 +206,7 @@
       "command": "npx --yes markdownlint-cli2 --config .github/markdownlint.yaml .specify/memory/constitution.md \"specs/001-session-user-exposure/**/*.md\"",
       "source": "derived",
       "exitCode": 0,
-      "durationSeconds": 1.0,
+      "durationSeconds": 1,
       "result": "Finding: .specify/memory/constitution.md specs/001-session-user-exposure/**/*.md · Linting: 9 files · Summary: 0 issues in 0 files"
     },
     {
@@ -217,7 +224,7 @@
       "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=ClientHandlerTest,PublicUserDiscoveryServiceTest test",
       "source": "derived",
       "exitCode": 1,
-      "durationSeconds": 45.0,
+      "durationSeconds": 45,
       "result": "[ERROR]  · [ERROR] For more information about the errors and possible solutions, please read the following articles: · [ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException",
       "warnings": [
         "exited 1"
@@ -228,7 +235,7 @@
       "command": "npx --yes markdownlint-cli2 --config .github/markdownlint.yaml --fix specs/001-session-user-exposure/tasks.md",
       "source": "derived",
       "exitCode": 0,
-      "durationSeconds": 1.0,
+      "durationSeconds": 1,
       "result": "Finding: specs/001-session-user-exposure/tasks.md · Linting: 1 file · Summary: 0 issues in 0 files"
     },
     {
@@ -236,7 +243,7 @@
       "command": "git diff --check",
       "source": "derived",
       "exitCode": 0,
-      "durationSeconds": 0.0,
+      "durationSeconds": 0,
       "result": "no output"
     },
     {
@@ -298,7 +305,7 @@
       "command": "git diff --check",
       "source": "derived",
       "exitCode": 0,
-      "durationSeconds": 0.0,
+      "durationSeconds": 0,
       "result": "no output"
     },
     {
@@ -318,7 +325,7 @@
       "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin spotless:apply",
       "source": "derived",
       "exitCode": 0,
-      "durationSeconds": 9.0,
+      "durationSeconds": 9,
       "result": "[INFO] Total time:  7.185 s · [INFO] Finished at: 2026-10-30T10:27:12+01:00 · [INFO] ------------------------------------------------------------------------"
     },
     {
@@ -358,7 +365,7 @@
       "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin -Dtest=ClientHandlerTest,PublicUserDiscoveryServiceTest clean install",
       "source": "derived",
       "exitCode": 1,
-      "durationSeconds": 267.0,
+      "durationSeconds": 267,
       "result": "[ERROR]  · [ERROR] For more information about the errors and possible solutions, please read the following articles: · [ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException",
       "warnings": [
         "exited 1"
@@ -420,7 +427,7 @@
       "command": "git diff --check",
       "source": "derived",
       "exitCode": 0,
-      "durationSeconds": 0.0,
+      "durationSeconds": 0,
       "result": "no output"
     },
     {
@@ -498,7 +505,7 @@
       "command": "docker image inspect openhab/openhab:snapshot-debian",
       "source": "derived",
       "exitCode": 0,
-      "durationSeconds": 0.0,
+      "durationSeconds": 0,
       "result": "        } ·     } · ]"
     },
     {
@@ -577,7 +584,7 @@
       "command": "git diff --check",
       "source": "derived",
       "exitCode": 0,
-      "durationSeconds": 0.0,
+      "durationSeconds": 0,
       "result": "no output"
     },
     {
@@ -585,7 +592,7 @@
       "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin spotless:apply",
       "source": "derived",
       "exitCode": 0,
-      "durationSeconds": 19.0,
+      "durationSeconds": 19,
       "result": "[INFO] Total time:  15.314 s · [INFO] Finished at: 2026-11-03T21:03:39+01:00 · [INFO] ------------------------------------------------------------------------"
     },
     {
@@ -609,7 +616,7 @@
       "command": "git diff --check",
       "source": "derived",
       "exitCode": 0,
-      "durationSeconds": 0.0,
+      "durationSeconds": 0,
       "result": "no output"
     },
     {
@@ -632,7 +639,7 @@
       "command": "./mvnw -pl bundles/org.openhab.binding.jellyfin clean install",
       "source": "derived",
       "exitCode": 1,
-      "durationSeconds": 239.0,
+      "durationSeconds": 239,
       "result": "All 341 tests passed with 0 failures, errors, or skipped; packaging and static-analysis phases completed. Karaf feature verification failed because org.openhab.core.semantics requires org.objectweb.asm >=9.10.0 and the supplied feature resources could not resolve that package. No overrides or verification skips were used."
     },
     {
@@ -688,7 +695,7 @@
       "command": ".specify/scripts/bash/check-prerequisites.sh --json --require-spec --require-tasks --include-tasks",
       "source": "derived",
       "exitCode": 0,
-      "durationSeconds": 0.0,
+      "durationSeconds": 0,
       "result": "{\"FEATURE_DIR\":\"/home/pgfeller/Documents/GitHub/openhab-addons/specs/001-session-user-exposure\",\"AVAILABLE_DOCS\":[\"research.md\",\"data-model.md\",\"contracts/\",\"quickstart.md\",\"tasks.md\"]}"
     },
     {
@@ -704,7 +711,7 @@
       "command": "git --no-pager diff --check",
       "source": "derived",
       "exitCode": 0,
-      "durationSeconds": 0.0,
+      "durationSeconds": 0,
       "result": "no output"
     },
     {
