@@ -32,6 +32,7 @@ Before you can integrate this service with your Google Cloud Text-to-Speech, you
 1. From the `Create credentials` drop-down list, select `OAuth client ID`.
 1. Select application type `Web application` and enter a name into the `Name` (e.g. `OpenHAB TTS`) field.
 1. Add `<https://www.google.com>` to the `Authorized redirect URIs`.
+   If you use a different redirect URI, configure the same URI in the Google Cloud Text-to-Speech service and add it to the authorized redirect URIs.
 
 - Watch out for trailing spaces in the URL! E.g. when using the copy url feature in the context menu of Google Chrome it appends a slash (`https://www.google.com` becomes `https://www.google.com`) and the steps afterwards fail.
 
@@ -43,6 +44,7 @@ Using your favorite configuration UI to edit **Settings / Other Services - Googl
 
 - **Client Id** - Google Cloud Platform OAuth 2.0-Client Id.
 - **Client Secret** - Google Cloud Platform OAuth 2.0-Client Secret.
+- **Redirect URI** - The redirect URI used in the authorization request and token exchange. It must match an authorized redirect URI for the OAuth client. Defaults to `https://www.google.com`.
 - **Authorization Code** - This code is used once for retrieving the Google Cloud Platform access and refresh tokens.
 
 1. Go to `OAuth consent screen` ([OAuth consent screen](https://console.cloud.google.com/apis/credentials/consent)) and set the `publishing status` to `production` to activate the created project.

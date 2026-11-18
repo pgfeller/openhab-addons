@@ -88,6 +88,7 @@ public class GoogleTTSService extends AbstractCachedTTSService {
     private static final String PARAM_CLIENT_ID = "clientId";
     private static final String PARAM_CLIEND_SECRET = "clientSecret";
     static final String PARAM_AUTHCODE = "authcode";
+    private static final String PARAM_REDIRECT_URI = "redirectUri";
     private static final String PARAM_PITCH = "pitch";
     private static final String PARAM_SPEAKING_RATE = "speakingRate";
     private static final String PARAM_VOLUME_GAIN_DB = "volumeGainDb";
@@ -220,6 +221,10 @@ public class GoogleTTSService extends AbstractCachedTTSService {
             // authcode
             param = newConfig.containsKey(PARAM_AUTHCODE) ? newConfig.get(PARAM_AUTHCODE).toString() : null;
             config.authcode = param;
+
+            // redirect URI
+            param = newConfig.containsKey(PARAM_REDIRECT_URI) ? newConfig.get(PARAM_REDIRECT_URI).toString() : null;
+            config.redirectUri = param;
 
             // pitch
             param = newConfig.containsKey(PARAM_PITCH) ? newConfig.get(PARAM_PITCH).toString() : null;

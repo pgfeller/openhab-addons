@@ -28,6 +28,7 @@ class GoogleTTSConfig {
     public @Nullable String clientId;
     public @Nullable String clientSecret;
     public @Nullable String authcode;
+    public @Nullable String redirectUri;
 
     /**
      * Pitch

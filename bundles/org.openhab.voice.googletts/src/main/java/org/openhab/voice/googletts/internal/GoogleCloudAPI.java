@@ -65,7 +65,7 @@ class GoogleCloudAPI {
 
     private static final String GCP_AUTH_URI = "https://accounts.google.com/o/oauth2/auth";
     private static final String GCP_TOKEN_URI = "https://accounts.google.com/o/oauth2/token";
-    private static final String GCP_REDIRECT_URI = "https://www.google.com";
+    private static final String GCP_DEFAULT_REDIRECT_URI = "https://www.google.com";
     /**
      * Google Cloud Platform authorization scope
      */
@@ -165,8 +165,12 @@ class GoogleCloudAPI {
         if (authcode != null && !authcode.isEmpty()) {
             logger.debug("Trying to get access and refresh tokens.");
             try {
+                String redirectUri = config.redirectUri;
+                if (redirectUri == null || redirectUri.isBlank()) {
+                    redirectUri = GCP_DEFAULT_REDIRECT_URI;
+                }
                 AccessTokenResponse response = oAuthService.getAccessTokenResponseByAuthorizationCode(authcode,
-                        GCP_REDIRECT_URI);
+                        redirectUri);
                 if (response.getRefreshToken() == null || response.getRefreshToken().isEmpty()) {
                     throw new AuthenticationException("Error fetching refresh token. Please reauthorize");
                 }
