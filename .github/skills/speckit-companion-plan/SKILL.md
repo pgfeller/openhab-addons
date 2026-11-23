@@ -7,8 +7,6 @@ metadata:
   source: extension:companion
 ---
 
-# Companion Plan Skill
-
 ## User Input
 
 ```text
