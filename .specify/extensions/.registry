@@ -1,20 +1,6 @@
 {
   "schema_version": "1.0",
   "extensions": {
-    "bug": {
-      "version": "1.0.1",
-      "source": "local",
-      "manifest_hash": "sha256:0f8ca9b828f8855be72a17cdef1f355fba81d7173b16f349d500d2ab367384fb",
-      "enabled": true,
-      "priority": 10,
-      "registered_commands": {},
-      "registered_skills": [
-        "speckit-bug-assess",
-        "speckit-bug-fix",
-        "speckit-bug-test"
-      ],
-      "installed_at": "2026-10-24T19:16:20.494493+00:00"
-    },
     "companion": {
       "version": "0.27.0",
       "source": "local",
@@ -44,6 +30,91 @@
         "speckit-companion-on-stop"
       ],
       "installed_at": "2026-11-13T17:47:25.241559+00:00"
+    },
+    "agent-context": {
+      "version": "1.0.3",
+      "source": "local",
+      "manifest_hash": "sha256:790fe14ee139490b46d25ebdc37964b9e620e88c65d92ba21e6bdf5274ea7a81",
+      "enabled": true,
+      "priority": 10,
+      "registered_commands": {},
+      "registered_skills": [
+        "speckit-agent-context-update"
+      ],
+      "installed_at": "2026-11-23T22:57:40.052265+00:00"
+    },
+    "assess": {
+      "version": "1.0.2",
+      "source": "local",
+      "manifest_hash": "sha256:c446e95c0cfc9482eb794fa90d428c5da3257162515db2cebd9ae3ec534d1919",
+      "enabled": true,
+      "priority": 10,
+      "registered_commands": {},
+      "registered_skills": [
+        "speckit-assess-intake",
+        "speckit-assess-research",
+        "speckit-assess-define",
+        "speckit-assess-shape",
+        "speckit-assess-decide"
+      ],
+      "installed_at": "2026-11-23T22:57:55.379485+00:00"
+    },
+    "git": {
+      "version": "1.0.8",
+      "source": "local",
+      "manifest_hash": "sha256:53692513178b01b0cca2d9328158fe08668b8dfa307e5e43bf86ca46ce69f19a",
+      "enabled": true,
+      "priority": 10,
+      "registered_commands": {},
+      "registered_skills": [
+        "speckit-git-feature",
+        "speckit-git-validate",
+        "speckit-git-remote",
+        "speckit-git-initialize",
+        "speckit-git-commit"
+      ],
+      "installed_at": "2026-11-23T22:58:09.238982+00:00"
+    },
+    "github": {
+      "version": "1.0.6",
+      "source": "local",
+      "manifest_hash": "sha256:e77193414ff8bf39b6338df4c8f4c205e3ff108a58a181727161e3e88009bff7",
+      "enabled": true,
+      "priority": 10,
+      "registered_commands": {},
+      "registered_skills": [
+        "speckit-github-taskstoissues"
+      ],
+      "installed_at": "2026-11-23T22:58:24.524802+00:00"
+    },
+    "task-consolidation": {
+      "version": "0.6.0",
+      "source": "local",
+      "manifest_hash": "sha256:052262e0eff4721186e66183b7bbbee70c556fd1feae5e81c4efbae959a1787d",
+      "enabled": true,
+      "priority": 10,
+      "registered_commands": {},
+      "registered_skills": [
+        "speckit-task-consolidation-consolidate"
+      ],
+      "installed_at": "2026-11-23T22:59:52.646540+00:00"
+    },
+    "bug": {
+      "version": "1.0.2",
+      "source": {
+        "kind": "catalog",
+        "catalog": "default"
+      },
+      "manifest_hash": "sha256:00ec851a8e57713e9d65401e4c7fa5b4fa4a689decacb0b654ba5411c653b647",
+      "enabled": true,
+      "priority": 10,
+      "registered_commands": {},
+      "registered_skills": [
+        "speckit-bug-assess",
+        "speckit-bug-fix",
+        "speckit-bug-test"
+      ],
+      "installed_at": "2026-10-24T19:16:20.494493+00:00"
     }
   }
 }
