@@ -5,6 +5,7 @@ compatibility: Requires spec-kit project structure with .specify/ directory
 metadata:
   author: alfredoperez
   source: extension:companion
+  version: 0.28.0
 ---
 
 # Companion After Plan Skill

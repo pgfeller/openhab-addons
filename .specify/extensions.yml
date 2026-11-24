@@ -10,14 +10,6 @@ settings:
   auto_execute_hooks: true
 hooks:
   before_specify:
-  - extension: companion
-    command: speckit.companion.before-step
-    enabled: true
-    optional: false
-    priority: 10
-    prompt: Execute speckit.companion.before-step?
-    description: Save the specify start time until its folder exists
-    condition: null
   - extension: git
     command: speckit.git.feature
     enabled: true
@@ -26,15 +18,15 @@ hooks:
     prompt: Execute speckit.git.feature?
     description: Create feature branch before specification
     condition: null
-  before_plan:
   - extension: companion
     command: speckit.companion.before-step
     enabled: true
     optional: false
     priority: 10
     prompt: Execute speckit.companion.before-step?
-    description: Record the plan start
+    description: Save the specify start time until its folder exists
     condition: null
+  before_plan:
   - extension: git
     command: speckit.git.commit
     enabled: true
@@ -43,15 +35,15 @@ hooks:
     prompt: Commit outstanding changes before planning?
     description: Auto-commit before implementation planning
     condition: null
-  before_tasks:
   - extension: companion
     command: speckit.companion.before-step
     enabled: true
     optional: false
     priority: 10
     prompt: Execute speckit.companion.before-step?
-    description: Record the tasks start
+    description: Record the plan start
     condition: null
+  before_tasks:
   - extension: git
     command: speckit.git.commit
     enabled: true
@@ -60,15 +52,15 @@ hooks:
     prompt: Commit outstanding changes before task generation?
     description: Auto-commit before task generation
     condition: null
-  before_implement:
   - extension: companion
     command: speckit.companion.before-step
     enabled: true
     optional: false
     priority: 10
     prompt: Execute speckit.companion.before-step?
-    description: Record the implement start
+    description: Record the tasks start
     condition: null
+  before_implement:
   - extension: git
     command: speckit.git.commit
     enabled: true
@@ -77,15 +69,15 @@ hooks:
     prompt: Commit outstanding changes before implementation?
     description: Auto-commit before implementation
     condition: null
-  after_specify:
   - extension: companion
-    command: speckit.companion.after-specify
+    command: speckit.companion.before-step
     enabled: true
     optional: false
     priority: 10
-    prompt: Execute speckit.companion.after-specify?
-    description: Record the specify start and finish
+    prompt: Execute speckit.companion.before-step?
+    description: Record the implement start
     condition: null
+  after_specify:
   - extension: agent-context
     command: speckit.agent-context.update
     enabled: true
@@ -102,15 +94,15 @@ hooks:
     prompt: Commit specification changes?
     description: Auto-commit after specification
     condition: null
-  after_plan:
   - extension: companion
-    command: speckit.companion.after-plan
+    command: speckit.companion.after-specify
     enabled: true
     optional: false
     priority: 10
-    prompt: Execute speckit.companion.after-plan?
-    description: Record the plan finish
+    prompt: Execute speckit.companion.after-specify?
+    description: Record the specify start and finish
     condition: null
+  after_plan:
   - extension: agent-context
     command: speckit.agent-context.update
     enabled: true
@@ -127,15 +119,15 @@ hooks:
     prompt: Commit plan changes?
     description: Auto-commit after implementation planning
     condition: null
-  after_tasks:
   - extension: companion
-    command: speckit.companion.after-tasks
+    command: speckit.companion.after-plan
     enabled: true
     optional: false
     priority: 10
-    prompt: Execute speckit.companion.after-tasks?
-    description: Record the tasks finish
+    prompt: Execute speckit.companion.after-plan?
+    description: Record the plan finish
     condition: null
+  after_tasks:
   - extension: git
     command: speckit.git.commit
     enabled: true
@@ -153,15 +145,15 @@ hooks:
     description: Save consolidated tasks before downstream hooks and the completion
       report.
     condition: null
-  after_implement:
   - extension: companion
-    command: speckit.companion.after-implement
+    command: speckit.companion.after-tasks
     enabled: true
     optional: false
     priority: 10
-    prompt: Execute speckit.companion.after-implement?
-    description: Sync implement progress from tasks.md
+    prompt: Execute speckit.companion.after-tasks?
+    description: Record the tasks finish
     condition: null
+  after_implement:
   - extension: git
     command: speckit.git.commit
     enabled: true
@@ -170,23 +162,13 @@ hooks:
     prompt: Commit implementation changes?
     description: Auto-commit after implementation
     condition: null
-  before_converge:
   - extension: companion
-    command: speckit.companion.before-converge
+    command: speckit.companion.after-implement
     enabled: true
     optional: false
     priority: 10
-    prompt: Execute speckit.companion.before-converge?
-    description: Record the converge start
-    condition: null
-  after_converge:
-  - extension: companion
-    command: speckit.companion.after-converge
-    enabled: true
-    optional: false
-    priority: 10
-    prompt: Execute speckit.companion.after-converge?
-    description: Record the converge finish
+    prompt: Execute speckit.companion.after-implement?
+    description: Sync implement progress from tasks.md
     condition: null
   before_constitution:
   - extension: git
@@ -277,4 +259,22 @@ hooks:
     priority: 10
     prompt: Commit after syncing issues?
     description: Auto-commit after tasks-to-issues conversion
+    condition: null
+  before_converge:
+  - extension: companion
+    command: speckit.companion.before-converge
+    enabled: true
+    optional: false
+    priority: 10
+    prompt: Execute speckit.companion.before-converge?
+    description: Record the converge start
+    condition: null
+  after_converge:
+  - extension: companion
+    command: speckit.companion.after-converge
+    enabled: true
+    optional: false
+    priority: 10
+    prompt: Execute speckit.companion.after-converge?
+    description: Record the converge finish
     condition: null
