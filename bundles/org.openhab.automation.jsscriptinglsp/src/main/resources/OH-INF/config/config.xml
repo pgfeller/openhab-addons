@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config-description:config-descriptions
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:config-description="https://openhab.org/schemas/config-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/config-description/v1.0.0
+		https://openhab.org/schemas/config-description-1.0.0.xsd">
+	<config-description uri="automation:jsscriptinglsp">
+		<parameter-group name="server">
+			<label>JavaScript Language Server</label>
+		</parameter-group>
+
+		<parameter name="enabled" type="boolean" required="true" groupName="server">
+			<label>Enable JavaScript Language Server</label>
+			<description>Enable or disable the JavaScript language-server endpoint.</description>
+			<default>false</default>
+		</parameter>
+		<parameter name="port" type="integer" required="false" min="1024" max="65535" groupName="server">
+			<label>WebSocket Port</label>
+			<description>Port for the JavaScript language-server WebSocket endpoint.</description>
+		</parameter>
+	</config-description>
+</config-description:config-descriptions>
