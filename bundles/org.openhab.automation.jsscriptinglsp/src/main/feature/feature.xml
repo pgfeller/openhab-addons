@@ -5,6 +5,9 @@
 
 	<feature name="openhab-automation-jsscriptinglsp" description="JavaScript Language Server" version="${project.version}">
 		<feature>openhab-runtime-base</feature>
+		<feature dependency="true">openhab-core-io-websocket</feature>
+		<feature dependency="true">openhab-automation-jsscripting</feature>
+		<feature dependency="true">openhab.tp-lsp4j</feature>
 		<bundle start-level="80">mvn:org.openhab.addons.bundles/org.openhab.automation.jsscriptinglsp/${project.version}</bundle>
 	</feature>
 </features>

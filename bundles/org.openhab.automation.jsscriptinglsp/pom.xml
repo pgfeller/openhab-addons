@@ -14,4 +14,43 @@
 
   <name>openHAB Add-ons :: Bundles :: Automation :: JavaScript Language Server</name>
 
+  <dependencies>
+    <dependency>
+      <groupId>org.openhab.core.bundles</groupId>
+      <artifactId>org.openhab.core.io.websocket</artifactId>
+      <version>${ohc.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.openhab.core.bundles</groupId>
+      <artifactId>org.openhab.core.automation.module.script</artifactId>
+      <version>${ohc.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.lsp4j</groupId>
+      <artifactId>org.eclipse.lsp4j</artifactId>
+      <version>1.0.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.lsp4j</groupId>
+      <artifactId>org.eclipse.lsp4j.jsonrpc</artifactId>
+      <version>1.0.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty.ee10.websocket</groupId>
+      <artifactId>jetty-ee10-websocket-jetty-server</artifactId>
+      <version>${jetty.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty.websocket</groupId>
+      <artifactId>jetty-websocket-jetty-api</artifactId>
+      <version>${jetty.version}</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+
 </project>

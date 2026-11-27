@@ -11,12 +11,8 @@
 
 		<parameter name="enabled" type="boolean" required="true" groupName="server">
 			<label>Enable JavaScript Language Server</label>
-			<description>Enable or disable the JavaScript language-server endpoint.</description>
+			<description>Enable the authenticated WebSocket endpoint at /ws/jsscriptinglsp. It uses openHAB's HTTP(S) listener.</description>
 			<default>false</default>
-		</parameter>
-		<parameter name="port" type="integer" required="false" min="1024" max="65535" groupName="server">
-			<label>WebSocket Port</label>
-			<description>Port for the JavaScript language-server WebSocket endpoint.</description>
 		</parameter>
 	</config-description>
 </config-description:config-descriptions>
